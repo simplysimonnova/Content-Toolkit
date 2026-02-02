@@ -1,0 +1,12 @@
+{
+  "name": "Content Toolkit",
+  "description": "An educational content generator for A2-level English lessons, creating teacher-facing blurbs and technical descriptions.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "googleApiScopes": [
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/drive.file"
+  ]
+}
