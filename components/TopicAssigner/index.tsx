@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, Download, CheckCircle, AlertCircle, Tag, X, Database, Play, Loader2, ListChecks, Hash, History, Trash2, Eye, RefreshCw } from 'lucide-react';
-import { parseCSV } from '../utils/csvHelper';
+import { parseCSV } from '../../utils/csvHelper';
 import { assignTopicsWithAI, TopicAssignmentResult } from './ai';
 
 interface TopicReference {
@@ -295,8 +295,8 @@ export const TopicAssigner: React.FC = () => {
             <button
               onClick={() => setShowTopicModal(true)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${topicFile
-                  ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300'
-                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
             >
               <Database className="w-4 h-4" />
@@ -367,8 +367,8 @@ export const TopicAssigner: React.FC = () => {
                 <label
                   key={index}
                   className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedIndices.has(index)
-                      ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-500 dark:border-orange-500/50 ring-1 ring-orange-500 dark:ring-orange-500/50'
-                      : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-400'
+                    ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-500 dark:border-orange-500/50 ring-1 ring-orange-500 dark:ring-orange-500/50'
+                    : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-400'
                     }`}
                 >
                   <input
@@ -417,8 +417,8 @@ export const TopicAssigner: React.FC = () => {
             onClick={handleProcess}
             disabled={!file || selectedIndices.size === 0 || isProcessing}
             className={`px-6 py-2.5 rounded-lg text-white font-medium shadow-sm flex items-center gap-2 transition-all ${!file || selectedIndices.size === 0 || isProcessing
-                ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
-                : 'bg-orange-500 hover:bg-orange-600 active:transform active:scale-95'
+              ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
+              : 'bg-orange-500 hover:bg-orange-600 active:transform active:scale-95'
               }`}
           >
             {isProcessing ? (
@@ -478,8 +478,8 @@ export const TopicAssigner: React.FC = () => {
                     <tr key={idx} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${item.status === 'New' ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}>
                       <td className="px-4 py-2.5">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${item.status === 'Existing'
-                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800'
+                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                          : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800'
                           }`}>
                           {item.status}
                         </span>
