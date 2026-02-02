@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { 
-  FolderSearch, Wand2, RefreshCcw, CheckCircle2, AlertCircle, 
+import {
+  FolderSearch, Wand2, RefreshCcw, CheckCircle2, AlertCircle,
   Save, ArrowRightLeft, FolderOutput, Info, ListChecks,
   Settings, Loader2, Cloud, FileSearch
 } from 'lucide-react';
-import { analyzeImageForRenaming } from '../services/geminiService';
-import { useAuth } from '../context/AuthContext';
-import { ToolSettingsModal } from './ToolSettingsModal';
+import { analyzeImageForRenaming } from './ai';
+import { useAuth } from '../../context/AuthContext';
+import { ToolSettingsModal } from '../ToolSettingsModal';
 
 interface GDriveFile {
   id: string;
@@ -25,7 +25,7 @@ export const ImageRenamer: React.FC = () => {
   const [sourceName, setSourceName] = useState<string | null>(null);
   const [destId, setDestId] = useState<string | null>(null);
   const [destName, setDestName] = useState<string | null>(null);
-  
+
   const [files, setFiles] = useState<GDriveFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -36,7 +36,7 @@ export const ImageRenamer: React.FC = () => {
       alert("Google Drive API is initializing. Ensure Picker/Drive APIs are enabled in GCP console.");
       return;
     }
-    
+
     /**
      * In a live environment, we call:
      * const picker = new google.picker.PickerBuilder()
@@ -45,11 +45,11 @@ export const ImageRenamer: React.FC = () => {
      *   .build();
      * picker.setVisible(true);
      */
-    
+
     // For this environment, we simulate the selection
     const mockFolderId = `gdrive-folder-${Math.random().toString(36).substr(2, 6)}`;
     const mockFolderName = mode === 'source' ? 'Raw_Assets_Q1' : 'Standardized_Art';
-    
+
     if (mode === 'source') {
       setSourceId(mockFolderId);
       setSourceName(mockFolderName);
@@ -69,11 +69,11 @@ export const ImageRenamer: React.FC = () => {
   const runBatchAnalysis = async () => {
     if (!sourceId) return;
     setIsProcessing(true);
-    
+
     const updatedFiles = [...files];
     for (let i = 0; i < updatedFiles.length; i++) {
       if (updatedFiles[i].status !== 'pending') continue;
-      
+
       updatedFiles[i].status = 'analyzing';
       setFiles([...updatedFiles]);
 
@@ -82,7 +82,7 @@ export const ImageRenamer: React.FC = () => {
         // and pass that reference to the Gemini analyzeImageForRenaming function.
         // Mocking AI response for the cloud-centric workflow
         await new Promise(r => setTimeout(r, 800));
-        
+
         updatedFiles[i].status = 'done';
         // AI logic would determine the type (char/prop/bg) based on visual scan
         const mockSubject = updatedFiles[i].name.split('_')[0];
@@ -120,7 +120,7 @@ export const ImageRenamer: React.FC = () => {
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
               <ListChecks className="w-4 h-4" /> Cloud Workflow
             </h3>
-            
+
             <div className="space-y-4">
               <button onClick={() => openPicker('source')} className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all ${sourceId ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
                 <div className="min-w-0">
@@ -147,7 +147,7 @@ export const ImageRenamer: React.FC = () => {
                 </select>
               </div>
 
-              <button 
+              <button
                 onClick={runBatchAnalysis}
                 disabled={isProcessing || !sourceId}
                 className="w-full flex items-center justify-center gap-2 py-3.5 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl font-black text-sm transition-all shadow-lg shadow-orange-500/10"
@@ -188,12 +188,12 @@ export const ImageRenamer: React.FC = () => {
                   </button>
                 )}
               </div>
-              
+
               <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
                 {files.map(file => (
                   <div key={file.id} className="p-3 rounded-xl border dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center gap-4 transition-all hover:border-orange-200 dark:hover:border-slate-600">
                     <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 flex items-center justify-center flex-shrink-0">
-                      <Cloud className="w-6 h-6 text-slate-400 opacity-50"/>
+                      <Cloud className="w-6 h-6 text-slate-400 opacity-50" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] text-slate-400 font-mono truncate">{file.name}</p>
@@ -203,9 +203,8 @@ export const ImageRenamer: React.FC = () => {
                           <p className="text-xs font-black text-orange-500 truncate">{file.proposedName}</p>
                         </div>
                       ) : (
-                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mt-1 inline-block ${
-                          file.status === 'analyzing' ? 'bg-orange-100 text-orange-600 animate-pulse' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
-                        }`}>
+                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mt-1 inline-block ${file.status === 'analyzing' ? 'bg-orange-100 text-orange-600 animate-pulse' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
+                          }`}>
                           {file.status}
                         </span>
                       )}
@@ -222,16 +221,16 @@ export const ImageRenamer: React.FC = () => {
         </div>
       </div>
 
-      <ToolSettingsModal 
-        toolId="image-renamer" 
-        isOpen={showSettings} 
-        onClose={() => setShowSettings(false)} 
+      <ToolSettingsModal
+        toolId="image-renamer"
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
         defaultPrompt={`Analyze images for Novakid naming conventions.
 Types: char (character), prop (object), bg (background), icon (UI element), anim (animated).
 Subject: The main noun.
 Descriptor: The action/mood/color.
 
-Return ONLY a JSON object: { "type": "string", "subject": "string", "descriptor": "string", "proposedName": "string" }`} 
+Return ONLY a JSON object: { "type": "string", "subject": "string", "descriptor": "string", "proposedName": "string" }`}
       />
     </div>
   );

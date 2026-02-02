@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { Map, CheckCircle2, AlertCircle, Loader2, Copy, Check, Trash2, Settings, ShieldCheck, Info, Code, ChevronDown, ChevronUp } from 'lucide-react';
-import { validateVRLink } from '../services/geminiService';
-import { ToolSettingsModal } from './ToolSettingsModal';
-import { useAuth } from '../context/AuthContext';
+import { validateVRLink } from './ai';
+import { ToolSettingsModal } from '../ToolSettingsModal';
+import { useAuth } from '../../context/AuthContext';
 
 export const VRValidator: React.FC = () => {
   const { isAdmin } = useAuth();
@@ -30,7 +30,7 @@ export const VRValidator: React.FC = () => {
   };
 
   const isValid = result?.toLowerCase().includes('valid') && !result?.toLowerCase().includes('not valid') && !result?.toLowerCase().includes('invalid');
-  
+
   // Construct the markup manually to ensure absolute link fidelity with double curly braces
   const generatedMarkup = isValid ? `{{"VR":"${url.trim()}"}}` : null;
 
@@ -76,10 +76,10 @@ CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Inv
               <p className="text-sm text-slate-500 dark:text-slate-400">Verify and wrap Google Maps 360° links for Novakid classrooms.</p>
             </div>
           </div>
-          
+
           {isAdmin && (
-            <button 
-              onClick={() => setShowSettings(true)} 
+            <button
+              onClick={() => setShowSettings(true)}
               className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 rounded-lg transition-all"
             >
               <Settings className="w-5 h-5" />
@@ -132,7 +132,7 @@ CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Inv
                   </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowReport(!showReport)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isValid ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200'}`}
               >
@@ -140,7 +140,7 @@ CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Inv
                 {showReport ? 'Hide Report' : 'Show Report'}
               </button>
             </div>
-            
+
             {showReport && (
               <div className={`px-6 pb-6 pt-2 border-t ${isValid ? 'border-green-100 dark:border-green-800/50' : 'border-red-100 dark:border-red-800/50'} animate-fade-in`}>
                 <div className={`p-4 rounded-xl text-sm leading-relaxed whitespace-pre-wrap font-medium ${isValid ? 'bg-white/50 dark:bg-slate-900/50 text-green-800 dark:text-green-200' : 'bg-white/50 dark:bg-slate-900/50 text-red-800 dark:text-red-200'}`}>
@@ -164,11 +164,10 @@ CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Inv
                 </div>
                 <button
                   onClick={handleCopyMarkup}
-                  className={`flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full transition-all shadow-sm ${
-                    copied 
-                    ? 'bg-green-500 text-white shadow-green-500/20' 
-                    : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                  }`}
+                  className={`flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full transition-all shadow-sm ${copied
+                      ? 'bg-green-500 text-white shadow-green-500/20'
+                      : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                    }`}
                 >
                   {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   {copied ? 'Markup Copied' : 'Copy VR Markup'}
@@ -180,7 +179,7 @@ CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Inv
                   {generatedMarkup}
                 </code>
               </div>
-              
+
               <div className="mt-6 flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
                 <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <p className="text-xs text-blue-800/70 dark:text-blue-400/70 leading-relaxed font-medium">
@@ -192,11 +191,11 @@ CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Inv
         </div>
       )}
 
-      <ToolSettingsModal 
-        toolId="vr-validator" 
-        isOpen={showSettings} 
-        onClose={() => setShowSettings(false)} 
-        defaultPrompt={defaultPrompt} 
+      <ToolSettingsModal
+        toolId="vr-validator"
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        defaultPrompt={defaultPrompt}
       />
     </div>
   );

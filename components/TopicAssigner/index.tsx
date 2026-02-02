@@ -2,7 +2,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, Download, CheckCircle, AlertCircle, Tag, X, Database, Play, Loader2, ListChecks, Hash, History, Trash2, Eye, RefreshCw } from 'lucide-react';
 import { parseCSV } from '../utils/csvHelper';
-import { assignTopicsWithAI, TopicAssignmentResult, TopicReference } from '../services/geminiService';
+import { assignTopicsWithAI, TopicAssignmentResult } from './ai';
+
+interface TopicReference {
+  id: string;
+  topic: string;
+  canDo: string;
+}
 
 interface TopicHistoryItem {
   id: string;
@@ -23,13 +29,13 @@ export const TopicAssigner: React.FC = () => {
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<string[][]>([]);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
-  
+
   // --- Topic File State ---
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [topicFile, setTopicFile] = useState<File | null>(null);
   const [topicHeaders, setTopicHeaders] = useState<string[]>([]);
   const [topicRows, setTopicRows] = useState<string[][]>([]);
-  
+
   // Topic Column Mapping Indices
   const [topicColIndex, setTopicColIndex] = useState<number | null>(null);
   const [idColIndex, setIdColIndex] = useState<number | null>(null);
@@ -39,7 +45,7 @@ export const TopicAssigner: React.FC = () => {
   const [results, setResults] = useState<TopicAssignmentResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState<{current: number, total: number} | null>(null);
+  const [progress, setProgress] = useState<{ current: number, total: number } | null>(null);
 
   // --- History State ---
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -66,7 +72,7 @@ export const TopicAssigner: React.FC = () => {
         setError('Please upload a valid CSV file.');
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
@@ -112,7 +118,7 @@ export const TopicAssigner: React.FC = () => {
     try {
       const newTopics = data.filter(r => r.status === 'New').length;
       const existingTopics = data.length - newTopics;
-      
+
       const newItem: TopicHistoryItem = {
         id: Date.now().toString(),
         timestamp: new Date().toISOString(),
@@ -194,11 +200,11 @@ export const TopicAssigner: React.FC = () => {
 
         // Deduplicate references based on ID (if provided) or Topic Name
         if (!seenIds.has(id)) {
-            referenceData.push({ id, topic: topicName, canDo });
-            seenIds.add(id);
+          referenceData.push({ id, topic: topicName, canDo });
+          seenIds.add(id);
         }
       });
-      
+
       if (referenceData.length === 0) {
         throw new Error("No valid topics found in the selected columns.");
       }
@@ -208,11 +214,11 @@ export const TopicAssigner: React.FC = () => {
       rows.forEach(row => {
         selectedIndices.forEach(colIndex => {
           if (row[colIndex]) {
-             const items = row[colIndex].split(/[,;]/); // Split by common delimiters
-             items.forEach(item => {
-               const cleaned = item.trim();
-               if (cleaned) words.add(cleaned);
-             });
+            const items = row[colIndex].split(/[,;]/); // Split by common delimiters
+            items.forEach(item => {
+              const cleaned = item.trim();
+              if (cleaned) words.add(cleaned);
+            });
           }
         });
       });
@@ -224,9 +230,9 @@ export const TopicAssigner: React.FC = () => {
 
       // 3. Call AI Service
       const assignedData = await assignTopicsWithAI(
-        uniqueWords, 
+        uniqueWords,
         referenceData,
-        (current, total) => setProgress({ current, total })
+        (current: number, total: number) => setProgress({ current, total })
       );
 
       // Sort by Status (New first), then Topic, then Word
@@ -272,7 +278,7 @@ export const TopicAssigner: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto relative">
-      
+
       {/* HEADER BLOCK */}
       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
         <div className="flex justify-between items-start mb-6">
@@ -286,20 +292,19 @@ export const TopicAssigner: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-2">
-             <button 
+            <button
               onClick={() => setShowTopicModal(true)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                topicFile 
-                  ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300' 
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${topicFile
+                  ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300'
                   : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-              }`}
+                }`}
             >
               <Database className="w-4 h-4" />
               {topicFile ? 'Topic List Active' : 'Configure Topics'}
               {topicFile && <span className="flex h-2 w-2 rounded-full bg-orange-500 ml-1"></span>}
             </button>
 
-             <button
+            <button
               onClick={() => setShowHistoryModal(true)}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
               title="View History"
@@ -312,26 +317,25 @@ export const TopicAssigner: React.FC = () => {
 
         {/* MAIN FILE UPLOAD */}
         <div className="mb-8">
-          <div 
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
-              file ? 'border-orange-300 dark:border-orange-500/50 bg-orange-50/50 dark:bg-orange-500/10' : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 dark:hover:border-orange-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-            }`}
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${file ? 'border-orange-300 dark:border-orange-500/50 bg-orange-50/50 dark:bg-orange-500/10' : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 dark:hover:border-orange-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+              }`}
             onClick={() => fileInputRef.current?.click()}
           >
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={(e) => handleFileChange(e, false)} 
-              accept=".csv" 
-              className="hidden" 
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={(e) => handleFileChange(e, false)}
+              accept=".csv"
+              className="hidden"
             />
-            
+
             {file ? (
               <div className="flex flex-col items-center">
                 <FileText className="w-10 h-10 text-orange-500 mb-2" />
                 <span className="font-medium text-slate-900 dark:text-slate-100">{file.name}</span>
                 <span className="text-sm text-slate-500 dark:text-slate-400">{(file.size / 1024).toFixed(1)} KB</span>
-                <button 
+                <button
                   className="mt-3 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 underline"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -360,13 +364,12 @@ export const TopicAssigner: React.FC = () => {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-1">
               {headers.map((header, index) => (
-                <label 
-                  key={index} 
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    selectedIndices.has(index) 
-                      ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-500 dark:border-orange-500/50 ring-1 ring-orange-500 dark:ring-orange-500/50' 
+                <label
+                  key={index}
+                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedIndices.has(index)
+                      ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-500 dark:border-orange-500/50 ring-1 ring-orange-500 dark:ring-orange-500/50'
                       : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-400'
-                  }`}
+                    }`}
                 >
                   <input
                     type="checkbox"
@@ -391,8 +394,8 @@ export const TopicAssigner: React.FC = () => {
               <span>{Math.round((progress.current / progress.total) * 100)}%</span>
             </div>
             <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5">
-              <div 
-                className="bg-orange-500 h-2.5 rounded-full transition-all duration-300" 
+              <div
+                className="bg-orange-500 h-2.5 rounded-full transition-all duration-300"
                 style={{ width: `${(progress.current / progress.total) * 100}%` }}
               ></div>
             </div>
@@ -413,17 +416,16 @@ export const TopicAssigner: React.FC = () => {
           <button
             onClick={handleProcess}
             disabled={!file || selectedIndices.size === 0 || isProcessing}
-            className={`px-6 py-2.5 rounded-lg text-white font-medium shadow-sm flex items-center gap-2 transition-all ${
-              !file || selectedIndices.size === 0 || isProcessing
+            className={`px-6 py-2.5 rounded-lg text-white font-medium shadow-sm flex items-center gap-2 transition-all ${!file || selectedIndices.size === 0 || isProcessing
                 ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
                 : 'bg-orange-500 hover:bg-orange-600 active:transform active:scale-95'
-            }`}
+              }`}
           >
             {isProcessing ? (
-               <>
-                 <Loader2 className="animate-spin h-4 w-4"/>
-                 Processing...
-               </>
+              <>
+                <Loader2 className="animate-spin h-4 w-4" />
+                Processing...
+              </>
             ) : (
               <>
                 <Play className="w-4 h-4 fill-current" />
@@ -437,7 +439,7 @@ export const TopicAssigner: React.FC = () => {
       {/* RESULTS TABLE */}
       {results.length > 0 && (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-teal-200 dark:border-teal-500/30 bg-teal-50/30 dark:bg-teal-500/5 animate-fade-in-up transition-colors">
-           <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4">
             <div>
               <h2 className="text-lg font-semibold text-teal-900 dark:text-teal-400 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-teal-600 dark:text-teal-400" />
@@ -460,38 +462,37 @@ export const TopicAssigner: React.FC = () => {
           </div>
 
           <div className="bg-white dark:bg-slate-900 rounded-lg border border-teal-100 dark:border-slate-700 overflow-hidden">
-             <div className="max-h-[500px] overflow-y-auto">
-               <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700 sticky top-0">
-                    <tr>
-                      <th className="px-4 py-3 w-32">Status</th>
-                      <th className="px-4 py-3">Word</th>
-                      <th className="px-4 py-3">Topic ID</th>
-                      <th className="px-4 py-3">Topic Name</th>
-                      <th className="px-4 py-3">Can Do</th>
+            <div className="max-h-[500px] overflow-y-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3 w-32">Status</th>
+                    <th className="px-4 py-3">Word</th>
+                    <th className="px-4 py-3">Topic ID</th>
+                    <th className="px-4 py-3">Topic Name</th>
+                    <th className="px-4 py-3">Can Do</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                  {results.map((item, idx) => (
+                    <tr key={idx} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${item.status === 'New' ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}>
+                      <td className="px-4 py-2.5">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${item.status === 'Existing'
+                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800'
+                          }`}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 font-medium text-slate-800 dark:text-slate-200">{item.word}</td>
+                      <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 font-mono text-xs">{item.topicId}</td>
+                      <td className="px-4 py-2.5 text-teal-700 dark:text-teal-400">{item.topic}</td>
+                      <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 italic max-w-xs truncate" title={item.canDo}>{item.canDo}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                    {results.map((item, idx) => (
-                      <tr key={idx} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${item.status === 'New' ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}>
-                        <td className="px-4 py-2.5">
-                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
-                             item.status === 'Existing' 
-                               ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                               : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800'
-                           }`}>
-                             {item.status}
-                           </span>
-                        </td>
-                        <td className="px-4 py-2.5 font-medium text-slate-800 dark:text-slate-200">{item.word}</td>
-                        <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 font-mono text-xs">{item.topicId}</td>
-                        <td className="px-4 py-2.5 text-teal-700 dark:text-teal-400">{item.topic}</td>
-                        <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 italic max-w-xs truncate" title={item.canDo}>{item.canDo}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-               </table>
-             </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -501,137 +502,136 @@ export const TopicAssigner: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-               <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Map Topic Columns</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Identify columns from your reference file.</p>
-               </div>
-               <button 
-                 onClick={() => setShowTopicModal(false)}
-                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-               >
-                 <X className="w-6 h-6" />
-               </button>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Map Topic Columns</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Identify columns from your reference file.</p>
+              </div>
+              <button
+                onClick={() => setShowTopicModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto space-y-8 bg-white dark:bg-slate-800">
               {/* File Upload Section */}
               <div>
-                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">1. Upload Reference Topic CSV</label>
-                 <div 
-                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-                      topicFile ? 'border-orange-300 dark:border-orange-500/50 bg-orange-50/50 dark:bg-orange-500/10' : 'border-slate-300 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">1. Upload Reference Topic CSV</label>
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${topicFile ? 'border-orange-300 dark:border-orange-500/50 bg-orange-50/50 dark:bg-orange-500/10' : 'border-slate-300 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                     }`}
-                    onClick={() => topicInputRef.current?.click()}
-                  >
-                    <input 
-                      type="file" 
-                      ref={topicInputRef} 
-                      onChange={(e) => handleFileChange(e, true)} 
-                      accept=".csv" 
-                      className="hidden" 
-                    />
-                     {topicFile ? (
-                      <div className="flex flex-col items-center">
-                        <Database className="w-8 h-8 text-orange-600 dark:text-orange-400 mb-2" />
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{topicFile.name}</span>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">{(topicFile.size / 1024).toFixed(1)} KB</span>
-                        <button 
-                          className="mt-2 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:underline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setTopicFile(null);
-                            setTopicHeaders([]);
-                            setTopicRows([]);
-                          }}
-                        >
-                          Remove File
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center">
-                        <Upload className="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" />
-                        <span className="font-medium text-slate-700 dark:text-slate-200">Click to upload Topics</span>
-                      </div>
-                    )}
-                  </div>
+                  onClick={() => topicInputRef.current?.click()}
+                >
+                  <input
+                    type="file"
+                    ref={topicInputRef}
+                    onChange={(e) => handleFileChange(e, true)}
+                    accept=".csv"
+                    className="hidden"
+                  />
+                  {topicFile ? (
+                    <div className="flex flex-col items-center">
+                      <Database className="w-8 h-8 text-orange-600 dark:text-orange-400 mb-2" />
+                      <span className="font-medium text-slate-900 dark:text-slate-100">{topicFile.name}</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">{(topicFile.size / 1024).toFixed(1)} KB</span>
+                      <button
+                        className="mt-2 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:underline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTopicFile(null);
+                          setTopicHeaders([]);
+                          setTopicRows([]);
+                        }}
+                      >
+                        Remove File
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Upload className="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" />
+                      <span className="font-medium text-slate-700 dark:text-slate-200">Click to upload Topics</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Column Mapping Section */}
               {topicHeaders.length > 0 && (
                 <div className="space-y-6 border-t border-slate-200 dark:border-slate-700 pt-6">
-                   <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                     <ListChecks className="w-4 h-4 text-orange-500"/>
-                     2. Map Data Columns
-                   </h4>
-                   
-                   {/* ID Selector */}
-                   <div>
-                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
-                       <span>ID Column <span className="text-slate-400 dark:text-slate-500 font-normal">(Recommended)</span></span>
-                       <span className="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">Unique Identifier</span>
-                     </label>
-                     <select 
-                       className="w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                       value={idColIndex === null ? '' : idColIndex}
-                       onChange={(e) => setIdColIndex(e.target.value === '' ? null : Number(e.target.value))}
-                     >
-                       <option value="">-- No ID Column --</option>
-                       {topicHeaders.map((h, i) => (
-                         <option key={i} value={i}>{h || `Column ${i+1}`}</option>
-                       ))}
-                     </select>
-                   </div>
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <ListChecks className="w-4 h-4 text-orange-500" />
+                    2. Map Data Columns
+                  </h4>
 
-                   {/* Topic Name Selector */}
-                   <div>
-                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                       Topic Name Column <span className="text-red-500">*</span>
-                     </label>
-                     <select 
-                       className="w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                       value={topicColIndex === null ? '' : topicColIndex}
-                       onChange={(e) => setTopicColIndex(e.target.value === '' ? null : Number(e.target.value))}
-                     >
-                       <option value="">-- Select Topic Name --</option>
-                       {topicHeaders.map((h, i) => (
-                         <option key={i} value={i}>{h || `Column ${i+1}`}</option>
-                       ))}
-                     </select>
-                   </div>
+                  {/* ID Selector */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
+                      <span>ID Column <span className="text-slate-400 dark:text-slate-500 font-normal">(Recommended)</span></span>
+                      <span className="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">Unique Identifier</span>
+                    </label>
+                    <select
+                      className="w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                      value={idColIndex === null ? '' : idColIndex}
+                      onChange={(e) => setIdColIndex(e.target.value === '' ? null : Number(e.target.value))}
+                    >
+                      <option value="">-- No ID Column --</option>
+                      {topicHeaders.map((h, i) => (
+                        <option key={i} value={i}>{h || `Column ${i + 1}`}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                   {/* Can Do Selector */}
-                   <div>
-                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                       Can Do Statement Column <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional)</span>
-                     </label>
-                     <select 
-                       className="w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                       value={canDoColIndex === null ? '' : canDoColIndex}
-                       onChange={(e) => setCanDoColIndex(e.target.value === '' ? null : Number(e.target.value))}
-                     >
-                       <option value="">-- No Can Do Column --</option>
-                       {topicHeaders.map((h, i) => (
-                         <option key={i} value={i}>{h || `Column ${i+1}`}</option>
-                       ))}
-                     </select>
-                   </div>
+                  {/* Topic Name Selector */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Topic Name Column <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      className="w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                      value={topicColIndex === null ? '' : topicColIndex}
+                      onChange={(e) => setTopicColIndex(e.target.value === '' ? null : Number(e.target.value))}
+                    >
+                      <option value="">-- Select Topic Name --</option>
+                      {topicHeaders.map((h, i) => (
+                        <option key={i} value={i}>{h || `Column ${i + 1}`}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Can Do Selector */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Can Do Statement Column <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional)</span>
+                    </label>
+                    <select
+                      className="w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                      value={canDoColIndex === null ? '' : canDoColIndex}
+                      onChange={(e) => setCanDoColIndex(e.target.value === '' ? null : Number(e.target.value))}
+                    >
+                      <option value="">-- No Can Do Column --</option>
+                      {topicHeaders.map((h, i) => (
+                        <option key={i} value={i}>{h || `Column ${i + 1}`}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               )}
             </div>
 
             <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-end">
-               <button 
-                 onClick={() => {
-                   if (topicColIndex === null && topicHeaders.length > 0) {
-                     alert("Please select the Topic Name column.");
-                     return;
-                   }
-                   setShowTopicModal(false);
-                 }}
-                 className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 active:transform active:scale-95"
-               >
-                 Save & Close
-               </button>
+              <button
+                onClick={() => {
+                  if (topicColIndex === null && topicHeaders.length > 0) {
+                    alert("Please select the Topic Name column.");
+                    return;
+                  }
+                  setShowTopicModal(false);
+                }}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 active:transform active:scale-95"
+              >
+                Save & Close
+              </button>
             </div>
           </div>
         </div>
@@ -642,23 +642,23 @@ export const TopicAssigner: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] transition-colors">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-               <div className="flex items-center gap-2">
-                  <div className="p-2 bg-slate-200 dark:bg-slate-700 rounded-lg">
-                    <History className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Assignment History</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Restore or download previous topic assignments.</p>
-                  </div>
-               </div>
-               <button 
-                 onClick={() => setShowHistoryModal(false)}
-                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-               >
-                 <X className="w-6 h-6" />
-               </button>
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-slate-200 dark:bg-slate-700 rounded-lg">
+                  <History className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Assignment History</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Restore or download previous topic assignments.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowHistoryModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
-            
+
             <div className="p-0 overflow-y-auto flex-1 bg-white dark:bg-slate-800">
               {history.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6 text-center text-slate-500 dark:text-slate-400">
@@ -684,13 +684,13 @@ export const TopicAssigner: React.FC = () => {
                         <td className="px-6 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {new Date(item.timestamp).toLocaleDateString()}
                           <span className="block text-xs opacity-60">
-                            {new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </td>
                         <td className="px-6 py-3 font-medium text-slate-800 dark:text-slate-200 truncate max-w-[150px]" title={item.fileName}>
                           {item.fileName}
                         </td>
-                         <td className="px-6 py-3 text-slate-600 truncate max-w-[150px]" title={item.topicFileName}>
+                        <td className="px-6 py-3 text-slate-600 truncate max-w-[150px]" title={item.topicFileName}>
                           {item.topicFileName}
                         </td>
                         <td className="px-4 py-3 text-right text-slate-700">{item.stats.total}</td>
@@ -700,26 +700,26 @@ export const TopicAssigner: React.FC = () => {
                               +{item.stats.newTopics}
                             </span>
                           ) : (
-                             <span className="text-slate-400">-</span>
+                            <span className="text-slate-400">-</span>
                           )}
                         </td>
                         <td className="px-6 py-3 text-right">
-                           <div className="flex items-center justify-end gap-2">
-                             <button
-                               onClick={() => loadFromHistory(item)}
-                               className="p-1.5 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                               title="Load into view"
-                             >
-                               <Eye className="w-4 h-4" />
-                             </button>
-                             <button
-                               onClick={(e) => deleteHistoryItem(item.id, e)}
-                               className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                               title="Delete"
-                             >
-                               <Trash2 className="w-4 h-4" />
-                             </button>
-                           </div>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => loadFromHistory(item)}
+                              className="p-1.5 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                              title="Load into view"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => deleteHistoryItem(item.id, e)}
+                              className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -729,20 +729,20 @@ export const TopicAssigner: React.FC = () => {
             </div>
 
             <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-between items-center">
-               <button 
-                 onClick={clearHistory}
-                 disabled={history.length === 0}
-                 className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium flex items-center gap-2 px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-               >
-                 <Trash2 className="w-4 h-4" />
-                 Clear All History
-               </button>
-               <button 
-                 onClick={() => setShowHistoryModal(false)}
-                 className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm"
-               >
-                 Close
-               </button>
+              <button
+                onClick={clearHistory}
+                disabled={history.length === 0}
+                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium flex items-center gap-2 px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-4 h-4" />
+                Clear All History
+              </button>
+              <button
+                onClick={() => setShowHistoryModal(false)}
+                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

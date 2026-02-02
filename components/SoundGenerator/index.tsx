@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Volume2, Play, Loader2, Sparkles, AlertCircle, Download, Trash2, FileAudio } from 'lucide-react';
-import { generateAudioSound } from '../services/geminiService';
+import { generateAudioSound } from './ai';
 
 export const SoundGenerator: React.FC = () => {
   const [prompt, setPrompt] = useState('');
@@ -10,7 +10,7 @@ export const SoundGenerator: React.FC = () => {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioMp3Url, setAudioMp3Url] = useState<string | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
-  
+
   const audioContextRef = useRef<AudioContext | null>(null);
 
   function decode(base64: string) {
@@ -44,7 +44,7 @@ export const SoundGenerator: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
-    
+
     setIsGenerating(true);
     setError(null);
     setAudioUrl(null);
@@ -53,16 +53,16 @@ export const SoundGenerator: React.FC = () => {
 
     try {
       const base64Data = await generateAudioSound(prompt);
-      
+
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       }
 
       const decodedBytes = decode(base64Data);
       const buffer = await decodeAudioData(decodedBytes, audioContextRef.current, 24000, 1);
-      
+
       setAudioBuffer(buffer);
-      
+
       // Prepare WAV URL
       const wavUrl = bufferToWavUrl(buffer);
       setAudioUrl(wavUrl);
@@ -85,7 +85,7 @@ export const SoundGenerator: React.FC = () => {
 
   const playSound = () => {
     if (!audioBuffer || !audioContextRef.current) return;
-    
+
     const source = audioContextRef.current.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioContextRef.current.destination);
@@ -132,7 +132,7 @@ export const SoundGenerator: React.FC = () => {
     const sampleRate = buffer.sampleRate;
     const format = 1; // PCM
     const bitDepth = 16;
-    
+
     const data = buffer.getChannelData(0);
     const length = data.length * 2;
     const bufferArray = new ArrayBuffer(44 + length);
@@ -191,9 +191,9 @@ export const SoundGenerator: React.FC = () => {
               className="w-full min-h-[120px] rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm focus:border-orange-500 focus:ring-orange-500 dark:focus:border-orange-400 p-4 transition-colors resize-none"
             />
           </div>
-          
+
           <div className="flex justify-end gap-3">
-             <button
+            <button
               onClick={() => { setPrompt(''); setAudioUrl(null); setAudioMp3Url(null); setAudioBuffer(null); }}
               className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-red-500 transition-colors flex items-center gap-2"
             >
@@ -221,45 +221,45 @@ export const SoundGenerator: React.FC = () => {
 
       {audioBuffer && (
         <div className="bg-orange-50 dark:bg-orange-950/20 p-8 rounded-xl border border-orange-200 dark:border-orange-800/50 flex flex-col items-center justify-center text-center animate-fade-in-up">
-           <div className="mb-4 p-4 bg-white dark:bg-slate-800 rounded-full shadow-md text-orange-500">
-              <Volume2 className="w-12 h-12" />
-           </div>
-           <h3 className="text-lg font-semibold text-orange-900 dark:text-orange-300 mb-1">Sound Generated!</h3>
-           <p className="text-sm text-orange-700/60 dark:text-orange-400/60 mb-6 font-mono truncate max-w-sm">"{prompt}"</p>
-           
-           <div className="flex flex-col gap-4 w-full max-w-md">
-              <button
-                onClick={playSound}
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95"
-              >
-                <Play className="w-6 h-6 fill-current" />
-                Play Now
-              </button>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-                {audioUrl && (
-                  <a
-                    href={audioUrl}
-                    download={`sound_${Date.now()}.wav`}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    .WAV (HQ)
-                  </a>
-                )}
+          <div className="mb-4 p-4 bg-white dark:bg-slate-800 rounded-full shadow-md text-orange-500">
+            <Volume2 className="w-12 h-12" />
+          </div>
+          <h3 className="text-lg font-semibold text-orange-900 dark:text-orange-300 mb-1">Sound Generated!</h3>
+          <p className="text-sm text-orange-700/60 dark:text-orange-400/60 mb-6 font-mono truncate max-w-sm">"{prompt}"</p>
 
-                {audioMp3Url && (
-                  <a
-                    href={audioMp3Url}
-                    download={`sound_${Date.now()}.mp3`}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200 border border-orange-200 dark:border-orange-800/50 rounded-xl font-medium hover:bg-orange-200 dark:hover:bg-orange-900 transition-colors"
-                  >
-                    <FileAudio className="w-4 h-4" />
-                    .MP3 (Small)
-                  </a>
-                )}
-              </div>
-           </div>
+          <div className="flex flex-col gap-4 w-full max-w-md">
+            <button
+              onClick={playSound}
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95"
+            >
+              <Play className="w-6 h-6 fill-current" />
+              Play Now
+            </button>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+              {audioUrl && (
+                <a
+                  href={audioUrl}
+                  download={`sound_${Date.now()}.wav`}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  .WAV (HQ)
+                </a>
+              )}
+
+              {audioMp3Url && (
+                <a
+                  href={audioMp3Url}
+                  download={`sound_${Date.now()}.mp3`}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200 border border-orange-200 dark:border-orange-800/50 rounded-xl font-medium hover:bg-orange-200 dark:hover:bg-orange-900 transition-colors"
+                >
+                  <FileAudio className="w-4 h-4" />
+                  .MP3 (Small)
+                </a>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
