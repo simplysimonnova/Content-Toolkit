@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, LayoutDashboard, Shield, Terminal, History, Trash2, Plus, 
-  Loader2, UserPlus, Link2, Lightbulb, Save, AlertCircle, 
+import {
+  X, LayoutDashboard, Shield, Terminal, History, Trash2, Plus,
+  Loader2, UserPlus, Link2, Lightbulb, Save, AlertCircle,
   Menu, ChevronUp, ChevronDown, ListOrdered, Edit3, Settings2,
   LayoutGrid, List, Check, RotateCcw, Presentation, UserCog, UserMinus,
   RefreshCw, LifeBuoy, GripVertical, Hash, Zap, SearchCheck, Wand2, Palette,
@@ -40,7 +40,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
   const [users, setUsers] = useState<any[]>([]);
   const [navGroups, setNavGroups] = useState<NavGroup[]>([]);
   const [configs, setConfigs] = useState<any[]>([]);
-  
+
   // --- Drag and Drop State ---
   const [draggedGroupIndex, setDraggedGroupIndex] = useState<number | null>(null);
   const [draggedItem, setDraggedItem] = useState<{ groupIdx: number, itemIdx: number } | null>(null);
@@ -105,20 +105,20 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
   const saveNavigation = async (updatedGroups: NavGroup[]) => {
     setIsSaving(true);
     try {
-      await setDoc(doc(db, 'navigation', 'sidebar_config'), { 
+      await setDoc(doc(db, 'navigation', 'sidebar_config'), {
         groups: updatedGroups,
         updatedAt: serverTimestamp()
       });
-    } catch (e) { 
-      alert("Save failed: Check permissions."); 
-    } finally { 
-      setIsSaving(false); 
+    } catch (e) {
+      alert("Save failed: Check permissions.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const repairNavigation = async () => {
     if (!confirm("This will overwrite your current menu with the standard toolkit defaults. Proceed?")) return;
-    
+
     setIsSaving(true);
     const initialConfig: NavGroup[] = [
       {
@@ -161,7 +161,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'w2', label: 'Topic Assigner', icon: 'Tag', page: 'topic-assigner' },
           { id: 'w3', label: 'List Merger', icon: 'ListOrdered', page: 'list-merger' },
           { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
-          { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' }
+          { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
+          { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' }
         ]
       },
       {
@@ -188,10 +189,10 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
     try {
       await saveNavigation(initialConfig);
-    } catch (e: any) { 
+    } catch (e: any) {
       console.error("Repair operation failed:", e);
-    } finally { 
-      setIsSaving(false); 
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -220,10 +221,10 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
     const updated = [...navGroups];
     const sourceGroup = updated[draggedItem.groupIdx];
     const targetGroup = updated[targetGroupIdx];
-    
+
     const [removed] = sourceGroup.items.splice(draggedItem.itemIdx, 1);
     targetGroup.items.splice(targetItemIdx, 0, removed);
-    
+
     setNavGroups(updated);
     saveNavigation(updated);
     setDraggedItem(null);
@@ -297,7 +298,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-slate-50 dark:bg-[#0f172a] rounded-2xl shadow-2xl w-full max-w-6xl overflow-hidden flex flex-col h-[90vh] border dark:border-slate-800">
-        
+
         <div className="px-6 py-5 border-b dark:border-slate-800 flex justify-between items-center bg-white dark:bg-[#0f172a]">
           <div className="flex items-center gap-3">
             <Shield className="w-6 h-6 text-orange-500" />
@@ -322,19 +323,19 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 bg-slate-100 dark:bg-[#0b1120] custom-scrollbar">
-          
+
           {activeTab === 'usage' && (
             <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
-               <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b dark:border-slate-700">
-                    <tr><th className="px-6 py-4">User</th><th className="px-6 py-4">Tool</th><th className="px-6 py-4 text-right">Time</th></tr>
-                  </thead>
-                  <tbody className="divide-y dark:divide-slate-700">
-                    {usage.map(u => (
-                      <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20"><td className="px-6 py-3 dark:text-slate-300">{u.userEmail}</td><td className="px-6 py-3 dark:text-slate-300 font-bold">{u.tool}</td><td className="px-6 py-3 text-right text-xs dark:text-slate-400">{u.timestamp?.toDate().toLocaleString()}</td></tr>
-                    ))}
-                  </tbody>
-               </table>
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b dark:border-slate-700">
+                  <tr><th className="px-6 py-4">User</th><th className="px-6 py-4">Tool</th><th className="px-6 py-4 text-right">Time</th></tr>
+                </thead>
+                <tbody className="divide-y dark:divide-slate-700">
+                  {usage.map(u => (
+                    <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20"><td className="px-6 py-3 dark:text-slate-300">{u.userEmail}</td><td className="px-6 py-3 dark:text-slate-300 font-bold">{u.tool}</td><td className="px-6 py-3 text-right text-xs dark:text-slate-400">{u.timestamp?.toDate().toLocaleString()}</td></tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -343,9 +344,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
               <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border dark:border-slate-700 shadow-sm">
                 <h4 className="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">Manual User Registration</h4>
                 <div className="flex flex-wrap gap-4">
-                  <input placeholder="Full Name" value={manualUser.displayName} onChange={e => setManualUser({...manualUser, displayName: e.target.value})} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-4 py-2 text-sm flex-1 dark:text-white" />
-                  <input placeholder="Email" value={manualUser.email} onChange={e => setManualUser({...manualUser, email: e.target.value})} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-4 py-2 text-sm flex-1 dark:text-white" />
-                  <select value={manualUser.role} onChange={e => setManualUser({...manualUser, role: e.target.value})} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-4 py-2 text-sm dark:text-white">
+                  <input placeholder="Full Name" value={manualUser.displayName} onChange={e => setManualUser({ ...manualUser, displayName: e.target.value })} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-4 py-2 text-sm flex-1 dark:text-white" />
+                  <input placeholder="Email" value={manualUser.email} onChange={e => setManualUser({ ...manualUser, email: e.target.value })} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-4 py-2 text-sm flex-1 dark:text-white" />
+                  <select value={manualUser.role} onChange={e => setManualUser({ ...manualUser, role: e.target.value })} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-4 py-2 text-sm dark:text-white">
                     <option value="user">User</option><option value="admin">Admin</option>
                   </select>
                   <button onClick={handleAddUser} disabled={isSaving} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
@@ -365,13 +366,13 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                         <p className="font-bold text-sm dark:text-white truncate">{u.displayName || 'Unnamed User'}</p>
                         <p className="text-[10px] text-slate-400 truncate">{u.email}</p>
                       </div>
-                      <button onClick={() => { if(confirm("Permanently delete user record?")) deleteDoc(doc(db, 'users', u.id)); }} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 p-1 transition-all">
+                      <button onClick={() => { if (confirm("Permanently delete user record?")) deleteDoc(doc(db, 'users', u.id)); }} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 p-1 transition-all">
                         <UserMinus className="w-4 h-4" />
                       </button>
                     </div>
                     <div className="flex items-center justify-between pt-4 border-t dark:border-slate-700 mt-auto">
-                      <select 
-                        value={u.role} 
+                      <select
+                        value={u.role}
                         onChange={(e) => updateUserRole(u.id, e.target.value)}
                         className={`text-[9px] font-black uppercase px-2 py-1 rounded transition-colors ${u.role === 'admin' ? 'bg-orange-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}
                       >
@@ -398,8 +399,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                     <p className="text-xs text-slate-500 dark:text-slate-400">Drag items to reorder. Resetting will restore all default toolkit tools.</p>
                   </div>
                 </div>
-                <button 
-                  onClick={repairNavigation} 
+                <button
+                  onClick={repairNavigation}
                   disabled={isSaving}
                   className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-bold hover:bg-orange-500 hover:text-white transition-all shadow-lg active:scale-95 disabled:opacity-50"
                 >
@@ -413,8 +414,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                   <LifeBuoy className="w-16 h-16 text-slate-300 mb-4 animate-bounce" />
                   <h4 className="text-lg font-bold dark:text-white">Menu Configuration Empty</h4>
                   <p className="text-sm text-slate-500 mb-6">Initialize the default sidebar menu structure below.</p>
-                  <button 
-                    onClick={repairNavigation} 
+                  <button
+                    onClick={repairNavigation}
                     disabled={isSaving}
                     className="flex items-center gap-2 px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-xl transition-all active:scale-95"
                   >
@@ -425,8 +426,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
               ) : (
                 <div className="space-y-6">
                   {navGroups.map((group, gIdx) => (
-                    <div 
-                      key={group.id} 
+                    <div
+                      key={group.id}
                       className={`bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 overflow-hidden shadow-sm transition-all ${draggedGroupIndex === gIdx ? 'opacity-40 scale-[0.98]' : ''}`}
                       draggable
                       onDragStart={() => handleDragGroupStart(gIdx)}
@@ -442,11 +443,11 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                         </div>
                         <button className="text-slate-400 hover:text-orange-500"><Edit3 className="w-3.5 h-3.5" /></button>
                       </div>
-                      
+
                       <div className="p-4 space-y-2">
                         {group.items.map((item, iIdx) => (
-                          <div 
-                            key={item.id} 
+                          <div
+                            key={item.id}
                             className={`flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/30 rounded-xl border dark:border-slate-700 group transition-all ${draggedItem?.groupIdx === gIdx && draggedItem?.itemIdx === iIdx ? 'opacity-30' : 'hover:border-orange-200 dark:hover:border-orange-900/50'}`}
                             draggable
                             onDragStart={(e) => {
@@ -463,22 +464,22 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                             }}
                           >
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="cursor-grab active:cursor-grabbing text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <GripVertical className="w-3.5 h-3.5" />
-                                </div>
-                                <Terminal className="w-4 h-4 text-slate-400" />
-                                <span className="text-sm font-bold dark:text-slate-200 truncate">{item.label}</span>
-                                <span className="text-[9px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded font-mono text-slate-500 uppercase">ID: {item.page}</span>
+                              <div className="cursor-grab active:cursor-grabbing text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <GripVertical className="w-3.5 h-3.5" />
+                              </div>
+                              <Terminal className="w-4 h-4 text-slate-400" />
+                              <span className="text-sm font-bold dark:text-slate-200 truncate">{item.label}</span>
+                              <span className="text-[9px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded font-mono text-slate-500 uppercase">ID: {item.page}</span>
                             </div>
                             <button onClick={() => deleteNavItem(group.id, item.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         ))}
                         <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-2 border-t dark:border-slate-700 pt-4">
-                          <input placeholder="Label" value={newItemData[group.id]?.label || ''} onChange={e => setNewItemData({...newItemData, [group.id]: {...newItemData[group.id], label: e.target.value}})} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
-                          <input placeholder="Icon (Lucide)" value={newItemData[group.id]?.icon || ''} onChange={e => setNewItemData({...newItemData, [group.id]: {...newItemData[group.id], icon: e.target.value}})} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
-                          <input placeholder="Page ID" value={newItemData[group.id]?.page || ''} onChange={e => setNewItemData({...newItemData, [group.id]: {...newItemData[group.id], page: e.target.value}})} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
+                          <input placeholder="Label" value={newItemData[group.id]?.label || ''} onChange={e => setNewItemData({ ...newItemData, [group.id]: { ...newItemData[group.id], label: e.target.value } })} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
+                          <input placeholder="Icon (Lucide)" value={newItemData[group.id]?.icon || ''} onChange={e => setNewItemData({ ...newItemData, [group.id]: { ...newItemData[group.id], icon: e.target.value } })} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
+                          <input placeholder="Page ID" value={newItemData[group.id]?.page || ''} onChange={e => setNewItemData({ ...newItemData, [group.id]: { ...newItemData[group.id], page: e.target.value } })} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
                           <button onClick={() => addNewNavItem(group.id)} className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold py-2 transition-colors">Add Tool</button>
                         </div>
                       </div>
@@ -493,16 +494,16 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
             <div className="space-y-6 animate-fade-in">
               <div id="link-form" className="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border dark:border-slate-800 shadow-sm">
                 <div className="flex justify-between items-center mb-4">
-                   <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">{editingLinkId ? 'Edit Link' : 'Add Link'}</h4>
-                   {editingLinkId && <button onClick={() => setEditingLinkId(null)} className="text-[10px] font-black uppercase text-slate-400 hover:text-red-500 flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Cancel</button>}
+                  <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">{editingLinkId ? 'Edit Link' : 'Add Link'}</h4>
+                  {editingLinkId && <button onClick={() => setEditingLinkId(null)} className="text-[10px] font-black uppercase text-slate-400 hover:text-red-500 flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Cancel</button>}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <input value={newLink.name} onChange={e => setNewLink({...newLink, name: e.target.value})} placeholder="Title" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
-                  <input value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} placeholder="URL" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
-                  <select value={newLink.category} onChange={e => setNewLink({...newLink, category: e.target.value})} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white"><option>Metabase</option><option>Curriculum</option><option>Tech</option></select>
+                  <input value={newLink.name} onChange={e => setNewLink({ ...newLink, name: e.target.value })} placeholder="Title" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                  <input value={newLink.url} onChange={e => setNewLink({ ...newLink, url: e.target.value })} placeholder="URL" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                  <select value={newLink.category} onChange={e => setNewLink({ ...newLink, category: e.target.value })} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white"><option>Metabase</option><option>Curriculum</option><option>Tech</option></select>
                   <button onClick={handleSaveLink} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold py-2 text-sm shadow-md transition-all">Save Resource</button>
                 </div>
-                <textarea value={newLink.description} onChange={e => setNewLink({...newLink, description: e.target.value})} placeholder="Summary..." rows={2} className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white resize-none" />
+                <textarea value={newLink.description} onChange={e => setNewLink({ ...newLink, description: e.target.value })} placeholder="Summary..." rows={2} className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white resize-none" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {links.map(l => (
@@ -524,16 +525,16 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
             <div className="space-y-6 animate-fade-in">
               <div id="guide-form" className="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border dark:border-slate-800 shadow-sm">
                 <div className="flex justify-between items-center mb-4">
-                   <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">{editingGuideId ? 'Edit Guide' : 'Add Guide'}</h4>
-                   {editingGuideId && <button onClick={() => setEditingGuideId(null)} className="text-[10px] font-black uppercase text-slate-400 hover:text-red-500 flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Cancel</button>}
+                  <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">{editingGuideId ? 'Edit Guide' : 'Add Guide'}</h4>
+                  {editingGuideId && <button onClick={() => setEditingGuideId(null)} className="text-[10px] font-black uppercase text-slate-400 hover:text-red-500 flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Cancel</button>}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <input value={newGuide.title} onChange={e => setNewGuide({...newGuide, title: e.target.value})} placeholder="Title" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
-                  <input value={newGuide.url} onChange={e => setNewGuide({...newGuide, url: e.target.value})} placeholder="URL" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
-                  <select value={newGuide.category} onChange={e => setNewGuide({...newGuide, category: e.target.value})} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white"><option>Slides</option><option>Media</option><option>Admin</option></select>
+                  <input value={newGuide.title} onChange={e => setNewGuide({ ...newGuide, title: e.target.value })} placeholder="Title" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                  <input value={newGuide.url} onChange={e => setNewGuide({ ...newGuide, url: e.target.value })} placeholder="URL" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                  <select value={newGuide.category} onChange={e => setNewGuide({ ...newGuide, category: e.target.value })} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white"><option>Slides</option><option>Media</option><option>Admin</option></select>
                   <button onClick={handleSaveGuide} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold py-2 text-sm shadow-md transition-all">Save Guide</button>
                 </div>
-                <textarea value={newGuide.summary} onChange={e => setNewGuide({...newGuide, summary: e.target.value})} placeholder="Instructions..." rows={2} className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white resize-none" />
+                <textarea value={newGuide.summary} onChange={e => setNewGuide({ ...newGuide, summary: e.target.value })} placeholder="Instructions..." rows={2} className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white resize-none" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {guides.map(g => (
@@ -560,7 +561,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                     <div className="p-2 bg-slate-100 dark:bg-slate-900 rounded-lg text-orange-500"><Settings2 className="w-4 h-4" /></div>
                     <div><h5 className="font-bold text-sm capitalize dark:text-white">{c.id.replace(/-/g, ' ')}</h5><p className="text-[10px] text-slate-400 font-bold uppercase">{c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : 'System'}</p></div>
                   </div>
-                  <button onClick={() => deleteDoc(doc(db, 'configurations', c.id))} className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-colors"><Trash2 className="w-4 h-4"/></button>
+                  <button onClick={() => deleteDoc(doc(db, 'configurations', c.id))} className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
             </div>

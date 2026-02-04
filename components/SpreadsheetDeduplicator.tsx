@@ -1,23 +1,36 @@
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Download, CheckCircle, AlertCircle, Trash2, ArrowRight, ShieldBan, FileCheck, Info } from 'lucide-react';
+import { Upload, FileText, Download, CheckCircle, AlertCircle, Trash2, ArrowRight, ShieldBan, FileCheck, Info, Settings, Shield, X } from 'lucide-react';
 import { parseCSV, generateCSVForRows } from '../utils/csvHelper';
+import { useAuth } from '../context/AuthContext';
+import { ToolSettingsModal } from './ToolSettingsModal';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 export const SpreadsheetDeduplicator: React.FC = () => {
+  const { isAdmin } = useAuth();
+  const [showSettings, setShowSettings] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+
   // Reference File (Blocklist)
   const [refFile, setRefFile] = useState<File | null>(null);
   const [refHeaders, setRefHeaders] = useState<string[]>([]);
+
   const [refRows, setRefRows] = useState<string[][]>([]);
-  const [refKeyIndex, setRefKeyIndex] = useState<number | null>(null);
+  const [refKeyIndices, setRefKeyIndices] = useState<number[]>([]);
 
   // Actionable File (Target)
   const [actFile, setActFile] = useState<File | null>(null);
   const [actHeaders, setActHeaders] = useState<string[]>([]);
   const [actRows, setActRows] = useState<string[][]>([]);
-  const [actKeyIndex, setActKeyIndex] = useState<number | null>(null);
+  const [actKeyIndices, setActKeyIndices] = useState<number[]>([]);
 
   // Settings
   const [removeInternalDuplicates, setRemoveInternalDuplicates] = useState(false);
+
+  // Key Alignment: array of [refColumnIndex, actColumnIndex] pairs
+  const [keyAlignment, setKeyAlignment] = useState<[number, number][]>([]);
 
   // Processing
   const [isProcessing, setIsProcessing] = useState(false);
@@ -38,11 +51,158 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
   const isCsv = (file: File) => file.type === 'text/csv' || file.name.endsWith('.csv');
 
-  const normalizeKey = (val: string | undefined) => {
-    if (!val) return '';
-    // Remove all whitespace (spaces, tabs) and quotes to handle "183 832" vs "183832"
-    return val.toString().replace(/['"\s]/g, '').toLowerCase();
+  /**
+   * Normalize column name to stable internal key for canonicalization lookup
+   * @param columnName - Raw column name from CSV header
+   * @returns Normalized column identifier
+   */
+  const normalizeColumnName = (columnName: string): string => {
+    return columnName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ''); // Remove all non-alphanumeric characters
   };
+
+  // Canonical mappings for categorical columns (keyed by normalized column name)
+  const CANONICAL_MAPPINGS: Record<string, Record<string, string>> = {
+    skill: {
+      speaking: "speaking",
+      phonics: "phonics",
+      grammar: "grammar",
+      vocabulary: "vocabulary",
+      vocab: "vocabulary",
+      writing: "writing",
+      reading: "reading",
+      listening: "listening",
+      spelling: "spelling",
+    },
+    skillarea: { // Handles "Skill Area", "skill area", etc.
+      speaking: "speaking",
+      phonics: "phonics",
+      grammar: "grammar",
+      vocabulary: "vocabulary",
+      vocab: "vocabulary",
+      writing: "writing",
+      reading: "reading",
+      listening: "listening",
+      spelling: "spelling",
+    }
+  };
+
+  /**
+   * Normalize a single text value with Unicode-safe processing
+   * @param text - Raw text value
+   * @param columnName - Optional column name for canonical mapping
+   * @returns Normalized text
+   */
+  const normalizeText = (text: string | undefined, columnName?: string): string => {
+    if (!text) return '';
+
+    let normalized = text.toString();
+
+    // Step 1: Unicode normalization (NFKD) - handles accents, ligatures, etc.
+    normalized = normalized.normalize('NFKD');
+
+    // Step 2: Convert smart quotes, dashes, and non-breaking spaces to ASCII
+    normalized = normalized
+      .replace(/[\u2018\u2019]/g, "'")  // Smart single quotes → '
+      .replace(/[\u201C\u201D]/g, '"')  // Smart double quotes → "
+      .replace(/[\u2013\u2014]/g, '-')  // En/em dashes → -
+      .replace(/\u00A0/g, ' ')          // Non-breaking space → space
+      .replace(/\u2026/g, '...');       // Ellipsis → ...
+
+    // Step 3: Remove quotes and apostrophes (preserves existing behavior)
+    normalized = normalized.replace(/['"]/g, '');
+
+    // Step 4: Whitespace normalization (NEW - replaces "remove all whitespace")
+    // - Trim leading/trailing whitespace
+    // - Replace sequences of whitespace with single space
+    normalized = normalized.trim().replace(/\s+/g, ' ');
+
+    // Step 5: Convert to lowercase
+    normalized = normalized.toLowerCase();
+
+    // Step 5.5: Special handling for CEFR columns
+    // Removes hyphens and other punctuation to handle "Pre-A1" vs "Pre A1"
+    if (columnName) {
+      const colKey = normalizeColumnName(columnName);
+      if (colKey === 'cefr' || colKey === 'cefrlevel') {
+        normalized = normalized
+          .replace(/[^a-z0-9]/g, ' ')  // Remove all non-alphanumeric
+          .replace(/\s+/g, ' ')         // Collapse whitespace
+          .trim();
+      }
+    }
+
+    // Step 6: Optional canonicalization for categorical columns
+    if (columnName) {
+      const normalizedColName = normalizeColumnName(columnName);
+      if (CANONICAL_MAPPINGS[normalizedColName]) {
+        const canonical = CANONICAL_MAPPINGS[normalizedColName][normalized];
+        if (canonical) {
+          normalized = canonical;
+        }
+      }
+    }
+
+    return normalized;
+  };
+
+  /**
+   * Create a composite key from multiple column values
+   * @param vals - Array of column values
+   * @param columnNames - Optional array of column names for canonicalization
+   * @returns Composite key string
+   */
+  const normalizeKey = (vals: (string | undefined)[], columnNames?: string[]): string => {
+    if (!vals || vals.length === 0) return '';
+
+    // Normalize each value individually (with optional column-specific canonicalization)
+    const normalizedVals = vals.map((val, idx) => {
+      const colName = columnNames && columnNames[idx];
+      return normalizeText(val, colName);
+    });
+
+    // Join with pipe separator (preserves existing composite key logic)
+    return normalizedVals.join('|');
+  };
+
+  // Helper functions for key alignment management
+  const addKeyPart = () => {
+    setKeyAlignment([...keyAlignment, [-1, -1]]); // -1 = not selected
+  };
+
+  const removeKeyPart = (index: number) => {
+    setKeyAlignment(keyAlignment.filter((_, i) => i !== index));
+  };
+
+  const updateKeyPart = (index: number, refIdx: number, actIdx: number) => {
+    const updated = [...keyAlignment];
+    updated[index] = [refIdx, actIdx];
+    setKeyAlignment(updated);
+  };
+
+  React.useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'configurations', 'deduplicator'), (snap) => {
+      if (snap.exists()) {
+        setIsLocked(!!snap.data().isLocked);
+      }
+    });
+    return unsub;
+  }, []);
+
+  const toggleColumnSelection = (index: number, type: 'ref' | 'act') => {
+    if (type === 'ref') {
+      setRefKeyIndices(prev =>
+        prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+      );
+    } else {
+      setActKeyIndices(prev =>
+        prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+      );
+    }
+  };
+
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'ref' | 'act') => {
     const selectedFile = e.target.files?.[0];
@@ -51,7 +211,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
         setError('Please upload a valid CSV file.');
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
@@ -62,12 +222,12 @@ export const SpreadsheetDeduplicator: React.FC = () => {
               setRefFile(selectedFile);
               setRefHeaders(parsedData[0]);
               setRefRows(parsedData.slice(1));
-              setRefKeyIndex(null); // Reset column selection
+              setRefKeyIndices([]); // Reset column selection
             } else {
               setActFile(selectedFile);
               setActHeaders(parsedData[0]);
               setActRows(parsedData.slice(1));
-              setActKeyIndex(null); // Reset column selection
+              setActKeyIndices([]); // Reset column selection
               setResult(null); // Reset results
             }
             setError(null);
@@ -82,10 +242,10 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
   const isConfigValid = () => {
     // 1. Must have Actionable File & Column
-    if (!actFile || actKeyIndex === null) return false;
+    if (!actFile || actKeyIndices.length === 0) return false;
 
     // 2. IF Reference File exists, must have Reference Column
-    if (refFile && refKeyIndex === null) return false;
+    if (refFile && refKeyIndices.length === 0) return false;
 
     // 3. Must be doing SOMETHING (either Ref Check OR Internal Check)
     const hasRefCheck = !!refFile;
@@ -95,14 +255,43 @@ export const SpreadsheetDeduplicator: React.FC = () => {
   };
 
   const handleProcess = () => {
-    if (!actFile || actKeyIndex === null) {
-      setError('Please configure the Actionable CSV.');
+    // Validation: Check if using alignment or traditional column selection
+    const usingAlignment = keyAlignment.length > 0;
+
+    if (!actFile) {
+      setError('Please upload an Actionable CSV file.');
       return;
     }
 
-    if (refFile && refKeyIndex === null) {
-      setError('Please select a key column for the Reference CSV.');
-      return;
+    if (usingAlignment) {
+      // Validate alignment mode
+      const hasInvalidPair = keyAlignment.some(([refIdx, actIdx]) => {
+        if (refFile && (refIdx < 0 || refIdx >= refHeaders.length)) return true;
+        if (actIdx < 0 || actIdx >= actHeaders.length) return true;
+        return false;
+      });
+
+      if (hasInvalidPair) {
+        setError('Please complete all key alignment selections.');
+        return;
+      }
+
+      // If using alignment with reference file, must have at least one pair
+      if (refFile && keyAlignment.length === 0) {
+        setError('Please define at least one key alignment or use column checkboxes.');
+        return;
+      }
+    } else {
+      // Validate traditional mode (fallback)
+      if (actKeyIndices.length === 0) {
+        setError('Please select key columns for the Actionable CSV or define key alignment.');
+        return;
+      }
+
+      if (refFile && refKeyIndices.length === 0) {
+        setError('Please select key columns for the Reference CSV or define key alignment.');
+        return;
+      }
     }
 
     if (!refFile && !removeInternalDuplicates) {
@@ -115,12 +304,27 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
     setTimeout(() => {
       try {
+        // Determine if using alignment or traditional mode
+        const usingAlignment = keyAlignment.length > 0;
+
         // 1. Build Lookup Set from Reference File (Normalized) - OPTIONAL
         const blocklist = new Set<string>();
-        if (refFile && refKeyIndex !== null) {
+        if (refFile && (usingAlignment ? keyAlignment.length > 0 : refKeyIndices.length > 0)) {
           refRows.forEach(row => {
-            const val = row[refKeyIndex];
-            const normalized = normalizeKey(val);
+            let vals: (string | undefined)[];
+            let colNames: string[];
+
+            if (usingAlignment) {
+              // Use alignment: extract values from reference columns only
+              vals = keyAlignment.map(([refIdx, _]) => row[refIdx]);
+              colNames = keyAlignment.map(([refIdx, _]) => refHeaders[refIdx]);
+            } else {
+              // Traditional mode: use refKeyIndices
+              vals = refKeyIndices.map(idx => row[idx]);
+              colNames = refKeyIndices.map(idx => refHeaders[idx]);
+            }
+
+            const normalized = normalizeKey(vals, colNames);
             if (normalized) blocklist.add(normalized);
           });
         }
@@ -128,14 +332,26 @@ export const SpreadsheetDeduplicator: React.FC = () => {
         // 2. Filter Actionable Rows
         const keptRows: string[][] = [];
         const seenInActionable = new Set<string>();
-        
+
         let removedByRef = 0;
         let removedInternal = 0;
 
         actRows.forEach(row => {
-          const rawVal = row[actKeyIndex];
-          const key = normalizeKey(rawVal);
-          
+          let vals: (string | undefined)[];
+          let colNames: string[];
+
+          if (usingAlignment) {
+            // Use alignment: extract values from actionable columns only
+            vals = keyAlignment.map(([_, actIdx]) => row[actIdx]);
+            colNames = keyAlignment.map(([_, actIdx]) => actHeaders[actIdx]);
+          } else {
+            // Traditional mode: use actKeyIndices
+            vals = actKeyIndices.map(idx => row[idx]);
+            colNames = actKeyIndices.map(idx => actHeaders[idx]);
+          }
+
+          const key = normalizeKey(vals, colNames);
+
           if (!key) {
             // Keep empty rows for safety
             keptRows.push(row);
@@ -197,146 +413,281 @@ export const SpreadsheetDeduplicator: React.FC = () => {
     <div className="max-w-6xl mx-auto animate-fade-in">
       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
         <div className="mb-6">
-           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-              <ShieldBan className="w-6 h-6 text-orange-500" />
-              Spreadsheet De-duplication
-           </h2>
-           <p className="text-slate-600 dark:text-slate-400 text-sm">
-             Remove duplicates from your Actionable List by checking against a Reference List (optional) or by checking for duplicates within the file itself.
-           </p>
-           <div className="mt-2 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-2 rounded border border-blue-100 dark:border-blue-800 inline-flex items-center gap-2">
-              <Info className="w-4 h-4"/>
-              <span>Matching ignores spaces and casing (e.g., "19 607" matches "19607").</span>
-           </div>
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                  <ShieldBan className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-800" />}
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                  Spreadsheet De-duplication
+                  {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  Remove duplicates from your Actionable List by checking against a Reference List (optional) or by checking for duplicates within the file itself.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowInfo(true)}
+                className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-lg transition-all"
+                title="What this tool does"
+              >
+                <Info className="w-5 h-5" />
+              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 rounded-lg transition-all"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="mt-2 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-2 rounded border border-blue-100 dark:border-blue-800 inline-flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            <span>Matching ignores spaces and casing (e.g., "19 607" matches "19607").</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-           
-           {/* Arrow Icon */}
-           <div className="hidden md:block absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 z-10 p-2 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 text-slate-400">
-              <ArrowRight className="w-6 h-6" />
-           </div>
 
-           {/* 1. REFERENCE FILE */}
-           <div className={`bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border flex flex-col h-full transition-colors ${!refFile ? 'border-dashed border-slate-300 dark:border-slate-700' : 'border-slate-200 dark:border-slate-700'}`}>
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-2">
-                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300">1</span>
-                 Reference CSV (Optional)
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 ml-8">Upload to block specific IDs/Values.</p>
-              
-              {!refFile ? (
-                 <div 
-                   onClick={() => refInputRef.current?.click()}
-                   className="flex-1 flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors"
-                 >
-                    <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Upload Reference CSV</span>
-                    <input type="file" ref={refInputRef} onChange={(e) => handleFileChange(e, 'ref')} accept=".csv" className="hidden" />
-                 </div>
-              ) : (
-                <div className="flex-1 flex flex-col">
-                   <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 mb-4">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                         <FileText className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                         <span className="text-sm font-medium truncate text-slate-700 dark:text-slate-200">{refFile.name}</span>
-                      </div>
-                      <button onClick={() => { setRefFile(null); setRefHeaders([]); setRefRows([]); setRefKeyIndex(null); }} className="text-slate-400 hover:text-red-500">
-                         <Trash2 className="w-4 h-4" />
-                      </button>
-                   </div>
-                   
-                   <div className="flex-1">
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                        Select Key Column to Match
-                      </label>
-                      <div className="max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
-                        {refHeaders.map((header, idx) => (
-                           <label key={idx} className={`flex items-center gap-3 p-2.5 border-b border-slate-100 dark:border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${refKeyIndex === idx ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
-                              <input 
-                                type="radio" 
-                                name="refCol" 
-                                checked={refKeyIndex === idx} 
-                                onChange={() => setRefKeyIndex(idx)}
-                                className="text-orange-500 focus:ring-orange-500"
-                              />
-                              <span className={`text-sm ${refKeyIndex === idx ? 'font-medium text-orange-700 dark:text-orange-300' : 'text-slate-600 dark:text-slate-400'}`}>
-                                 {header || `Column ${idx+1}`}
-                              </span>
-                           </label>
-                        ))}
-                      </div>
-                   </div>
+          {/* Arrow Icon */}
+          <div className="hidden md:block absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 z-10 p-2 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 text-slate-400">
+            <ArrowRight className="w-6 h-6" />
+          </div>
+
+          {/* 1. REFERENCE FILE */}
+          <div className={`bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border flex flex-col h-full transition-colors ${!refFile ? 'border-dashed border-slate-300 dark:border-slate-700' : 'border-slate-200 dark:border-slate-700'}`}>
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300">1</span>
+              Reference CSV (Optional)
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 ml-8">Upload to block specific IDs/Values.</p>
+
+            {!refFile ? (
+              <div
+                onClick={() => refInputRef.current?.click()}
+                className="flex-1 flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors"
+              >
+                <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Upload Reference CSV</span>
+                <input type="file" ref={refInputRef} onChange={(e) => handleFileChange(e, 'ref')} accept=".csv" className="hidden" />
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col">
+                <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 mb-4">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <FileText className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                    <span className="text-sm font-medium truncate text-slate-700 dark:text-slate-200">{refFile.name}</span>
+                  </div>
+                  <button onClick={() => { setRefFile(null); setRefHeaders([]); setRefRows([]); setRefKeyIndices([]); }} className="text-slate-400 hover:text-red-500">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-              )}
-           </div>
 
-           {/* 2. ACTIONABLE FILE */}
-           <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col h-full">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300">2</span>
-                 Actionable CSV (Target)
-              </h3>
-
-              {!actFile ? (
-                 <div 
-                   onClick={() => actInputRef.current?.click()}
-                   className="flex-1 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors"
-                 >
-                    <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Upload Actionable CSV</span>
-                    <input type="file" ref={actInputRef} onChange={(e) => handleFileChange(e, 'act')} accept=".csv" className="hidden" />
-                 </div>
-              ) : (
-                <div className="flex-1 flex flex-col">
-                   <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 mb-4">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                         <FileCheck className="w-5 h-5 text-teal-500 flex-shrink-0" />
-                         <span className="text-sm font-medium truncate text-slate-700 dark:text-slate-200">{actFile.name}</span>
-                      </div>
-                      <button onClick={() => { setActFile(null); setActHeaders([]); setActRows([]); setActKeyIndex(null); setResult(null); }} className="text-slate-400 hover:text-red-500">
-                         <Trash2 className="w-4 h-4" />
-                      </button>
-                   </div>
-                   
-                   <div className="flex-1">
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                        Select Key Column to Check
-                      </label>
-                      <div className="max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
-                        {actHeaders.map((header, idx) => (
-                           <label key={idx} className={`flex items-center gap-3 p-2.5 border-b border-slate-100 dark:border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${actKeyIndex === idx ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}>
-                              <input 
-                                type="radio" 
-                                name="actCol" 
-                                checked={actKeyIndex === idx} 
-                                onChange={() => setActKeyIndex(idx)}
-                                className="text-teal-600 focus:ring-teal-500"
-                              />
-                              <span className={`text-sm ${actKeyIndex === idx ? 'font-medium text-teal-700 dark:text-teal-300' : 'text-slate-600 dark:text-slate-400'}`}>
-                                 {header || `Column ${idx+1}`}
-                              </span>
-                           </label>
-                        ))}
-                      </div>
-                   </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    Select Key Column to Match
+                  </label>
+                  <div className="max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    {refHeaders.map((header, idx) => {
+                      const isSelected = refKeyIndices.includes(idx);
+                      return (
+                        <label key={idx} className={`flex items-center gap-3 p-2.5 border-b border-slate-100 dark:border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleColumnSelection(idx, 'ref')}
+                            className="h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 transition-all"
+                          />
+                          <span className={`text-sm ${isSelected ? 'font-medium text-orange-700 dark:text-orange-300' : 'text-slate-600 dark:text-slate-400'}`}>
+                            {header || `Column ${idx + 1}`}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
-           </div>
+              </div>
+            )}
+          </div>
+
+          {/* 2. ACTIONABLE FILE */}
+          <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col h-full">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300">2</span>
+              Actionable CSV (Target)
+            </h3>
+
+            {!actFile ? (
+              <div
+                onClick={() => actInputRef.current?.click()}
+                className="flex-1 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors"
+              >
+                <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Upload Actionable CSV</span>
+                <input type="file" ref={actInputRef} onChange={(e) => handleFileChange(e, 'act')} accept=".csv" className="hidden" />
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col">
+                <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 mb-4">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <FileCheck className="w-5 h-5 text-teal-500 flex-shrink-0" />
+                    <span className="text-sm font-medium truncate text-slate-700 dark:text-slate-200">{actFile.name}</span>
+                  </div>
+                  <button onClick={() => { setActFile(null); setActHeaders([]); setActRows([]); setActKeyIndices([]); setResult(null); }} className="text-slate-400 hover:text-red-500">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    Select Key Column to Check
+                  </label>
+                  <div className="max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    {actHeaders.map((header, idx) => {
+                      const isSelected = actKeyIndices.includes(idx);
+                      return (
+                        <label key={idx} className={`flex items-center gap-3 p-2.5 border-b border-slate-100 dark:border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${isSelected ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleColumnSelection(idx, 'act')}
+                            className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 transition-all"
+                          />
+                          <span className={`text-sm ${isSelected ? 'font-medium text-teal-700 dark:text-teal-300' : 'text-slate-600 dark:text-slate-400'}`}>
+                            {header || `Column ${idx + 1}`}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        
+
+        {/* KEY ALIGNMENT SECTION */}
+        {refFile && actFile && (
+          <div className="mt-6 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-xl border border-indigo-200 dark:border-indigo-800">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-500 text-white text-xs font-bold">3</span>
+                  Key Alignment (Optional)
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 ml-8">
+                  Define which columns represent the same semantic concept across both files. Leave empty to use column checkboxes above.
+                </p>
+              </div>
+            </div>
+
+            {keyAlignment.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                  No key alignments defined. Using column selections above.
+                </p>
+                <button
+                  onClick={addKeyPart}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all flex items-center gap-2 mx-auto"
+                >
+                  <span className="text-lg">+</span>
+                  Add First Key Part
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {keyAlignment.map((pair, idx) => {
+                  const [refIdx, actIdx] = pair;
+                  return (
+                    <div key={idx} className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-indigo-200 dark:border-indigo-700 flex items-center gap-4">
+                      <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 min-w-[80px]">
+                        Key Part {idx + 1}
+                      </span>
+
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Reference Column Dropdown */}
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                            Reference Column
+                          </label>
+                          <select
+                            value={refIdx}
+                            onChange={(e) => updateKeyPart(idx, parseInt(e.target.value), actIdx)}
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          >
+                            <option value={-1}>-- Select Column --</option>
+                            {refHeaders.map((header, headerIdx) => (
+                              <option key={headerIdx} value={headerIdx}>
+                                {header || `Column ${headerIdx + 1}`}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Actionable Column Dropdown */}
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                            Actionable Column
+                          </label>
+                          <select
+                            value={actIdx}
+                            onChange={(e) => updateKeyPart(idx, refIdx, parseInt(e.target.value))}
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          >
+                            <option value={-1}>-- Select Column --</option>
+                            {actHeaders.map((header, headerIdx) => (
+                              <option key={headerIdx} value={headerIdx}>
+                                {header || `Column ${headerIdx + 1}`}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        onClick={() => removeKeyPart(idx)}
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                        title="Remove this key part"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+
+                <button
+                  onClick={addKeyPart}
+                  className="w-full px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="text-lg">+</span>
+                  Add Another Key Part
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* SETTINGS AREA */}
         <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
           <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={removeInternalDuplicates}
               onChange={(e) => setRemoveInternalDuplicates(e.target.checked)}
               className="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
             />
             <div className="flex flex-col">
-               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Remove internal duplicates within the Actionable CSV</span>
-               <span className="text-xs text-slate-500 dark:text-slate-400">Check this to remove duplicates found within the file itself, even if no Reference file is used.</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Remove internal duplicates within the Actionable CSV</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Check this to remove duplicates found within the file itself, even if no Reference file is used.</span>
             </div>
           </label>
         </div>
@@ -351,65 +702,210 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
         {/* ACTION AREA */}
         <div className="mt-8 flex justify-end pt-6 border-t border-slate-100 dark:border-slate-700">
-           <button
-             onClick={handleProcess}
-             disabled={isProcessing || !isConfigValid()}
-             className="px-8 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2"
-           >
-             {isProcessing ? (
-               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-             ) : (
-               <ShieldBan className="w-5 h-5" />
-             )}
-             Remove Duplicates
-           </button>
+          <button
+            onClick={handleProcess}
+            disabled={isProcessing || !isConfigValid()}
+            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2"
+          >
+            {isProcessing ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              <ShieldBan className="w-5 h-5" />
+            )}
+            Remove Duplicates
+          </button>
         </div>
       </div>
 
       {/* RESULT */}
       {result && (
         <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-teal-200 dark:border-teal-500/30 bg-teal-50/30 dark:bg-teal-500/5 animate-fade-in-up transition-colors">
-           <div className="flex flex-col gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {result.stats.refSetSize > 0 && (
-                  <div className="p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-teal-100 dark:border-teal-900/30">
-                      <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Reference Blocklist Size</div>
-                      <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{result.stats.refSetSize}</div>
-                  </div>
-                 )}
-                 <div className="p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-teal-100 dark:border-teal-900/30">
-                    <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Original Actionable Rows</div>
-                    <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{result.stats.originalCount}</div>
-                 </div>
+          <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {result.stats.refSetSize > 0 && (
+                <div className="p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-teal-100 dark:border-teal-900/30">
+                  <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Reference Blocklist Size</div>
+                  <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{result.stats.refSetSize}</div>
+                </div>
+              )}
+              <div className="p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-teal-100 dark:border-teal-900/30">
+                <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Original Actionable Rows</div>
+                <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{result.stats.originalCount}</div>
               </div>
+            </div>
 
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-teal-200 dark:border-teal-800/30 pt-6">
-                 <div>
-                    <h2 className="text-xl font-bold text-teal-900 dark:text-teal-400 flex items-center gap-2 mb-2">
-                       <CheckCircle className="w-6 h-6" />
-                       De-duplication Complete
-                    </h2>
-                    <ul className="text-sm space-y-1 text-slate-600 dark:text-slate-300">
-                       {result.stats.refSetSize > 0 && (
-                          <li>Removed <strong className="text-red-600 dark:text-red-400">{result.stats.removedByRef}</strong> found in reference.</li>
-                       )}
-                       {removeInternalDuplicates && (
-                         <li>Removed <strong className="text-red-600 dark:text-red-400">{result.stats.removedInternal}</strong> internal duplicates.</li>
-                       )}
-                       <li className="pt-1 mt-1 border-t border-slate-200 dark:border-slate-700">
-                         Final row count: <strong>{result.stats.finalCount}</strong>
-                       </li>
-                    </ul>
-                 </div>
-                 <button 
-                   onClick={handleDownload}
-                   className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium shadow-sm flex items-center gap-2 transition-transform hover:-translate-y-0.5 active:translate-y-0"
-                 >
-                   <Download className="w-5 h-5" />
-                   Download Clean CSV
-                 </button>
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-teal-200 dark:border-teal-800/30 pt-6">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-teal-900 dark:text-teal-400 flex items-center gap-2 mb-4">
+                  <CheckCircle className="w-6 h-6" />
+                  De-duplication Complete
+                </h2>
+
+                {/* Arithmetic Breakdown */}
+                <div className="bg-white/70 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700 font-mono text-sm space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-600 dark:text-slate-400">Original actionable rows:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{result.stats.originalCount}</span>
+                  </div>
+
+                  {result.stats.refSetSize > 0 && (
+                    <div className="border-t border-slate-200 dark:border-slate-700 pt-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-red-600 dark:text-red-400">Rows removed (found in reference):</span>
+                        <span className="font-semibold text-red-600 dark:text-red-400">−{result.stats.removedByRef}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                        Some competencies appeared multiple times in the actionable file. All matching rows were removed to prevent duplicate imports.
+                      </p>
+                    </div>
+                  )}
+
+                  {removeInternalDuplicates && result.stats.removedInternal > 0 && (
+                    <div className={`${result.stats.refSetSize > 0 ? 'border-t border-slate-200 dark:border-slate-700 pt-2' : ''}`}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-orange-600 dark:text-orange-400">Rows removed (internal duplicates):</span>
+                        <span className="font-semibold text-orange-600 dark:text-orange-400">−{result.stats.removedInternal}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="border-t-2 border-slate-300 dark:border-slate-600 pt-2 mt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-teal-700 dark:text-teal-300">Rows safe to import:</span>
+                      <span className="font-bold text-lg text-teal-700 dark:text-teal-300">{result.stats.finalCount}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-           </div>
+              <button
+                onClick={handleDownload}
+                className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium shadow-sm flex items-center gap-2 transition-transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <Download className="w-5 h-5" />
+                Download Clean CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <ToolSettingsModal
+        toolId="deduplicator"
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        defaultPrompt={`// Core De-duplication Logic
+// This tool processes CSV files to remove duplicates based on composite keys.
+
+Key Normalization Rules (Unicode-Safe):
+1. Multi-column composite keys are supported (select multiple columns via checkboxes)
+
+2. Text normalization pipeline (applied to each column value):
+   a) Unicode normalization (NFKD) - handles accents, ligatures, etc.
+   b) Smart character conversion:
+      - Smart quotes (", ", ', ') → standard quotes
+      - En/em dashes (–, —) → hyphen (-)
+      - Non-breaking spaces → regular spaces
+      - Ellipsis (…) → three dots (...)
+   c) Remove quotes and apostrophes
+   d) Whitespace normalization:
+      - Trim leading/trailing whitespace
+      - Collapse multiple spaces to single space
+      - Preserves spaces within text (important for sentences)
+   e) Convert to lowercase
+   f) Optional canonicalization for categorical columns (default: off)
+
+3. Composite key creation:
+   - Normalized values joined with pipe separator (|)
+   - Example: ["Student can read", "A1"] → "student can read|a1"
+   
+Processing Flow:
+1. Build blocklist from Reference CSV (if provided)
+   - Extract values from selected reference columns
+   - Normalize and store in Set for O(1) lookup
+   
+2. Filter Actionable CSV rows:
+   - Extract values from selected actionable columns
+   - Normalize to create composite key
+   - Check against reference blocklist (if exists)
+   - Check for internal duplicates (if enabled)
+   - Keep first occurrence, remove subsequent matches
+
+Output:
+- Cleaned CSV with duplicates removed
+- Statistics: original count, removed by reference, removed internally, final count
+
+Backward Compatibility:
+- Single-column dedup works exactly as before
+- Reference-based and internal-only dedup unchanged
+- Whitespace handling improved to support semantic keys`}
+      />
+
+      {showInfo && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg overflow-hidden animate-scale-in">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Info className="w-5 h-5 text-blue-500" />
+                What this tool does
+              </h3>
+              <button
+                onClick={() => setShowInfo(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-8 max-h-[70vh] overflow-y-auto font-sans">
+              <div className="space-y-8">
+                <section>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                    This tool helps you safely clean a spreadsheet before import by removing entries that would create duplicates.
+                  </p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mt-3">
+                    You choose which columns define “the same entry” (for example: Can-Do + CEFR + Skill).
+                    The tool then checks your Actionable file against an optional Reference file.
+                  </p>
+                </section>
+
+                <section>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">How duplicates are handled</h4>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                    If an entry already exists in the Reference file, all matching rows are removed from the Actionable file.
+                  </p>
+                  <p className="text-slate-500 dark:text-slate-500 text-[13px] italic mt-2">
+                    This is done on purpose to avoid importing duplicates where the system can’t validate them later.
+                  </p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mt-3">
+                    If the same entry appears multiple times in your Actionable file, those repeats are also removed (optional).
+                  </p>
+                </section>
+
+                <section>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">What the results mean</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                      <p className="text-slate-600 dark:text-slate-400 text-sm"><span className="font-semibold text-slate-900 dark:text-slate-200">Rows removed</span> = entries that are unsafe to import</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-400 flex-shrink-0" />
+                      <p className="text-slate-600 dark:text-slate-400 text-sm"><span className="font-semibold text-slate-900 dark:text-slate-200">Rows safe to import</span> = entries that don’t exist in the Reference file</p>
+                    </div>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm font-medium mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                    The downloaded file contains only entries that are safe to add.
+                  </p>
+                </section>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+              <button
+                onClick={() => setShowInfo(false)}
+                className="px-6 py-2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-600 transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

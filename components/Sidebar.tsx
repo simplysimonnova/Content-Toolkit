@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  BookOpen, FileText, Moon, Sun, Settings, LayoutDashboard, 
-  ImageIcon, Volume2, Link2, ChevronLeft, ChevronRight, 
+import {
+  BookOpen, FileText, Moon, Sun, Settings, LayoutDashboard,
+  ImageIcon, Volume2, Link2, ChevronLeft, ChevronRight,
   TableProperties, ListFilter, Tag, ShieldBan, Search,
   CreditCard, Palette, ClipboardCheck, Compass, Sparkles, PenTool,
   Zap, Map, Presentation, MessageSquareText, Mic2, Wand2, PenLine, SearchCheck,
@@ -67,7 +67,8 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
       { id: 'w2', label: 'Topic Assigner', icon: 'Tag', page: 'topic-assigner' },
       { id: 'w3', label: 'List Merger', icon: 'ListOrdered', page: 'list-merger' },
       { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
-      { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' }
+      { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
+      { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' }
     ]
   },
   {
@@ -170,11 +171,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
 
   const filteredNavGroups = useMemo(() => {
     if (!searchQuery.trim()) return navGroups;
-    
+
     return navGroups.map(group => ({
       ...group,
-      items: group.items.filter(item => 
-        item.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      items: group.items.filter(item =>
+        item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
         group.title.toLowerCase().includes(searchQuery.toLowerCase())
       )
     })).filter(group => group.items.length > 0);
@@ -185,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
     return (
       <div className="mb-2">
         {!isCollapsed && (
-          <button 
+          <button
             onClick={() => toggleGroup(title)}
             className="w-full flex items-center justify-between px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-500 hover:text-slate-300 transition-colors group"
           >
@@ -209,11 +210,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
     return (
       <button
         onClick={() => onNavigate(page as AppPage)}
-        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all group relative ${
-          isActive
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all group relative ${isActive
             ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
             : 'text-slate-400 dark:text-slate-500 hover:bg-slate-800 hover:text-orange-500 dark:hover:text-slate-200'
-        }`}
+          }`}
         title={isCollapsed ? label : ''}
       >
         <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-orange-500'}`} />
@@ -252,7 +252,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
           <div className="px-3 mb-4 animate-fade-in">
             <div className="relative group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600 group-focus-within:text-orange-500 transition-colors" />
-              <input 
+              <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -278,12 +278,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
               <div key={group.id}>
                 <NavGroup title={group.title}>
                   {group.items.map(item => (
-                    <NavLink 
+                    <NavLink
                       key={item.id}
-                      page={item.page} 
-                      iconName={item.icon} 
-                      label={item.label} 
-                      adminOnly={item.adminOnly} 
+                      page={item.page}
+                      iconName={item.icon}
+                      label={item.label}
+                      adminOnly={item.adminOnly}
                     />
                   ))}
                 </NavGroup>
@@ -320,19 +320,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
           )}
 
           <div className={`flex items-center gap-3 px-3 py-3 mt-2 rounded-2xl bg-slate-900/50 border border-slate-800 overflow-hidden ${isCollapsed ? 'justify-center' : ''}`}>
-             {user?.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-slate-700 flex-shrink-0" />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
-                  {user?.email?.charAt(0).toUpperCase()}
-                </div>
-              )}
-              {!isCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{user?.displayName || 'User'}</p>
-                  <button onClick={handleLogout} className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:text-red-400">Sign Out</button>
-                </div>
-              )}
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-slate-700 flex-shrink-0" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
+                {user?.email?.charAt(0).toUpperCase()}
+              </div>
+            )}
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-white truncate">{user?.displayName || 'User'}</p>
+                <button onClick={handleLogout} className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:text-red-400">Sign Out</button>
+              </div>
+            )}
           </div>
         </div>
 

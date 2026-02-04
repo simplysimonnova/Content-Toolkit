@@ -29,6 +29,7 @@ const GeneralProofingBot = React.lazy(() => import('./components/GeneralProofing
 const ImageRenamer = React.lazy(() => import('./components/ImageRenamer').then(m => ({ default: m.ImageRenamer })));
 const VRValidator = React.lazy(() => import('./components/VRValidator').then(m => ({ default: m.VRValidator })));
 const ClassIdFinder = React.lazy(() => import('./components/ClassIdFinder').then(m => ({ default: m.ClassIdFinder })));
+const CompImportCreator = React.lazy(() => import('./components/CompImportCreator/CompImportCreator').then(m => ({ default: m.CompImportCreator })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -89,6 +90,8 @@ const App: React.FC = () => {
         return <VRValidator />;
       case 'class-id-finder':
         return <ClassIdFinder />;
+      case 'comp-import-creator':
+        return <CompImportCreator />;
 
       // Curriculum & Planning
       case 'ss-compactor':

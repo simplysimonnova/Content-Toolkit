@@ -11,23 +11,23 @@ export interface GenerationResponse {
   error?: string;
 }
 
-export type AppPage = 
+export type AppPage =
   | 'dashboard'
-  | 'lesson-descriptions' 
-  | 'taf-generator' 
-  | 'word-cleaner' 
-  | 'topic-assigner' 
+  | 'lesson-descriptions'
+  | 'taf-generator'
+  | 'word-cleaner'
+  | 'topic-assigner'
   | 'list-merger'
   | 'llm-content-checker'
-  | 'image-extractor' 
+  | 'image-extractor'
   | 'nano-banana'
   | 'prompt-writer'
   | 'prompt-rewriter'
   | 'proofing-bot'
   | 'lesson-proofing-bot'
-  | 'sound-generator' 
+  | 'sound-generator'
   | 'tts-generator'
-  | 'deduplicator' 
+  | 'deduplicator'
   | 'useful-links'
   | 'internal-notes'
   | 'directus-guides'
@@ -42,7 +42,8 @@ export type AppPage =
   | 'editorial-tool'
   | 'image-renamer'
   | 'vr-validator'
-  | 'class-id-finder';
+  | 'class-id-finder'
+  | 'comp-import-creator';
 
 export interface ResourceLink {
   id?: string;
