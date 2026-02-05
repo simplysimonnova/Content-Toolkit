@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import {
   Search, Copy, Check, Trash2, AlertTriangle, List,
   BookOpen, Layers, Split, AlertCircle, ChevronDown, ChevronRight,
-  CheckCircle2, XCircle, Settings, Shield
+  CheckCircle2, XCircle, Settings, Shield, Eye, EyeOff
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ToolSettingsModal } from '../ToolSettingsModal';
@@ -64,7 +64,7 @@ const groupByTopic = <T extends { vocabulary_topic: string }>(items: T[]) => {
 
 // --- Components ---
 
-const TopicGroup = ({ topic, items, renderItem }: { topic: string, items: any[], renderItem: (item: any) => React.ReactNode }) => {
+const TopicGroup = ({ topic, items, renderItem }: { topic: string, items: any[], renderItem: (item: any) => React.ReactNode, key?: string }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -102,6 +102,7 @@ export const LLMContentChecker: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'vocabulary' | 'sentences' | 'distractors'>('vocabulary');
   const [showSettings, setShowSettings] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [showExtended, setShowExtended] = useState(true);
   const { isAdmin } = useAuth();
 
   React.useEffect(() => {
@@ -150,24 +151,37 @@ export const LLMContentChecker: React.FC = () => {
   // --- Render Sections ---
 
   const renderTabs = () => (
-    <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl mb-6 inline-flex">
-      {[
-        { id: 'vocabulary', label: 'Vocabulary', icon: BookOpen },
-        { id: 'sentences', label: 'Sentences', icon: Layers },
-        { id: 'distractors', label: 'Distractors', icon: Split },
-      ].map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id as any)}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id
-            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
-        >
-          <tab.icon className="w-4 h-4" />
-          {tab.label}
-        </button>
-      ))}
+    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl inline-flex">
+        {[
+          { id: 'vocabulary', label: 'Vocabulary', icon: BookOpen },
+          { id: 'sentences', label: 'Sentences', icon: Layers },
+          { id: 'distractors', label: 'Distractors', icon: Split },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id
+              ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+          >
+            <tab.icon className="w-4 h-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={() => setShowExtended(!showExtended)}
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${showExtended
+          ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400'
+          : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500'
+          }`}
+      >
+        {showExtended ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+        {showExtended ? 'Extended Content: ON' : 'Extended Content: OFF'}
+      </button>
     </div>
   );
 
@@ -186,7 +200,7 @@ export const LLMContentChecker: React.FC = () => {
           <BookOpen className="w-5 h-5 text-indigo-500" /> Vocabulary Analysis
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`grid gap-6 ${showExtended ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
           {/* Primary Column */}
           <div className="bg-indigo-50/50 dark:bg-slate-800/50 p-4 rounded-xl border border-indigo-100 dark:border-slate-700">
             <div className="flex justify-between items-center mb-4">
@@ -207,23 +221,25 @@ export const LLMContentChecker: React.FC = () => {
           </div>
 
           {/* Extended Column */}
-          <div className="bg-orange-50/50 dark:bg-slate-800/50 p-4 rounded-xl border border-orange-100 dark:border-slate-700">
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="font-bold text-orange-900 dark:text-orange-200 uppercase tracking-widest text-xs">Extended ({extended.length})</h4>
+          {showExtended && (
+            <div className="bg-orange-50/50 dark:bg-slate-800/50 p-4 rounded-xl border border-orange-100 dark:border-slate-700">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold text-orange-900 dark:text-orange-200 uppercase tracking-widest text-xs">Extended ({extended.length})</h4>
+              </div>
+              {Object.keys(extendedGroups).map(topic => (
+                <TopicGroup
+                  key={topic}
+                  topic={topic}
+                  items={extendedGroups[topic]}
+                  renderItem={(item: VocabularyItem) => (
+                    <div className="text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-3 py-2 rounded border border-slate-100 dark:border-slate-700 shadow-sm">
+                      {item.word}
+                    </div>
+                  )}
+                />
+              ))}
             </div>
-            {Object.keys(extendedGroups).map(topic => (
-              <TopicGroup
-                key={topic}
-                topic={topic}
-                items={extendedGroups[topic]}
-                renderItem={(item: VocabularyItem) => (
-                  <div className="text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-3 py-2 rounded border border-slate-100 dark:border-slate-700 shadow-sm">
-                    {item.word}
-                  </div>
-                )}
-              />
-            ))}
-          </div>
+          )}
         </div>
       </div>
     );
@@ -262,15 +278,17 @@ export const LLMContentChecker: React.FC = () => {
           <Layers className="w-5 h-5 text-indigo-500" /> Sentence Analysis
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`grid gap-6 ${showExtended ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
           <div>
             <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs mb-3 pl-1">Core Sentences ({primary.length})</h4>
             {renderList(primary)}
           </div>
-          <div>
-            <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs mb-3 pl-1">Mix / Extended ({others.length})</h4>
-            {renderList(others)}
-          </div>
+          {showExtended && (
+            <div>
+              <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs mb-3 pl-1">Mix / Extended ({others.length})</h4>
+              {renderList(others)}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -411,7 +429,7 @@ export const LLMContentChecker: React.FC = () => {
               <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{output.stats.primaryWords}</span>
               <span className="text-xs uppercase tracking-widest text-slate-500">Primary Words</span>
             </div>
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
+            <div className={`bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center transition-opacity ${!showExtended ? 'opacity-40 grayscale' : ''}`}>
               <span className="text-2xl font-black text-orange-500">{output.stats.extendedWords}</span>
               <span className="text-xs uppercase tracking-widest text-slate-500">Extended Words</span>
             </div>
