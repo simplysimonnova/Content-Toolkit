@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Download, CheckCircle, AlertCircle, Trash2, ArrowRight, ShieldBan, FileCheck, Info, Settings, Shield, X } from 'lucide-react';
+import { Upload, FileText, Download, CheckCircle, AlertCircle, Trash2, ArrowRight, ShieldBan, FileCheck, Info, Settings, Shield, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { parseCSV, generateCSVForRows } from '../utils/csvHelper';
 import { useAuth } from '../context/AuthContext';
 import { ToolSettingsModal } from './ToolSettingsModal';
@@ -43,8 +43,11 @@ export const SpreadsheetDeduplicator: React.FC = () => {
       removedInternal: number;
       finalCount: number;
       refSetSize: number;
+      duplicateDetails?: { key: string; rows: number[] }[];
     }
   } | null>(null);
+
+  const [showDuplicateDetails, setShowDuplicateDetails] = useState(false);
 
   const refInputRef = useRef<HTMLInputElement>(null);
   const actInputRef = useRef<HTMLInputElement>(null);
@@ -332,11 +335,13 @@ export const SpreadsheetDeduplicator: React.FC = () => {
         // 2. Filter Actionable Rows
         const keptRows: string[][] = [];
         const seenInActionable = new Set<string>();
+        const allOccurrences = new Map<string, number[]>();
+        const removedKeys = new Set<string>();
 
         let removedByRef = 0;
         let removedInternal = 0;
 
-        actRows.forEach(row => {
+        actRows.forEach((row, idx) => {
           let vals: (string | undefined)[];
           let colNames: string[];
 
@@ -351,6 +356,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
           }
 
           const key = normalizeKey(vals, colNames);
+          const rowNum = idx + 1; // 1-based row number (excluding header)
 
           if (!key) {
             // Keep empty rows for safety
@@ -358,9 +364,16 @@ export const SpreadsheetDeduplicator: React.FC = () => {
             return;
           }
 
+          // Track occurrences for every key found in actionable
+          if (!allOccurrences.has(key)) {
+            allOccurrences.set(key, []);
+          }
+          allOccurrences.get(key)!.push(rowNum);
+
           // Check Reference Match (if blocklist exists)
           if (blocklist.size > 0 && blocklist.has(key)) {
             removedByRef++;
+            removedKeys.add(key);
             return; // Skip this row
           }
 
@@ -368,6 +381,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
           if (removeInternalDuplicates) {
             if (seenInActionable.has(key)) {
               removedInternal++;
+              removedKeys.add(key);
               return; // Skip this row
             }
             seenInActionable.add(key);
@@ -376,6 +390,11 @@ export const SpreadsheetDeduplicator: React.FC = () => {
           keptRows.push(row);
         });
 
+        // Build duplicate details and sort by first occurrence
+        const duplicateDetails = Array.from(removedKeys)
+          .map(k => ({ key: k, rows: allOccurrences.get(k) || [] }))
+          .sort((a, b) => (a.rows[0] || 0) - (b.rows[0] || 0));
+
         setResult({
           processedRows: keptRows,
           stats: {
@@ -383,9 +402,11 @@ export const SpreadsheetDeduplicator: React.FC = () => {
             removedByRef,
             removedInternal,
             finalCount: keptRows.length,
-            refSetSize: blocklist.size
+            refSetSize: blocklist.size,
+            duplicateDetails
           }
         });
+        setShowDuplicateDetails(false); // Ensure collapsed on new result
 
       } catch (err) {
         setError("An error occurred during de-duplication.");
@@ -404,6 +425,38 @@ export const SpreadsheetDeduplicator: React.FC = () => {
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', `actionable_no_duplicates_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadDuplicates = () => {
+    if (!result || !result.stats.duplicateDetails) return;
+
+    // Determine headers based on selected key columns
+    let keyHeaders: string[] = [];
+    if (keyAlignment.length > 0) {
+      keyHeaders = keyAlignment.map(([_, actIdx]) => actHeaders[actIdx]);
+    } else {
+      keyHeaders = actKeyIndices.map(idx => actHeaders[idx]);
+    }
+
+    const headers = [...keyHeaders, 'duplicate_row_numbers', 'duplicate_count'];
+
+    // Build rows from duplicate details
+    const duplicateRows = result.stats.duplicateDetails.map(detail => {
+      const keyParts = detail.key.split('|');
+      const rowNumbers = detail.rows.join(',');
+      const count = (detail.rows.length - 1).toString();
+      return [...keyParts, rowNumbers, count];
+    });
+
+    const csvContent = generateCSVForRows(headers, duplicateRows);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `removed_duplicates_audit_${new Date().getTime()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -776,6 +829,51 @@ export const SpreadsheetDeduplicator: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Collapsible Duplicate Details */}
+                {result.stats.duplicateDetails && result.stats.duplicateDetails.length > 0 && (
+                  <div className="mt-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white/50 dark:bg-slate-900/30">
+                    <div className="flex items-center justify-between bg-white/50 dark:bg-slate-800/50 pr-3">
+                      <button
+                        onClick={() => setShowDuplicateDetails(!showDuplicateDetails)}
+                        className="flex-1 flex items-center justify-between p-3 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          {showDuplicateDetails ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          View removed duplicates (optional)
+                        </span>
+                        <span className="text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded-full">
+                          {result.stats.duplicateDetails.length} items
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={handleDownloadDuplicates}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold transition-all shadow-sm flex-shrink-0"
+                        title="Download Duplicate List as CSV"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Download list (CSV)
+                      </button>
+                    </div>
+
+                    {showDuplicateDetails && (
+                      <div className="p-4 border-t border-slate-200 dark:border-slate-700 max-h-60 overflow-y-auto space-y-4">
+                        {result.stats.duplicateDetails.map((detail, idx) => (
+                          <div key={idx} className="text-xs space-y-1">
+                            <div className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                              {detail.key.split('|').join(' | ')}
+                            </div>
+                            <div className="text-slate-500 dark:text-slate-500 font-mono ml-3.5">
+                              Rows: {detail.rows.join(', ')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <button
                 onClick={handleDownload}
@@ -788,6 +886,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
           </div>
         </div>
       )}
+
       <ToolSettingsModal
         toolId="deduplicator"
         isOpen={showSettings}
