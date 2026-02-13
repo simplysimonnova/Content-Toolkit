@@ -14,6 +14,7 @@ import { AppPage } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { AdminConsoleModal } from './AdminConsoleModal';
+import { ChangelogModal } from './ChangelogModal';
 
 const ICON_MAP: Record<string, any> = {
   'Zap': Zap, 'Map': Map, 'Sparkles': Sparkles, 'Presentation': Presentation,
@@ -119,6 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
   const { theme, toggleTheme } = useTheme();
   const { isAdmin, user } = useAuth();
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'Lesson Tools': true,
@@ -242,7 +244,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
             {!isCollapsed && (
               <div className="animate-fade-in whitespace-nowrap">
                 <h1 className="text-sm font-black tracking-tight text-white uppercase leading-tight">Content Toolkit</h1>
-                <p className="text-[10px] text-slate-500 font-bold tracking-tighter">TOOLKIT PRO</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] text-slate-500 font-bold tracking-tighter">TOOLKIT PRO</p>
+                  <button onClick={() => setShowChangelog(true)} className="text-[9px] text-slate-600 hover:text-orange-500 font-mono transition-colors">v1.0.2</button>
+                </div>
               </div>
             )}
           </div>
@@ -342,6 +347,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
         </button>
       </aside>
       {isAdmin && <AdminConsoleModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} />}
+      <ChangelogModal isOpen={showChangelog} onClose={() => setShowChangelog(false)} />
     </>
   );
 };

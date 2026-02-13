@@ -1,3 +1,7 @@
+// Dedup Normalization v1.0
+// Composite key: can_do_statement + CEFR + skill
+// Semantic matching (quotes removed in key only)
+// Row content never mutated
 
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, Download, CheckCircle, AlertCircle, Trash2, ArrowRight, ShieldBan, FileCheck, Info, Settings, Shield, X, ChevronDown, ChevronRight } from 'lucide-react';
@@ -6,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { ToolSettingsModal } from './ToolSettingsModal';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { logUsage } from '../services/geminiService';
 
 export const SpreadsheetDeduplicator: React.FC = () => {
   const { isAdmin } = useAuth();
@@ -88,7 +93,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
       reading: "reading",
       listening: "listening",
       spelling: "spelling",
-    }
+    },
   };
 
   /**
@@ -163,7 +168,9 @@ export const SpreadsheetDeduplicator: React.FC = () => {
     // Normalize each value individually (with optional column-specific canonicalization)
     const normalizedVals = vals.map((val, idx) => {
       const colName = columnNames && columnNames[idx];
-      return normalizeText(val, colName);
+      let normalized = normalizeText(val, colName);
+      // Remove all double quotes for key generation ONLY
+      return normalized.replace(/"/g, '');
     });
 
     // Join with pipe separator (preserves existing composite key logic)
@@ -259,6 +266,8 @@ export const SpreadsheetDeduplicator: React.FC = () => {
   };
 
   const handleProcess = () => {
+    // Stateless execution: all Sets and counters reset per run
+
     // Validation: Check if using alignment or traditional column selection
     const usingAlignment = keyAlignment.length > 0;
 
@@ -298,12 +307,32 @@ export const SpreadsheetDeduplicator: React.FC = () => {
       }
     }
 
+    // REQUIRED COLUMN VALIDATION
+    let selectedActColumns: string[] = [];
+    if (usingAlignment) {
+      selectedActColumns = keyAlignment.map(([_, actIdx]) => actHeaders[actIdx]);
+    } else {
+      selectedActColumns = actKeyIndices.map(idx => actHeaders[idx]);
+    }
+
+    const normalizedSelectedCols = selectedActColumns.map(normalizeColumnName);
+    const hasCanDo = normalizedSelectedCols.some(col => col.includes('candostatement') || col === 'cando');
+    const hasCefr = normalizedSelectedCols.some(col => col.includes('cefr') || col === 'level');
+    const hasSkill = normalizedSelectedCols.some(col => col.includes('skill'));
+
+    if (!hasCanDo || !hasCefr || !hasSkill) {
+      setError('Composite key must include can_do_statement, CEFR, and skill.');
+      return;
+    }
+
     if (!refFile && !removeInternalDuplicates) {
       setError('Please either upload a Reference CSV or enable "Remove internal duplicates".');
       return;
     }
 
+    // Explicitly reset result/error state before processing
     setIsProcessing(true);
+    setResult(null);
     setError(null);
 
     setTimeout(() => {
@@ -312,7 +341,9 @@ export const SpreadsheetDeduplicator: React.FC = () => {
         const usingAlignment = keyAlignment.length > 0;
 
         // 1. Build Lookup Set from Reference File (Normalized) - OPTIONAL
+        // Ensure these variables are recreated inside the function body
         const blocklist = new Set<string>();
+
         if (refFile && (usingAlignment ? keyAlignment.length > 0 : refKeyIndices.length > 0)) {
           refRows.forEach(row => {
             let vals: (string | undefined)[];
@@ -334,6 +365,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
         }
 
         // 2. Filter Actionable Rows
+        // Ensure strictly local scope for tracking sets
         const keptRows: string[][] = [];
         const seenInActionable = new Set<string>();
         const allOccurrences = new Map<string, number[]>();
@@ -408,6 +440,9 @@ export const SpreadsheetDeduplicator: React.FC = () => {
           }
         });
         setShowDuplicateDetails(false); // Ensure collapsed on new result
+
+        // Log usage (fire and forget)
+        logUsage("Deduplicator", "Deterministic", 0).catch(err => console.error("Logging failed", err));
 
       } catch (err) {
         setError("An error occurred during de-duplication.");
@@ -506,6 +541,21 @@ export const SpreadsheetDeduplicator: React.FC = () => {
           <div className="mt-2 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-2 rounded border border-blue-100 dark:border-blue-800 inline-flex items-center gap-2">
             <Info className="w-4 h-4" />
             <span>Matching ignores spaces and casing (e.g., "19 607" matches "19607").</span>
+          </div>
+        </div>
+
+        {/* User Instructional Explainer */}
+        <div className="mb-8 bg-indigo-50 dark:bg-indigo-900/20 p-5 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
+          <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-300 mb-3">
+            How to use this tool correctly (3-step import process):
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-xs text-slate-700 dark:text-slate-300 ml-1 font-medium">
+            <li>Run internal dedup on the level file you are preparing for import.</li>
+            <li>Export the full Competency Library from Directus (no filters except exclude Archived).</li>
+            <li>Run dedup against the exported library as the Reference file, then download the final cleaned CSV for import.</li>
+          </ol>
+          <div className="mt-3 text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-white dark:bg-indigo-950/30 px-3 py-2 rounded border border-indigo-100 dark:border-indigo-800 inline-block">
+            Only the final cleaned file should be imported.
           </div>
         </div>
 
@@ -958,24 +1008,21 @@ Backward Compatibility:
               <div className="space-y-8">
                 <section>
                   <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                    This tool helps you safely clean a spreadsheet before import by removing entries that would create duplicates.
+                    This tool helps you safely prepare a spreadsheet before import by removing entries that would create duplicate competencies.
                   </p>
                   <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mt-3">
-                    You choose which columns define “the same entry” (for example: Can-Do + CEFR + Skill).
-                    The tool then checks your Actionable file against an optional Reference file.
+                    You choose which columns define “the same entry” (for example: Can-Do + CEFR + Skill). These columns form a composite key used to compare rows.
                   </p>
                 </section>
 
                 <section>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">How duplicates are handled</h4>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                    If an entry already exists in the Reference file, all matching rows are removed from the Actionable file.
-                  </p>
-                  <p className="text-slate-500 dark:text-slate-500 text-[13px] italic mt-2">
-                    This is done on purpose to avoid importing duplicates where the system can’t validate them later.
-                  </p>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mt-3">
-                    If the same entry appears multiple times in your Actionable file, those repeats are also removed (optional).
+                  <ul className="list-disc list-outside space-y-2 text-slate-600 dark:text-slate-400 text-sm ml-4">
+                    <li>If an entry already exists in the Reference file, all matching rows are removed from the Actionable file.</li>
+                    <li>If the same entry appears multiple times within the Actionable file, those internal duplicates are also removed (optional).</li>
+                  </ul>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mt-3 italic bg-slate-50 dark:bg-black/20 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                    Matching is semantic — formatting differences (case, spacing, quotes, CEFR format) will not create separate entries.
                   </p>
                 </section>
 
@@ -984,15 +1031,21 @@ Backward Compatibility:
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-                      <p className="text-slate-600 dark:text-slate-400 text-sm"><span className="font-semibold text-slate-900 dark:text-slate-200">Rows removed</span> = entries that are unsafe to import</p>
+                      <div className="text-slate-600 dark:text-slate-400 text-sm">
+                        <span className="font-bold text-slate-900 dark:text-slate-200 block mb-0.5">Rows removed</span>
+                        Entries that would create duplicates and are unsafe to import.
+                      </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-400 flex-shrink-0" />
-                      <p className="text-slate-600 dark:text-slate-400 text-sm"><span className="font-semibold text-slate-900 dark:text-slate-200">Rows safe to import</span> = entries that don’t exist in the Reference file</p>
+                      <div className="text-slate-600 dark:text-slate-400 text-sm">
+                        <span className="font-bold text-slate-900 dark:text-slate-200 block mb-0.5">Rows safe to import</span>
+                        Entries that do not exist in the Reference file and can be safely added.
+                      </div>
                     </div>
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 text-sm font-medium mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
-                    The downloaded file contains only entries that are safe to add.
+                    The downloaded file contains only entries that are safe to import.
                   </p>
                 </section>
               </div>

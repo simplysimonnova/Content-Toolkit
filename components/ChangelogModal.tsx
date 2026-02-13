@@ -12,6 +12,18 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.0.2',
+    date: 'February 2026',
+    title: 'Deduplicator Reliability Update',
+    type: 'Improvement',
+    changes: [
+      'Implemented "Strict Semantic Deduplication" (ignoring quotes, casing across all keys).',
+      'Enforced "Stateless Execution" to prevent data leakage between runs.',
+      'Added Usage Logging for Admin Hub tracking.',
+      'Updated tool documentation with clear 3-step import workflow.'
+    ]
+  },
+  {
     version: '0.5.0',
     date: 'March 2026',
     title: 'Immutable Component Protocol',
@@ -114,7 +126,7 @@ export const ChangelogModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
               </div>
 
               <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{log.title}</h4>
-              
+
               <ul className="space-y-3">
                 {log.changes.map((change, cIdx) => (
                   <li key={cIdx} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-3 leading-relaxed">
@@ -128,7 +140,7 @@ export const ChangelogModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
         </div>
 
         <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-center">
-          <button 
+          <button
             onClick={onClose}
             className="px-8 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm transition-transform active:scale-95"
           >
