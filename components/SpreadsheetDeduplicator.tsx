@@ -107,14 +107,15 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
     // Step 2: Convert smart quotes, dashes, and non-breaking spaces to ASCII
     normalized = normalized
-      .replace(/[\u2018\u2019]/g, "'")  // Smart single quotes → '
+      .replace(/[\u2018\u2019]/g, '"')  // Smart single quotes → "
+      .replace(/'/g, '"')               // Straight single quotes → "
       .replace(/[\u201C\u201D]/g, '"')  // Smart double quotes → "
       .replace(/[\u2013\u2014]/g, '-')  // En/em dashes → -
       .replace(/\u00A0/g, ' ')          // Non-breaking space → space
       .replace(/\u2026/g, '...');       // Ellipsis → ...
 
-    // Step 3: Remove quotes and apostrophes (preserves existing behavior)
-    normalized = normalized.replace(/['"]/g, '');
+    // Step 3: Remove quotes and apostrophes (REMOVED - preserves quotes)
+    // normalized = normalized.replace(/['"]/g, '');
 
     // Step 4: Whitespace normalization (NEW - replaces "remove all whitespace")
     // - Trim leading/trailing whitespace

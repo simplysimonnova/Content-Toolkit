@@ -162,7 +162,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'w3', label: 'List Merger', icon: 'ListOrdered', page: 'list-merger' },
           { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
           { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
-          { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' }
+          { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' },
+          { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' }
         ]
       },
       {

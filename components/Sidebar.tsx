@@ -68,7 +68,8 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
       { id: 'w3', label: 'List Merger', icon: 'ListOrdered', page: 'list-merger' },
       { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
       { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
-      { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' }
+      { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' },
+      { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' }
     ]
   },
   {
@@ -211,8 +212,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
       <button
         onClick={() => onNavigate(page as AppPage)}
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all group relative ${isActive
-            ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-            : 'text-slate-400 dark:text-slate-500 hover:bg-slate-800 hover:text-orange-500 dark:hover:text-slate-200'
+          ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+          : 'text-slate-400 dark:text-slate-500 hover:bg-slate-800 hover:text-orange-500 dark:hover:text-slate-200'
           }`}
         title={isCollapsed ? label : ''}
       >

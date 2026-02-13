@@ -43,7 +43,8 @@ export type AppPage =
   | 'image-renamer'
   | 'vr-validator'
   | 'class-id-finder'
-  | 'comp-import-creator';
+  | 'comp-import-creator'
+  | 'competency-csv-normaliser';
 
 export interface ResourceLink {
   id?: string;
