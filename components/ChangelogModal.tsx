@@ -12,6 +12,22 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.1.0',
+    date: 'February 2026',
+    title: 'TN Standardization Module',
+    type: 'Feature',
+    changes: [
+      'Integrated TN Standardization tool into the Content Toolkit.',
+      'Reformats Teacher Notes into strict Novakid TN conventions (numbering, T/S abbreviations, slide labels, timings).',
+      'Full Lesson Mode with PDF and PowerPoint (.pptx) file upload and slide-by-slide extraction.',
+      'Info Modal with module purpose, pipeline position, and what the tool does and does not do.',
+      'Settings Modal with locked core methodology (read-only) and editable additional admin instructions.',
+      'Fix Log output panel showing all changes made and why.',
+      'LocalStorage persistence for admin prompt customisations.',
+      'Fixed broken JSX structure in Internal Notes form.'
+    ]
+  },
+  {
     version: '1.0.2',
     date: 'February 2026',
     title: 'Deduplicator Reliability Update',
@@ -93,7 +109,7 @@ export const ChangelogModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] border border-slate-200 dark:border-slate-800">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
               <History className="w-5 h-5" />
             </div>
             <div>
@@ -112,15 +128,15 @@ export const ChangelogModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
               {idx !== HISTORY.length - 1 && (
                 <div className="absolute left-[11px] top-8 bottom-[-40px] w-0.5 bg-slate-100 dark:bg-slate-800"></div>
               )}
-              <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border-2 border-orange-500 flex items-center justify-center z-10">
-                <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+              <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border-2 border-indigo-500 flex items-center justify-center z-10">
+                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 mb-3">
                 <span className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                   <Calendar className="w-3 h-3" /> {log.date}
                 </span>
-                <span className="px-2 py-0.5 bg-orange-500 text-white text-[10px] font-black uppercase rounded">
+                <span className="px-2 py-0.5 bg-indigo-600 text-white text-[10px] font-black uppercase rounded">
                   v{log.version}
                 </span>
               </div>
