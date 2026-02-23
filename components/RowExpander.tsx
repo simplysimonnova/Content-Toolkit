@@ -214,34 +214,32 @@ export const RowExpander: React.FC = () => {
     return (
         <div className="max-w-6xl mx-auto animate-fade-in pb-20">
             {/* Header */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
-                <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                        <div className="relative">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                <Maximize2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-800" />}
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center mb-6">
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <div className="p-4 bg-blue-500 rounded-2xl shadow-lg shadow-blue-500/20">
+                            <Maximize2 className="w-8 h-8 text-white" />
                         </div>
-                        <div>
-                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                Row Expander
-                                {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
-                            </h2>
-                            <p className="text-slate-600 dark:text-slate-400 text-sm">
-                                Expand rows with multiple values in a cell into atomic, single-value rows.
-                            </p>
-                        </div>
+                        {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-900" />}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setShowInfo(true)}
-                            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-lg transition-all"
-                            title="Info"
-                        >
-                            <Info className="w-5 h-5" />
-                        </button>
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                            Row Expander
+                            {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">
+                            Expand rows with multiple values in a cell into atomic, single-value rows.
+                        </p>
                     </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowInfo(true)}
+                        className="p-2.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                        title="Info"
+                    >
+                        <Info className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
 
@@ -262,7 +260,7 @@ export const RowExpander: React.FC = () => {
                                 <li><strong>Atomic Rows:</strong> Each output row contains exactly one value from the expanded column.</li>
                                 <li><strong>Data Preservation:</strong> All other column data is duplicated exactly for the new rows.</li>
                             </ul>
-                            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800 text-blue-800 dark:text-blue-300 text-xs">
+                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs">
                                 <strong>Tip:</strong> Use this before deduplication or ID matching to ensure every value is treated individually.
                             </div>
                         </div>
@@ -277,7 +275,7 @@ export const RowExpander: React.FC = () => {
                 {/* Left Col: Setup */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* 1. Upload */}
-                    <div className={`bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border transition-colors ${!file ? 'border-dashed border-slate-300 dark:border-slate-700' : 'border-slate-200 dark:border-slate-700'}`}>
+                    <div className={`bg-white dark:bg-slate-900 p-6 rounded-2xl border transition-colors ${!file ? 'border-dashed border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800'}`}>
                         <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300">1</span>
                             Upload CSV
@@ -306,7 +304,7 @@ export const RowExpander: React.FC = () => {
 
                     {/* 2. Configuration */}
                     {file && (
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                             <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300">2</span>
                                 Configuration
@@ -370,7 +368,7 @@ export const RowExpander: React.FC = () => {
                             <button
                                 onClick={handleProcess}
                                 disabled={isProcessing || expandColumnIdx === -1}
-                                className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+                                className="w-full mt-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white font-black rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-widest"
                             >
                                 {isProcessing ? 'Processing...' : 'Expand Rows'}
                                 {!isProcessing && <ArrowRight className="w-4 h-4" />}
@@ -383,8 +381,8 @@ export const RowExpander: React.FC = () => {
                 {/* Right Col: Results */}
                 <div className="lg:col-span-2">
                     {stats ? (
-                        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-                            <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30">
+                        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                            <div className="p-6 border-b border-slate-200 dark:border-slate-800">
                                 <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                     <CheckCircle className="w-5 h-5 text-green-500" />
                                     Expansion Complete
@@ -392,21 +390,21 @@ export const RowExpander: React.FC = () => {
                             </div>
 
                             <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-center">
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
                                     <p className="text-xs text-slate-500 font-semibold uppercase">Original Rows</p>
                                     <p className="text-2xl font-black text-slate-700 dark:text-slate-200">{stats.originalRowCount}</p>
                                 </div>
-                                <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg text-center">
-                                    <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase">Expanded Rows</p>
-                                    <p className="text-2xl font-black text-blue-700 dark:text-blue-300">{stats.expandedRowCount}</p>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+                                    <p className="text-xs text-slate-500 font-semibold uppercase">Expanded Rows</p>
+                                    <p className="text-2xl font-black text-slate-700 dark:text-slate-200">{stats.expandedRowCount}</p>
                                 </div>
-                                <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-lg text-center">
-                                    <p className="text-xs text-green-600 dark:text-green-400 font-semibold uppercase">Net Increase</p>
-                                    <p className="text-2xl font-black text-green-700 dark:text-green-300">+{stats.netRowIncrease}</p>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+                                    <p className="text-xs text-slate-500 font-semibold uppercase">Net Increase</p>
+                                    <p className="text-2xl font-black text-slate-700 dark:text-slate-200">+{stats.netRowIncrease}</p>
                                 </div>
-                                <div className="p-4 bg-orange-50 dark:bg-orange-900/10 rounded-lg text-center">
-                                    <p className="text-xs text-orange-600 dark:text-orange-400 font-semibold uppercase">Multi-Value Rows</p>
-                                    <p className="text-2xl font-black text-orange-700 dark:text-orange-300">{stats.rowsWithMultipleValues}</p>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+                                    <p className="text-xs text-slate-500 font-semibold uppercase">Multi-Value Rows</p>
+                                    <p className="text-2xl font-black text-slate-700 dark:text-slate-200">{stats.rowsWithMultipleValues}</p>
                                 </div>
                             </div>
 
@@ -428,7 +426,7 @@ export const RowExpander: React.FC = () => {
 
                                 <button
                                     onClick={handleDownload}
-                                    className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-widest"
                                 >
                                     <Download className="w-5 h-5" />
                                     Download Expanded CSV
@@ -436,7 +434,7 @@ export const RowExpander: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="p-12 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 h-full flex flex-col items-center justify-center">
+                        <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 h-full flex flex-col items-center justify-center">
                             <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full mb-4">
                                 <Maximize2 className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                             </div>

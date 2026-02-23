@@ -16,7 +16,7 @@ export const LessonForm: React.FC<LessonFormProps> = ({ info, onChange, onSubmit
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col transition-colors">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col transition-colors">
       <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">2. Lesson Details</h2>
       
       <div className="space-y-4 flex flex-col">
@@ -30,7 +30,7 @@ export const LessonForm: React.FC<LessonFormProps> = ({ info, onChange, onSubmit
             value={info.age}
             onChange={handleChange}
             placeholder="e.g., 10+"
-            className="w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm focus:border-orange-500 focus:ring-orange-500 dark:focus:border-orange-400 dark:focus:ring-orange-400 px-4 py-2 border transition-colors"
+            className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 px-4 py-2 border transition-colors"
           />
         </div>
 
@@ -48,7 +48,7 @@ export const LessonForm: React.FC<LessonFormProps> = ({ info, onChange, onSubmit
 - Vocabulary List
 - Notes about Texts / Tasks
 - VR / Digital Resources"
-            className="w-full min-h-[300px] rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm focus:border-orange-500 focus:ring-orange-500 dark:focus:border-orange-400 dark:focus:ring-orange-400 px-4 py-2 border resize-y font-mono text-sm transition-colors"
+            className="w-full min-h-[300px] rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 px-4 py-2 border resize-y font-mono text-sm transition-colors"
           />
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Paste the raw lesson data here. The AI will extract the relevant details.
@@ -60,7 +60,7 @@ export const LessonForm: React.FC<LessonFormProps> = ({ info, onChange, onSubmit
         <button
           onClick={onSubmit}
           disabled={isGenerating}
-          className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors ${
+          className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-indigo-500/20 text-xs font-black uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors ${
             isGenerating ? 'opacity-70 cursor-not-allowed' : ''
           }`}
         >

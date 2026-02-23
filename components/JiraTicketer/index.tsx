@@ -62,9 +62,9 @@ export const JiraTicketer: React.FC = () => {
         <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-orange-500/10 transition-colors"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-indigo-500/10 transition-colors"></div>
                 <div className="relative flex items-center gap-4">
-                    <div className="p-4 bg-orange-500 rounded-2xl shadow-lg shadow-orange-500/20">
+                    <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
                         <Ticket className="w-8 h-8 text-white" />
                     </div>
                     <div>

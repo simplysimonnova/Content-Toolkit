@@ -151,22 +151,25 @@ export const TAFGenerator: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
-      <div className="mb-2 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex justify-between items-center">
+      {/* Header */}
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <TableProperties className="w-8 h-8 text-orange-500" />
-            {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-800" />}
+            <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+              <TableProperties className="w-8 h-8 text-white" />
+            </div>
+            {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-900" />}
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
               TAF Generator
               {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
-            </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Create standalone "Today you..." statements from lesson content.</p>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">Create standalone "Today you..." statements from lesson content.</p>
           </div>
         </div>
         {isAdmin && (
-          <button onClick={() => setShowSettings(true)} className="p-3 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 rounded-xl transition-all">
+          <button onClick={() => setShowSettings(true)} className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all">
             <Settings className="w-6 h-6" />
           </button>
         )}
@@ -204,12 +207,12 @@ export const TAFGenerator: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/50 transition-colors">
-            <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2 mb-2">
+          <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <h4 className="text-xs font-bold text-slate-500 flex items-center gap-2 mb-2 uppercase tracking-widest">
               <Info className="w-4 h-4" />
               Truth Condition
             </h4>
-            <p className="text-xs text-blue-700/80 dark:text-blue-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Statements must be true if the teacher ticks them. They must NOT be automatically true for every student. NO full stops allowed at the end.
             </p>
           </div>
@@ -283,7 +286,7 @@ export const TAFGenerator: React.FC = () => {
                 <button
                   onClick={runGeneration}
                   disabled={isGenerating}
-                  className="flex items-center gap-2 px-8 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg active:scale-95 transition-all"
+                  className="flex items-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white font-black rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all text-xs uppercase tracking-widest"
                 >
                   {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
                   Generate TAF Row
@@ -300,15 +303,15 @@ export const TAFGenerator: React.FC = () => {
           )}
 
           {result && (
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-teal-200 dark:border-teal-800 shadow-sm overflow-hidden animate-fade-in-up transition-colors">
-              <div className="px-6 py-4 bg-teal-50/50 dark:bg-teal-900/30 border-b border-teal-100 dark:border-teal-800 flex justify-between items-center">
-                <h3 className="font-bold text-teal-800 dark:text-teal-300 flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5" />
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-fade-in-up">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-teal-500" />
                   Generated Output
                 </h3>
                 <button
                   onClick={exportCsv}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl transition-colors shadow-sm shadow-indigo-500/20 uppercase tracking-widest"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Export .CSV

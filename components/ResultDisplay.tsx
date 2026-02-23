@@ -25,20 +25,9 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, error, mod
     ? 'Format: Second Person (You will...)' 
     : 'Format: Third Person (Students will...)';
   
-  // Theme logic for Container
-  const themeClasses = mode === 'content' 
-    ? 'bg-orange-50 border-orange-100 dark:bg-slate-900/50 dark:border-orange-500/30' 
-    : 'bg-teal-50 border-teal-100 dark:bg-slate-900/50 dark:border-teal-500/30';
-
-  // Theme logic for Titles/Text
-  const textClasses = mode === 'content'
-    ? 'text-orange-900 dark:text-orange-400'
-    : 'text-teal-900 dark:text-teal-400';
-
-  // Theme logic for Buttons
-  const buttonClasses = mode === 'content'
-    ? 'text-orange-700 bg-orange-100 hover:bg-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:hover:bg-orange-500/20'
-    : 'text-teal-700 bg-teal-100 hover:bg-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:hover:bg-teal-500/20';
+  const themeClasses = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700';
+  const textClasses = 'text-slate-800 dark:text-slate-200';
+  const buttonClasses = 'text-slate-600 bg-slate-100 hover:bg-indigo-600 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-indigo-600 dark:hover:text-white';
 
   if (error) {
     return (
@@ -94,7 +83,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, error, mod
         </button>
       </div>
       
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex-grow transition-colors">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex-grow transition-colors">
         <p className="text-lg leading-relaxed text-slate-800 dark:text-slate-200 font-medium whitespace-pre-wrap">
           {result}
         </p>

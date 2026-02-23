@@ -6,7 +6,7 @@ import {
   TableProperties, ListFilter, Tag, ShieldBan, Search,
   CreditCard, Palette, ClipboardCheck, Compass, Sparkles, PenTool,
   Zap, Map, Presentation, MessageSquareText, Mic2, Wand2, PenLine, SearchCheck,
-  ChevronDown, ShieldCheck, Loader2, ListOrdered, Shield, StickyNote, Hash, Terminal, Ticket
+  ChevronDown, ShieldCheck, Loader2, ListOrdered, Shield, StickyNote, Hash, Terminal, Ticket, Braces
 } from 'lucide-react';
 import { doc, onSnapshot, collection } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
@@ -24,7 +24,7 @@ const ICON_MAP: Record<string, any> = {
   'Tag': Tag, 'TableProperties': TableProperties, 'FileText': FileText,
   'ShieldBan': ShieldBan, 'Link2': Link2, 'CreditCard': CreditCard,
   'ClipboardCheck': ClipboardCheck, 'ListOrdered': ListOrdered,
-  'StickyNote': StickyNote, 'Hash': Hash, 'Terminal': Terminal, 'Ticket': Ticket
+  'StickyNote': StickyNote, 'Hash': Hash, 'Terminal': Terminal, 'Ticket': Ticket, 'Braces': Braces
 };
 
 const FALLBACK_GROUPS: NavGroupConfig[] = [
@@ -70,10 +70,11 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
       { id: 'w3', label: 'List Merger', icon: 'ListOrdered', page: 'list-merger' },
       { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
       { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
-      { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' },
+      { id: 'w6', label: 'Competency Builder', icon: 'TableProperties', page: 'comp-import-creator' },
       { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' },
       { id: 'w8', label: 'Row Expander', icon: 'ListFilter', page: 'row-expander' },
-      { id: 'w9', label: 'ID Resolver', icon: 'Link2', page: 'id-resolver' }
+      { id: 'w9', label: 'ID Resolver', icon: 'Link2', page: 'id-resolver' },
+      { id: 'w10', label: 'Directus JSON Builder', icon: 'Braces', page: 'directus-json-builder' }
     ]
   },
   {

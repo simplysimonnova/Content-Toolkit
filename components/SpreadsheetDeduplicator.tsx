@@ -406,65 +406,45 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto animate-fade-in">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
-        <div className="mb-6">
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                  <ShieldBan className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                </div>
-                {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-800" />}
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                  Spreadsheet De-duplication
-                  {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
-                </h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
-                  Remove duplicates from your Actionable List by checking against a Reference List (optional) or by checking for duplicates within the file itself.
-                </p>
-              </div>
+      {/* Header */}
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+              <ShieldBan className="w-8 h-8 text-white" />
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowInfo(true)}
-                className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-lg transition-all"
-                title="What this tool does"
-              >
-                <Info className="w-5 h-5" />
-              </button>
-              {isAdmin && (
-                <button
-                  onClick={() => setShowSettings(true)}
-                  className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 rounded-lg transition-all"
-                >
-                  <Settings className="w-5 h-5" />
-                </button>
-              )}
-            </div>
+            {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-900" />}
           </div>
-          <div className="mt-2 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-2 rounded border border-blue-100 dark:border-blue-800 inline-flex items-center gap-2">
-            <Info className="w-4 h-4" />
-            <span>Matching ignores spaces and casing (e.g., "19 607" matches "19607").</span>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+              Spreadsheet De-duplication
+              {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">
+              Remove duplicates against a Reference List or within the file itself.
+            </p>
           </div>
         </div>
-
-        {/* User Instructional Explainer */}
-        <div className="mb-8 bg-indigo-50 dark:bg-indigo-900/20 p-5 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
-          <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-300 mb-3">
-            How to use this tool correctly (3-step import process):
-          </h3>
-          <ol className="list-decimal list-inside space-y-2 text-xs text-slate-700 dark:text-slate-300 ml-1 font-medium">
-            <li>Run internal dedup on the level file you are preparing for import.</li>
-            <li>Export the full Competency Library from Directus (no filters except exclude Archived).</li>
-            <li>Run dedup against the exported library as the Reference file, then download the final cleaned CSV for import.</li>
-          </ol>
-          <div className="mt-3 text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-white dark:bg-indigo-950/30 px-3 py-2 rounded border border-indigo-100 dark:border-indigo-800 inline-block">
-            Only the final cleaned file should be imported.
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowInfo(true)}
+            className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+            title="What this tool does"
+          >
+            <Info className="w-5 h-5" />
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          )}
         </div>
+      </div>
 
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
 
           {/* Arrow Icon */}
@@ -473,7 +453,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
           </div>
 
           {/* 1. REFERENCE FILE */}
-          <div className={`bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border flex flex-col h-full transition-colors ${!refFile ? 'border-dashed border-slate-300 dark:border-slate-700' : 'border-slate-200 dark:border-slate-700'}`}>
+          <div className={`bg-white dark:bg-slate-900 p-6 rounded-2xl border flex flex-col h-full transition-colors ${!refFile ? 'border-dashed border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800'}`}>
             <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-2">
               <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300">1</span>
               Reference CSV (Optional)
@@ -509,14 +489,14 @@ export const SpreadsheetDeduplicator: React.FC = () => {
                     {refHeaders.map((header, idx) => {
                       const isSelected = refKeyIndices.includes(idx);
                       return (
-                        <label key={idx} className={`flex items-center gap-3 p-2.5 border-b border-slate-100 dark:border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
+                        <label key={idx} className={`flex items-center gap-3 p-2.5 border-b border-slate-100 dark:border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}>
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleColumnSelection(idx, 'ref')}
-                            className="h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 transition-all"
+                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all"
                           />
-                          <span className={`text-sm ${isSelected ? 'font-medium text-orange-700 dark:text-orange-300' : 'text-slate-600 dark:text-slate-400'}`}>
+                          <span className={`text-sm ${isSelected ? 'font-medium text-indigo-700 dark:text-indigo-300' : 'text-slate-600 dark:text-slate-400'}`}>
                             {header || `Column ${idx + 1}`}
                           </span>
                         </label>
@@ -529,7 +509,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
           </div>
 
           {/* 2. ACTIONABLE FILE */}
-          <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col h-full">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-full">
             <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
               <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300">2</span>
               Actionable CSV (Target)
@@ -564,14 +544,14 @@ export const SpreadsheetDeduplicator: React.FC = () => {
                     {actHeaders.map((header, idx) => {
                       const isSelected = actKeyIndices.includes(idx);
                       return (
-                        <label key={idx} className={`flex items-center gap-3 p-2.5 border-b border-slate-100 dark:border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${isSelected ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}>
+                        <label key={idx} className={`flex items-center gap-3 p-2.5 border-b border-slate-100 dark:border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}>
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleColumnSelection(idx, 'act')}
-                            className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 transition-all"
+                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all"
                           />
-                          <span className={`text-sm ${isSelected ? 'font-medium text-teal-700 dark:text-teal-300' : 'text-slate-600 dark:text-slate-400'}`}>
+                          <span className={`text-sm ${isSelected ? 'font-medium text-indigo-700 dark:text-indigo-300' : 'text-slate-600 dark:text-slate-400'}`}>
                             {header || `Column ${idx + 1}`}
                           </span>
                         </label>
@@ -586,14 +566,14 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
         {/* KEY ALIGNMENT SECTION */}
         {refFile && actFile && (
-          <div className="mt-6 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-xl border border-indigo-200 dark:border-indigo-800">
+          <div className="mt-6 p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-500 text-white text-xs font-bold">3</span>
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-700 dark:bg-slate-600 text-white text-xs font-bold">3</span>
                   Key Alignment (Optional)
                 </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 ml-8">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 ml-8">
                   Define which columns represent the same semantic concept across both files. Leave empty to use column checkboxes above.
                 </p>
               </div>
@@ -617,7 +597,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
                 {keyAlignment.map((pair, idx) => {
                   const [refIdx, actIdx] = pair;
                   return (
-                    <div key={idx} className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-indigo-200 dark:border-indigo-700 flex items-center gap-4">
+                    <div key={idx} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-indigo-200 dark:border-indigo-700 flex items-center gap-4">
                       <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 min-w-[80px]">
                         Key Part {idx + 1}
                       </span>
@@ -693,7 +673,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
               type="checkbox"
               checked={removeInternalDuplicates}
               onChange={(e) => setRemoveInternalDuplicates(e.target.checked)}
-              className="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+              className="h-5 w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
             />
             <div className="flex flex-col">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Remove internal duplicates within the Actionable CSV</span>
@@ -711,11 +691,11 @@ export const SpreadsheetDeduplicator: React.FC = () => {
         )}
 
         {/* ACTION AREA */}
-        <div className="mt-8 flex justify-end pt-6 border-t border-slate-100 dark:border-slate-700">
+        <div className="mt-8 flex justify-end pt-6 border-t border-slate-100 dark:border-slate-800">
           <button
             onClick={handleProcess}
             disabled={isProcessing || !isConfigValid()}
-            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2"
+            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-black rounded-xl shadow-lg shadow-indigo-500/20 transition-all active:scale-95 flex items-center gap-2 text-xs uppercase tracking-widest"
           >
             {isProcessing ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -729,25 +709,25 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
       {/* RESULT */}
       {result && (
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-teal-200 dark:border-teal-500/30 bg-teal-50/30 dark:bg-teal-500/5 animate-fade-in-up transition-colors">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm animate-fade-in-up">
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {result.stats.refSetSize > 0 && (
-                <div className="p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-teal-100 dark:border-teal-900/30">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                   <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Reference Blocklist Size</div>
                   <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{result.stats.refSetSize}</div>
                 </div>
               )}
-              <div className="p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-teal-100 dark:border-teal-900/30">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                 <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Original Actionable Rows</div>
                 <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{result.stats.originalCount}</div>
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-teal-200 dark:border-teal-800/30 pt-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-6">
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-teal-900 dark:text-teal-400 flex items-center gap-2 mb-4">
-                  <CheckCircle className="w-6 h-6" />
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-4">
+                  <CheckCircle className="w-6 h-6 text-teal-500" />
                   De-duplication Complete
                 </h2>
 

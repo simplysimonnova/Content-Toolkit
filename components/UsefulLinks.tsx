@@ -47,10 +47,10 @@ export const UsefulLinks: React.FC = () => {
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-            <Link2 className="w-7 h-7 text-orange-500" />
+            <Link2 className="w-7 h-7 text-indigo-500" />
             Useful Links
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Directory of educational resources and Metabase dashboards.</p>
@@ -59,13 +59,13 @@ export const UsefulLinks: React.FC = () => {
         <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
           <button 
             onClick={() => setViewMode('card')}
-            className={`p-2 rounded-lg transition-all ${viewMode === 'card' ? 'bg-white dark:bg-slate-700 shadow-sm text-orange-500' : 'text-slate-400'}`}
+            className={`p-2 rounded-lg transition-all ${viewMode === 'card' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}
           >
             <LayoutGrid className="w-5 h-5" />
           </button>
           <button 
             onClick={() => setViewMode('list')}
-            className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-orange-500' : 'text-slate-400'}`}
+            className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}
           >
             <List className="w-5 h-5" />
           </button>
@@ -80,7 +80,7 @@ export const UsefulLinks: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search resources..."
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
@@ -90,8 +90,8 @@ export const UsefulLinks: React.FC = () => {
               onClick={() => setActiveCategory(cat)}
               className={`px-4 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                 activeCategory === cat 
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' 
-                  : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
+                  : 'bg-white dark:bg-slate-900 text-slate-500 border border-slate-200 dark:border-slate-800 hover:bg-slate-50'
               }`}
             >
               {cat}
@@ -101,12 +101,12 @@ export const UsefulLinks: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
-           <Loader2 className="w-10 h-10 text-orange-500 animate-spin mb-4" />
+        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+           <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
            <p className="text-slate-500 font-medium">Loading resources...</p>
         </div>
       ) : filteredLinks.length === 0 ? (
-        <div className="py-20 text-center bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+        <div className="py-20 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
            <Filter className="w-12 h-12 text-slate-300 mx-auto mb-4" />
            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">No resources found</h3>
            <p className="text-slate-500 mt-2">Try adjusting your filters or search terms.</p>
@@ -119,35 +119,35 @@ export const UsefulLinks: React.FC = () => {
               href={link.url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-orange-500 dark:hover:border-orange-500 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between shadow-sm"
+              className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between shadow-sm"
             >
               <div>
                 <div className="flex justify-between items-start mb-4">
-                  <span className="px-2.5 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                  <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-lg">
                     {link.category}
                   </span>
-                  <ExternalLink className="w-5 h-5 text-slate-300 group-hover:text-orange-500 transition-colors" />
+                  <ExternalLink className="w-5 h-5 text-slate-300 group-hover:text-indigo-500 transition-colors" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-tight">{link.name}</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">{link.description}</p>
               </div>
-              <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-700/50 flex items-center text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-tighter">
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">
                 Open Resource
               </div>
             </a>
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden divide-y dark:divide-slate-700">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden divide-y dark:divide-slate-800">
           {filteredLinks.map(link => (
             <a 
               key={link.id} 
               href={link.url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group"
+              className="flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
             >
-              <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 flex-shrink-0">
                 <Link2 className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
@@ -157,7 +157,7 @@ export const UsefulLinks: React.FC = () => {
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{link.description}</p>
               </div>
-              <ExternalLink className="w-5 h-5 text-slate-300 group-hover:text-orange-500" />
+              <ExternalLink className="w-5 h-5 text-slate-300 group-hover:text-indigo-500" />
             </a>
           ))}
         </div>

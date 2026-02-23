@@ -46,7 +46,7 @@ export const DirectusGuides: React.FC = () => {
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
             <Presentation className="w-7 h-7 text-indigo-500" />
@@ -79,7 +79,7 @@ export const DirectusGuides: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search guides..."
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
@@ -90,7 +90,7 @@ export const DirectusGuides: React.FC = () => {
               className={`px-4 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                 activeCategory === cat 
                   ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
-                  : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                  : 'bg-white dark:bg-slate-900 text-slate-500 border border-slate-200 dark:border-slate-800 hover:bg-slate-50'
               }`}
             >
               {cat}
@@ -100,12 +100,12 @@ export const DirectusGuides: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
            <p className="text-slate-500 font-medium">Loading manuals...</p>
         </div>
       ) : filteredGuides.length === 0 ? (
-        <div className="py-20 text-center bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+        <div className="py-20 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
            <Filter className="w-12 h-12 text-slate-300 mx-auto mb-4" />
            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">No guides found</h3>
            <p className="text-slate-500 mt-2">Try adjusting your filters or search terms.</p>
@@ -118,7 +118,7 @@ export const DirectusGuides: React.FC = () => {
               href={guide.url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between shadow-sm"
+              className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between shadow-sm"
             >
               <div>
                 <div className="flex justify-between items-start mb-4">
@@ -137,14 +137,14 @@ export const DirectusGuides: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden divide-y dark:divide-slate-700">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden divide-y dark:divide-slate-800">
           {filteredGuides.map(guide => (
             <a 
               key={guide.id} 
               href={guide.url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group"
+              className="flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
             >
               <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0">
                 <Presentation className="w-5 h-5" />

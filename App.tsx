@@ -34,6 +34,7 @@ const CompetencyCsvNormaliser = React.lazy(() => import('./components/Competency
 const RowExpander = React.lazy(() => import('./components/RowExpander').then(m => ({ default: m.RowExpander })));
 const IDResolver = React.lazy(() => import('./components/IDResolver').then(m => ({ default: m.IDResolver })));
 const JiraTicketer = React.lazy(() => import('./components/JiraTicketer').then(m => ({ default: m.JiraTicketer })));
+const DirectusJsonBuilder = React.lazy(() => import('./components/DirectusJsonBuilder').then(m => ({ default: m.DirectusJsonBuilder })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -104,6 +105,8 @@ const App: React.FC = () => {
         return <IDResolver />;
       case 'jira-ticketer':
         return <JiraTicketer />;
+      case 'directus-json-builder':
+        return <DirectusJsonBuilder />;
 
       // Curriculum & Planning
       case 'ss-compactor':
@@ -124,12 +127,10 @@ const App: React.FC = () => {
       // Media
       case 'nano-banana':
         return (
-          <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-orange-200 dark:border-slate-700 transition-colors animate-fade-in relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400"></div>
+          <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 transition-colors animate-fade-in relative overflow-hidden">
 
             <div className="relative mb-8">
-              <div className="absolute -inset-4 bg-yellow-400 rounded-full blur-xl opacity-20 animate-pulse"></div>
-              <div className="relative p-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-full text-yellow-600 dark:text-yellow-500">
+              <div className="relative p-8 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500">
                 <Palette className="w-16 h-16" />
               </div>
               <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-orange-400 animate-bounce" />
@@ -139,7 +140,7 @@ const App: React.FC = () => {
               Nano Banana Studio
             </h2>
 
-            <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 mb-8 font-bold px-4 py-2 bg-orange-50 dark:bg-orange-900/30 rounded-full border border-orange-100 dark:border-orange-800">
+            <div className="flex items-center gap-2 text-slate-500 mb-8 font-bold px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700">
               <Construction className="w-5 h-5" />
               <span className="text-sm uppercase tracking-widest">Under Construction</span>
             </div>
@@ -175,22 +176,19 @@ const App: React.FC = () => {
 
       case 'lesson-proofing-bot':
         return (
-          <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-indigo-200 dark:border-slate-700 transition-colors animate-fade-in relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-400"></div>
+          <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 transition-colors animate-fade-in relative overflow-hidden">
 
             <div className="relative mb-8">
-              <div className="absolute -inset-4 bg-indigo-400 rounded-full blur-xl opacity-20 animate-pulse"></div>
-              <div className="relative p-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-full text-indigo-600 dark:text-indigo-500">
+              <div className="relative p-8 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500">
                 <ShieldCheck className="w-16 h-16" />
               </div>
-              <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-indigo-400 animate-bounce" />
             </div>
 
             <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight flex items-center gap-3">
               Lesson Proofing Bot
             </h2>
 
-            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-8 font-bold px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-full border border-indigo-100 dark:border-indigo-800">
+            <div className="flex items-center gap-2 text-slate-500 mb-8 font-bold px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700">
               <Construction className="w-5 h-5" />
               <span className="text-sm uppercase tracking-widest">In Development</span>
             </div>

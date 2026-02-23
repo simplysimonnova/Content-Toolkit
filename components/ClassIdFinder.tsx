@@ -53,16 +53,20 @@ export const ClassIdFinder: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in space-y-6">
-      <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-2xl text-orange-600 dark:text-orange-400">
-            <Hash className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight">Class ID Finder</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Extract and transform classroom identifiers instantly.</p>
-          </div>
+      {/* Header */}
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+          <Hash className="w-8 h-8 text-white" />
         </div>
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Class ID Finder</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Extract and transform classroom identifiers instantly.</p>
+        </div>
+      </div>
+
+      {/* Content Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-8">
 
         <div className="space-y-8">
           {/* Input Area */}
@@ -111,16 +115,16 @@ export const ClassIdFinder: React.FC = () => {
                  </div>
               ) : (
                 <div className="relative animate-fade-in-up">
-                  <div className="p-6 rounded-2xl bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/50 flex flex-col items-center justify-center shadow-inner group">
-                    <span className="text-2xl font-black text-orange-600 dark:text-orange-400 tracking-tight tabular-nums">
+                  <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center shadow-inner group">
+                    <span className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight tabular-nums">
                       {classId}
                     </span>
                     <button
                       onClick={handleCopyId}
                       className={`mt-4 flex items-center gap-2 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95 ${
-                        idCopied 
-                          ? 'bg-teal-500 text-white shadow-teal-500/20' 
-                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-orange-500 hover:text-white'
+                        idCopied
+                          ? 'bg-teal-500 text-white shadow-teal-500/20'
+                          : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-600 hover:text-white'
                       }`}
                     >
                       {idCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -144,12 +148,12 @@ export const ClassIdFinder: React.FC = () => {
                  </div>
               ) : (
                 <div className="relative animate-fade-in-up">
-                  <div className="p-6 rounded-2xl bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 flex flex-col items-center justify-center shadow-inner group">
-                    <a 
-                      href={adminLink} 
-                      target="_blank" 
+                  <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center shadow-inner group">
+                    <a
+                      href={adminLink}
+                      target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                      className="text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors"
                       title="Open in Admin"
                     >
                       <ExternalLink className="w-8 h-8" />
@@ -157,9 +161,9 @@ export const ClassIdFinder: React.FC = () => {
                     <button
                       onClick={handleCopyLink}
                       className={`mt-4 flex items-center gap-2 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95 ${
-                        linkCopied 
-                          ? 'bg-teal-500 text-white shadow-teal-500/20' 
-                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-500 hover:text-white'
+                        linkCopied
+                          ? 'bg-teal-500 text-white shadow-teal-500/20'
+                          : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-600 hover:text-white'
                       }`}
                     >
                       {linkCopied ? <Check className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
@@ -171,12 +175,13 @@ export const ClassIdFinder: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100 dark:border-blue-800/50 flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-700/80 dark:text-blue-400/80 leading-relaxed font-medium">
+          <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-start gap-3">
+            <Info className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
               Extraction identifies the 7-12 digit numeric sequence in the URL path. Use the <strong>Extracted ID</strong> for technical lookups or the <strong>Admin Shortcut</strong> for direct access to class resources.
             </p>
           </div>
+        </div>
         </div>
       </div>
     </div>

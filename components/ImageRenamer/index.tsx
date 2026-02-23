@@ -97,18 +97,20 @@ export const ImageRenamer: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-            <Cloud className="w-7 h-7 text-blue-500" />
-            GDrive Batch Renamer
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            Standardize thousands of Novakid assets directly in Google Drive. No downloads required.
-          </p>
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <div className="p-4 bg-blue-500 rounded-2xl shadow-lg shadow-blue-500/20">
+            <Cloud className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">GDrive Batch Renamer</h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">
+              Standardize thousands of Novakid assets directly in Google Drive. No downloads required.
+            </p>
+          </div>
         </div>
         {isAdmin && (
-          <button onClick={() => setShowSettings(true)} className="p-3 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 rounded-xl transition-all">
+          <button onClick={() => setShowSettings(true)} className="p-3 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-800 rounded-xl transition-all">
             <Settings className="w-6 h-6" />
           </button>
         )}
@@ -116,26 +118,26 @@ export const ImageRenamer: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border dark:border-slate-700 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
               <ListChecks className="w-4 h-4" /> Cloud Workflow
             </h3>
 
             <div className="space-y-4">
-              <button onClick={() => openPicker('source')} className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all ${sourceId ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
+              <button onClick={() => openPicker('source')} className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all ${sourceId ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase font-black text-slate-400">Source Folder</p>
                   <p className="text-xs font-bold truncate dark:text-white">{sourceName || 'Select Folder...'}</p>
                 </div>
-                <FolderSearch className="w-4 h-4 text-orange-500" />
+                <FolderSearch className="w-4 h-4 text-indigo-500" />
               </button>
 
-              <button onClick={() => openPicker('dest')} className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all ${destId ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
+              <button onClick={() => openPicker('dest')} className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all ${destId ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase font-black text-slate-400">Output Folder</p>
                   <p className="text-xs font-bold truncate dark:text-white">{destName || 'Select Folder...'}</p>
                 </div>
-                <FolderOutput className="w-4 h-4 text-blue-500" />
+                <FolderOutput className="w-4 h-4 text-indigo-500" />
               </button>
 
               <div className="pt-2">
@@ -150,7 +152,7 @@ export const ImageRenamer: React.FC = () => {
               <button
                 onClick={runBatchAnalysis}
                 disabled={isProcessing || !sourceId}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl font-black text-sm transition-all shadow-lg shadow-orange-500/10"
+                className="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20"
               >
                 {isProcessing ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
                 Run Cloud Scan
@@ -158,11 +160,11 @@ export const ImageRenamer: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/50">
-            <h4 className="text-[10px] font-black text-blue-800 dark:text-blue-300 flex items-center gap-2 mb-2 uppercase tracking-widest">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+            <h4 className="text-[10px] font-black text-slate-500 flex items-center gap-2 mb-2 uppercase tracking-widest">
               <Info className="w-3 h-3" /> Bandwidth Safe
             </h4>
-            <p className="text-[10px] text-blue-700 dark:text-blue-400 leading-relaxed">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
               Files stay in Google Drive. AI analyzes thumbnails to propose new standardized names.
             </p>
           </div>
@@ -170,20 +172,20 @@ export const ImageRenamer: React.FC = () => {
 
         <div className="lg:col-span-3">
           {files.length === 0 ? (
-            <div className="bg-white dark:bg-slate-800 h-full rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-12 text-slate-400">
+            <div className="bg-white dark:bg-slate-900 h-full rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-12 text-slate-400">
               <Cloud className="w-16 h-16 mb-4 opacity-10" />
               <p className="text-lg font-bold">Cloud Queue Empty</p>
               <p className="text-sm">Select a Google Drive source folder to begin.</p>
             </div>
           ) : (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-[70vh]">
-              <div className="px-6 py-4 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-[70vh]">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                   <FileSearch className="w-5 h-5 text-orange-500" />
                   Cloud Queue ({files.length} Assets)
                 </h3>
                 {files.some(t => t.status === 'done') && (
-                  <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-lg shadow-md transition-colors">
+                  <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl shadow-md shadow-indigo-500/20 transition-colors uppercase tracking-widest">
                     <Save className="w-4 h-4" /> Move & Rename
                   </button>
                 )}
@@ -191,7 +193,7 @@ export const ImageRenamer: React.FC = () => {
 
               <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
                 {files.map(file => (
-                  <div key={file.id} className="p-3 rounded-xl border dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center gap-4 transition-all hover:border-orange-200 dark:hover:border-slate-600">
+                  <div key={file.id} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center gap-4 transition-all hover:border-indigo-200 dark:hover:border-indigo-800">
                     <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 flex items-center justify-center flex-shrink-0">
                       <Cloud className="w-6 h-6 text-slate-400 opacity-50" />
                     </div>

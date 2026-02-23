@@ -277,49 +277,55 @@ export const TopicAssigner: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto relative">
+    <div className="max-w-4xl mx-auto relative space-y-6">
 
-      {/* HEADER BLOCK */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
-        <div className="flex justify-between items-start mb-6">
+      {/* Header */}
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+            <Tag className="w-8 h-8 text-white" />
+          </div>
           <div>
-            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-              <Tag className="w-5 h-5 text-orange-500" />
-              LLM Topic Assigner
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">LLM Topic Assigner</h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">
               Map words to existing topics. New topics are created only if necessary.
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowTopicModal(true)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${topicFile
-                ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300'
-                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-                }`}
-            >
-              <Database className="w-4 h-4" />
-              {topicFile ? 'Topic List Active' : 'Configure Topics'}
-              {topicFile && <span className="flex h-2 w-2 rounded-full bg-orange-500 ml-1"></span>}
-            </button>
-
-            <button
-              onClick={() => setShowHistoryModal(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-              title="View History"
-            >
-              <History className="w-4 h-4" />
-              History
-            </button>
-          </div>
         </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowTopicModal(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors border ${
+              topicFile
+                ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Database className="w-4 h-4" />
+            {topicFile ? 'Topic List Active' : 'Configure Topics'}
+            {topicFile && <span className="flex h-2 w-2 rounded-full bg-indigo-500 ml-1"></span>}
+          </button>
+          <button
+            onClick={() => setShowHistoryModal(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            title="View History"
+          >
+            <History className="w-4 h-4" />
+            History
+          </button>
+        </div>
+      </div>
+
+      {/* Content Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="p-6">
 
         {/* MAIN FILE UPLOAD */}
         <div className="mb-8">
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${file ? 'border-orange-300 dark:border-orange-500/50 bg-orange-50/50 dark:bg-orange-500/10' : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 dark:hover:border-orange-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-              }`}
+            className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors cursor-pointer ${
+              file ? 'border-indigo-300 dark:border-indigo-500/50 bg-slate-50 dark:bg-slate-800' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-slate-800'
+            }`}
             onClick={() => fileInputRef.current?.click()}
           >
             <input
@@ -366,18 +372,19 @@ export const TopicAssigner: React.FC = () => {
               {headers.map((header, index) => (
                 <label
                   key={index}
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedIndices.has(index)
-                    ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-500 dark:border-orange-500/50 ring-1 ring-orange-500 dark:ring-orange-500/50'
-                    : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-400'
-                    }`}
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                selectedIndices.has(index)
+                  ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-500 dark:border-indigo-500/50 ring-1 ring-indigo-500 dark:ring-indigo-500/50'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-400'
+              }`}
                 >
                   <input
                     type="checkbox"
                     checked={selectedIndices.has(index)}
                     onChange={() => toggleWordColumn(index)}
-                    className="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-500 text-orange-600 focus:ring-orange-600 bg-white dark:bg-slate-800"
+                    className="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-500 text-indigo-600 focus:ring-indigo-600 bg-white dark:bg-slate-800"
                   />
-                  <span className={`text-sm ${selectedIndices.has(index) ? 'text-orange-900 dark:text-orange-300 font-medium' : 'text-slate-600 dark:text-slate-300'}`}>
+                  <span className={`text-sm ${selectedIndices.has(index) ? 'text-indigo-900 dark:text-indigo-300 font-medium' : 'text-slate-600 dark:text-slate-300'}`}>
                     {header || `Column ${index + 1}`}
                   </span>
                 </label>
@@ -395,7 +402,7 @@ export const TopicAssigner: React.FC = () => {
             </div>
             <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5">
               <div
-                className="bg-orange-500 h-2.5 rounded-full transition-all duration-300"
+                className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300"
                 style={{ width: `${(progress.current / progress.total) * 100}%` }}
               ></div>
             </div>
@@ -416,10 +423,7 @@ export const TopicAssigner: React.FC = () => {
           <button
             onClick={handleProcess}
             disabled={!file || selectedIndices.size === 0 || isProcessing}
-            className={`px-6 py-2.5 rounded-lg text-white font-medium shadow-sm flex items-center gap-2 transition-all ${!file || selectedIndices.size === 0 || isProcessing
-              ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
-              : 'bg-orange-500 hover:bg-orange-600 active:transform active:scale-95'
-              }`}
+            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white font-black rounded-xl shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all active:scale-95 text-xs uppercase tracking-widest"
           >
             {isProcessing ? (
               <>
@@ -434,15 +438,16 @@ export const TopicAssigner: React.FC = () => {
             )}
           </button>
         </div>
+        </div>
       </div>
 
       {/* RESULTS TABLE */}
       {results.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-teal-200 dark:border-teal-500/30 bg-teal-50/30 dark:bg-teal-500/5 animate-fade-in-up transition-colors">
-          <div className="flex justify-between items-center mb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-fade-in-up">
+          <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
             <div>
-              <h2 className="text-lg font-semibold text-teal-900 dark:text-teal-400 flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+              <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-teal-500" />
                 Assignment Complete ({results.length})
               </h2>
               {!file && (
@@ -454,14 +459,14 @@ export const TopicAssigner: React.FC = () => {
             </div>
             <button
               onClick={handleDownload}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-sm shadow-indigo-500/20 flex items-center gap-2 transition-colors uppercase tracking-widest"
             >
               <Download className="w-4 h-4" />
               Download Full CSV
             </button>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-teal-100 dark:border-slate-700 overflow-hidden">
+          <div className="overflow-hidden">
             <div className="max-h-[500px] overflow-y-auto">
               <table className="w-full text-sm text-left">
                 <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700 sticky top-0">

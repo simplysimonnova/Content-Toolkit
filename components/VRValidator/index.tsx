@@ -64,50 +64,48 @@ If Invalid: "❌ Invalid VR link" followed by a concise list of failed rules.
 CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Invalid VR link".`;
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in">
-      <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-8 transition-colors">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Map className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">VR Link Validator</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Verify and wrap Google Maps 360° links for Novakid classrooms.</p>
-            </div>
+    <div className="max-w-4xl mx-auto animate-fade-in space-y-6">
+      {/* Header */}
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+            <Map className="w-8 h-8 text-white" />
           </div>
-
-          {isAdmin && (
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 rounded-lg transition-all"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-
-        <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">
-              Paste Google Maps URL
-            </label>
-            <textarea
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://www.google.com/maps/place/..."
-              className="w-full h-32 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 text-sm font-mono resize-none transition-all"
-            />
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">VR Link Validator</h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">Verify and wrap Google Maps 360° links for Novakid classrooms.</p>
           </div>
+        </div>
+        {isAdmin && (
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+        )}
+      </div>
 
+      {/* Input Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-6 space-y-4">
+          <label className="block text-xs font-black text-slate-500 uppercase tracking-widest">
+            Paste Google Maps URL
+          </label>
+          <textarea
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://www.google.com/maps/place/..."
+            className="w-full h-32 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none p-4 text-sm font-mono resize-none transition-all"
+          />
           <div className="flex justify-between items-center">
-            <button onClick={handleClear} className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1.5">
+            <button onClick={handleClear} className="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1.5">
               <Trash2 className="w-3.5 h-3.5" /> Clear Input
             </button>
             <button
               onClick={handleValidate}
               disabled={!url.trim() || isProcessing}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2 active:scale-95"
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 active:scale-95 text-xs uppercase tracking-widest"
             >
               {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
               Validate Link
@@ -155,8 +153,8 @@ CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Inv
             <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                    <Code className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <div className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                    <Code className="w-4 h-4 text-slate-500" />
                   </div>
                   <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                     Platform Markup
@@ -180,9 +178,9 @@ CRITICAL: The first line must strictly be either "✅ Valid VR link" or "❌ Inv
                 </code>
               </div>
 
-              <div className="mt-6 flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                <p className="text-xs text-blue-800/70 dark:text-blue-400/70 leading-relaxed font-medium">
+              <div className="mt-6 flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <Info className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
                   Use this specific code block in your lesson slides. It ensures the classroom stage correctly initializes the interactive 360° environment for students.
                 </p>
               </div>

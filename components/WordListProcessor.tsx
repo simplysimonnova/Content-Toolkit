@@ -222,53 +222,59 @@ export const WordListProcessor: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto relative">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
-        <div className="flex justify-between items-start mb-6">
+    <div className="max-w-4xl mx-auto relative space-y-6">
+      {/* Header */}
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+            <Settings className="w-8 h-8 text-white" />
+          </div>
           <div>
-            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-              <Settings className="w-5 h-5 text-orange-500" />
-              LLM Word List Generator
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">LLM Word List Generator</h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">
               Upload a CSV, select columns, and generate a cleaned, de-duplicated vocabulary list.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setShowReferenceModal(true)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                referenceFile 
-                  ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300' 
-                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-              }`}
-            >
-              <Database className="w-4 h-4" />
-              {referenceFile ? 'Ref Active' : 'Ref List'}
-              {referenceFile && <span className="flex h-2 w-2 rounded-full bg-orange-500 ml-1"></span>}
-            </button>
-            <button
-              onClick={() => setShowHistoryModal(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-            >
-              <History className="w-4 h-4" />
-              History
-            </button>
-            {isAdmin && (
-              <button 
-                onClick={() => setShowSettings(true)}
-                className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 rounded-lg transition-all"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-            )}
-          </div>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowReferenceModal(true)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors border ${
+              referenceFile
+                ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Database className="w-4 h-4" />
+            {referenceFile ? 'Ref Active' : 'Ref List'}
+            {referenceFile && <span className="flex h-2 w-2 rounded-full bg-indigo-500 ml-1"></span>}
+          </button>
+          <button
+            onClick={() => setShowHistoryModal(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            <History className="w-4 h-4" />
+            History
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Content Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-6">
 
         <div className="mb-8">
-          <div 
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
-              file ? 'border-orange-300 dark:border-orange-500/50 bg-orange-50/50 dark:bg-orange-500/10' : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 dark:hover:border-orange-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+          <div
+            className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors cursor-pointer ${
+              file ? 'border-indigo-300 dark:border-indigo-500/50 bg-slate-50 dark:bg-slate-800' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -314,25 +320,26 @@ export const WordListProcessor: React.FC = () => {
           <button
             onClick={processList}
             disabled={!file || selectedIndices.size === 0 || isProcessing}
-            className={`px-6 py-2.5 rounded-lg text-white font-medium shadow-sm flex items-center gap-2 transition-all ${!file || selectedIndices.size === 0 || isProcessing ? 'bg-slate-300 dark:bg-slate-700' : 'bg-orange-500 hover:bg-orange-600'}`}
+            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white font-black rounded-xl shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all active:scale-95 text-xs uppercase tracking-widest"
           >
             {isProcessing ? 'Processing...' : 'Process Word List'}
           </button>
         </div>
+        </div>
       </div>
 
       {processedList.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-teal-200 dark:border-teal-500/30 bg-teal-50/30 animate-fade-in-up transition-colors">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-teal-900 dark:text-teal-400 flex items-center gap-2"><CheckCircle className="w-5 h-5" />List Generated</h2>
-            <button onClick={handleDownload} className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium flex items-center gap-2"><Download className="w-4 h-4" />Download CSV</button>
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-fade-in-up">
+          <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2"><CheckCircle className="w-4 h-4 text-teal-500" />List Generated</h2>
+            <button onClick={handleDownload} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black flex items-center gap-2 shadow-sm shadow-indigo-500/20 uppercase tracking-widest"><Download className="w-4 h-4" />Download CSV</button>
           </div>
           {stats && (
-            <div className="mb-4 p-3 bg-teal-100/50 dark:bg-teal-900/30 rounded-lg border border-teal-100 text-sm text-teal-900 dark:text-teal-200 font-mono">
+            <div className="mx-6 mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 font-mono">
               Found {stats.rawTotal}, removed {stats.internalDuplicates} dupes, {stats.refExcluded} excluded. Final: {stats.final}.
             </div>
           )}
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-teal-100 p-4 max-h-64 overflow-y-auto">
+          <div className="p-6 max-h-64 overflow-y-auto">
             <div className="flex flex-wrap gap-2">
               {processedList.slice(0, 50).map((word, i) => (
                 <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">{word}</span>

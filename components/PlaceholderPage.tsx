@@ -8,13 +8,11 @@ interface PlaceholderPageProps {
 
 export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({ title }) => {
   return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 transition-colors animate-fade-in">
+    <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 transition-colors animate-fade-in">
       <div className="relative mb-6">
-        <div className="absolute -inset-1 bg-orange-500 rounded-full blur opacity-25 animate-pulse"></div>
-        <div className="relative p-6 bg-orange-50 dark:bg-orange-900/20 rounded-full text-orange-500">
+        <div className="relative p-6 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500">
           <Construction className="w-12 h-12" />
         </div>
-        <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-orange-400 animate-bounce" />
       </div>
       
       <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-3 uppercase tracking-tight">

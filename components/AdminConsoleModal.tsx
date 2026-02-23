@@ -165,10 +165,11 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'w3', label: 'List Merger', icon: 'ListOrdered', page: 'list-merger' },
           { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
           { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
-          { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' },
+          { id: 'w6', label: 'Competency Builder', icon: 'TableProperties', page: 'comp-import-creator' },
           { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' },
           { id: 'w8', label: 'Row Expander', icon: 'ListFilter', page: 'row-expander' },
-          { id: 'w9', label: 'ID Resolver', icon: 'Link2', page: 'id-resolver' }
+          { id: 'w9', label: 'ID Resolver', icon: 'Link2', page: 'id-resolver' },
+          { id: 'w10', label: 'Directus JSON Builder', icon: 'Braces', page: 'directus-json-builder' }
         ]
       },
       {
@@ -332,7 +333,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
             { id: 'rules', icon: Terminal, label: 'Tool Configs' },
             { id: 'subscriptions', icon: CreditCard, label: 'Subscriptions' }
           ].map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id ? 'border-orange-50 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
               <tab.icon className="w-4 h-4" /> {tab.label}
             </button>
           ))}
@@ -365,7 +366,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                   <select value={manualUser.role} onChange={e => setManualUser({ ...manualUser, role: e.target.value })} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-4 py-2 text-sm dark:text-white">
                     <option value="user">User</option><option value="admin">Admin</option>
                   </select>
-                  <button onClick={handleAddUser} disabled={isSaving} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
+                  <button onClick={handleAddUser} disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />} Create User
                   </button>
                 </div>
@@ -373,7 +374,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {users.map(u => (
-                  <div key={u.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border dark:border-slate-700 flex flex-col group hover:border-orange-500/50 transition-colors">
+                  <div key={u.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border dark:border-slate-700 flex flex-col group hover:border-indigo-500/50 transition-colors">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center font-bold text-orange-500 border dark:border-slate-700">
                         {u.displayName?.[0] || u.email?.[0]}
@@ -390,7 +391,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                       <select
                         value={u.role}
                         onChange={(e) => updateUserRole(u.id, e.target.value)}
-                        className={`text-[9px] font-black uppercase px-2 py-1 rounded transition-colors ${u.role === 'admin' ? 'bg-orange-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}
+                        className={`text-[9px] font-black uppercase px-2 py-1 rounded transition-colors ${u.role === 'admin' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}
                       >
                         <option value="user">User</option><option value="admin">Admin</option>
                       </select>
@@ -407,7 +408,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
               {/* Reset Defaults Bar */}
               <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4 mb-6 shadow-sm">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl text-orange-600 dark:text-orange-400">
+                  <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400">
                     <ListOrdered className="w-6 h-6" />
                   </div>
                   <div>
@@ -418,7 +419,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                 <button
                   onClick={repairNavigation}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-bold hover:bg-orange-500 hover:text-white transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-bold hover:bg-indigo-600 hover:text-white transition-all shadow-lg active:scale-95 disabled:opacity-50"
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
                   Reset to Defaults
@@ -433,7 +434,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                   <button
                     onClick={repairNavigation}
                     disabled={isSaving}
-                    className="flex items-center gap-2 px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-xl transition-all active:scale-95"
+                    className="flex items-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xl transition-all active:scale-95"
                   >
                     {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
                     Initialize Navigation
@@ -457,14 +458,14 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                           </div>
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{group.title}</span>
                         </div>
-                        <button className="text-slate-400 hover:text-orange-500"><Edit3 className="w-3.5 h-3.5" /></button>
+                        <button className="text-slate-400 hover:text-indigo-500"><Edit3 className="w-3.5 h-3.5" /></button>
                       </div>
 
                       <div className="p-4 space-y-2">
                         {group.items.map((item, iIdx) => (
                           <div
                             key={item.id}
-                            className={`flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/30 rounded-xl border dark:border-slate-700 group transition-all ${draggedItem?.groupIdx === gIdx && draggedItem?.itemIdx === iIdx ? 'opacity-30' : 'hover:border-orange-200 dark:hover:border-orange-900/50'}`}
+                            className={`flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/30 rounded-xl border dark:border-slate-700 group transition-all ${draggedItem?.groupIdx === gIdx && draggedItem?.itemIdx === iIdx ? 'opacity-30' : 'hover:border-indigo-200 dark:hover:border-indigo-900/50'}`}
                             draggable
                             onDragStart={(e) => {
                               e.stopPropagation();
@@ -496,7 +497,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                           <input placeholder="Label" value={newItemData[group.id]?.label || ''} onChange={e => setNewItemData({ ...newItemData, [group.id]: { ...newItemData[group.id], label: e.target.value } })} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
                           <input placeholder="Icon (Lucide)" value={newItemData[group.id]?.icon || ''} onChange={e => setNewItemData({ ...newItemData, [group.id]: { ...newItemData[group.id], icon: e.target.value } })} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
                           <input placeholder="Page ID" value={newItemData[group.id]?.page || ''} onChange={e => setNewItemData({ ...newItemData, [group.id]: { ...newItemData[group.id], page: e.target.value } })} className="bg-white dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-2 text-xs dark:text-white" />
-                          <button onClick={() => addNewNavItem(group.id)} className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold py-2 transition-colors">Add Tool</button>
+                          <button onClick={() => addNewNavItem(group.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold py-2 transition-colors">Add Tool</button>
                         </div>
                       </div>
                     </div>
@@ -517,7 +518,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                   <input value={newLink.name} onChange={e => setNewLink({ ...newLink, name: e.target.value })} placeholder="Title" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
                   <input value={newLink.url} onChange={e => setNewLink({ ...newLink, url: e.target.value })} placeholder="URL" className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
                   <select value={newLink.category} onChange={e => setNewLink({ ...newLink, category: e.target.value })} className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white"><option>Metabase</option><option>Curriculum</option><option>Tech</option></select>
-                  <button onClick={handleSaveLink} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold py-2 text-sm shadow-md transition-all">Save Resource</button>
+                  <button onClick={handleSaveLink} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold py-2 text-sm shadow-md transition-all">Save Resource</button>
                 </div>
                 <textarea value={newLink.description} onChange={e => setNewLink({ ...newLink, description: e.target.value })} placeholder="Summary..." rows={2} className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white resize-none" />
               </div>

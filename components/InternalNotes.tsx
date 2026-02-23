@@ -254,7 +254,7 @@ export const InternalNotes: React.FC = () => {
           </div>
           <button 
             onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
           >
             <Plus className="w-5 h-5" />
             Create Note
@@ -294,7 +294,7 @@ export const InternalNotes: React.FC = () => {
               onClick={() => setActiveTag(tag)}
               className={`px-4 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                 activeTag === tag 
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' 
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
                   : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 hover:bg-slate-50'
               }`}
             >
@@ -335,7 +335,7 @@ export const InternalNotes: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl overflow-hidden border dark:border-slate-800 shadow-2xl flex flex-col max-h-[90vh]">
             <div className="px-6 py-5 border-b dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
                   {editingNote ? <Edit3 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 </div>
                 <div>
@@ -384,25 +384,13 @@ export const InternalNotes: React.FC = () => {
                       className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white transition-all"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Sharing</label>
-                  <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-all group">
-                    <div className={`p-2 rounded-lg transition-colors ${formData.isShared ? 'bg-orange-100 text-orange-600' : 'bg-slate-200 text-slate-500'}`}>
-                      {formData.isShared ? <Share2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-bold dark:text-white">{formData.isShared ? 'Public to team' : 'Private to me'}</p>
-                      <p className="text-[10px] text-slate-500">Toggle visibility for other users</p>
-                    </div>
                     <input 
                       type="checkbox"
                       checked={formData.isShared}
                       onChange={e => setFormData({...formData, isShared: e.target.checked})}
                       className="hidden"
                     />
-                    <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.isShared ? 'bg-orange-500' : 'bg-slate-300'}`}>
+                    <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.isShared ? 'bg-indigo-600' : 'bg-slate-300'}`}>
                       <div className={`absolute top-1 bg-white w-4 h-4 rounded-full transition-all ${formData.isShared ? 'left-5' : 'left-1'}`} />
                     </div>
                   </label>
@@ -419,7 +407,7 @@ export const InternalNotes: React.FC = () => {
               </button>
               <button 
                 onClick={handleSave}
-                className="flex items-center gap-2 px-8 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all active:scale-95"
+                className="flex items-center gap-2 px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
               >
                 <Save className="w-4 h-4" />
                 {editingNote ? 'Save Changes' : 'Create Note'}

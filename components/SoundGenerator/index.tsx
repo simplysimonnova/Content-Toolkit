@@ -170,32 +170,34 @@ export const SoundGenerator: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-            <Volume2 className="w-6 h-6 text-orange-500" />
-            AI Sound Generator
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
+    <div className="max-w-4xl mx-auto animate-fade-in space-y-6">
+      {/* Header */}
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+          <Volume2 className="w-8 h-8 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">AI Sound Generator</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">
             Generate success chimes, ambient textures, or short effects for your lessons.
           </p>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          <div className="relative">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe the sound, e.g., 'A happy sparkling success chime', 'Wind blowing through trees', 'A low ominous thud'..."
-              className="w-full min-h-[120px] rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm focus:border-orange-500 focus:ring-orange-500 dark:focus:border-orange-400 p-4 transition-colors resize-none"
-            />
-          </div>
-
+      {/* Input Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-6 space-y-4">
+          <label className="text-xs font-black uppercase tracking-widest text-slate-500">Sound Description</label>
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Describe the sound, e.g., 'A happy sparkling success chime', 'Wind blowing through trees', 'A low ominous thud'..."
+            className="w-full min-h-[120px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none p-4 transition-all resize-none"
+          />
           <div className="flex justify-end gap-3">
             <button
               onClick={() => { setPrompt(''); setAudioUrl(null); setAudioMp3Url(null); setAudioBuffer(null); }}
-              className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-red-500 transition-colors flex items-center gap-2"
+              className="px-4 py-2 text-slate-500 hover:text-red-500 transition-colors flex items-center gap-2 text-sm font-medium"
             >
               <Trash2 className="w-4 h-4" />
               Clear
@@ -203,34 +205,33 @@ export const SoundGenerator: React.FC = () => {
             <button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2"
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white font-black rounded-xl shadow-lg shadow-indigo-500/20 transition-all active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2"
             >
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               Generate Sound
             </button>
           </div>
+          {error && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-xl flex items-center gap-2 border border-red-100 dark:border-red-800/50">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
         </div>
-
-        {error && (
-          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg flex items-center gap-2 border border-red-100 dark:border-red-800/50">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <p className="text-sm">{error}</p>
-          </div>
-        )}
       </div>
 
       {audioBuffer && (
-        <div className="bg-orange-50 dark:bg-orange-950/20 p-8 rounded-xl border border-orange-200 dark:border-orange-800/50 flex flex-col items-center justify-center text-center animate-fade-in-up">
-          <div className="mb-4 p-4 bg-white dark:bg-slate-800 rounded-full shadow-md text-orange-500">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center text-center animate-fade-in-up">
+          <div className="mb-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-full shadow-sm text-indigo-600">
             <Volume2 className="w-12 h-12" />
           </div>
-          <h3 className="text-lg font-semibold text-orange-900 dark:text-orange-300 mb-1">Sound Generated!</h3>
-          <p className="text-sm text-orange-700/60 dark:text-orange-400/60 mb-6 font-mono truncate max-w-sm">"{prompt}"</p>
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight mb-1">Sound Generated!</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-mono truncate max-w-sm">"{prompt}"</p>
 
           <div className="flex flex-col gap-4 w-full max-w-md">
             <button
               onClick={playSound}
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95"
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 active:scale-95 text-xs uppercase tracking-widest"
             >
               <Play className="w-6 h-6 fill-current" />
               Play Now
@@ -252,7 +253,7 @@ export const SoundGenerator: React.FC = () => {
                 <a
                   href={audioMp3Url}
                   download={`sound_${Date.now()}.mp3`}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200 border border-orange-200 dark:border-orange-800/50 rounded-xl font-medium hover:bg-orange-200 dark:hover:bg-orange-900 transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   <FileAudio className="w-4 h-4" />
                   .MP3 (Small)

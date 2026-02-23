@@ -112,17 +112,17 @@ export const CompetencyCsvNormaliser: React.FC = () => {
         <div className="max-w-6xl mx-auto animate-fade-in pb-20">
 
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2 flex items-center gap-3">
-                        <div className="p-3 bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/20">
-                            <TableProperties className="w-8 h-8 text-white" />
-                        </div>
-                        Competency CSV Normaliser
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">
-                        Methodologist-safe tool for preparing import-ready competency data.
-                    </p>
+            <div className="flex justify-between items-center mb-8 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="flex items-center gap-4">
+                    <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+                        <TableProperties className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Competency CSV Normaliser</h1>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">
+                            Methodologist-safe tool for preparing import-ready competency data.
+                        </p>
+                    </div>
                 </div>
                 <div className="flex gap-2">
                     <button
@@ -149,7 +149,7 @@ export const CompetencyCsvNormaliser: React.FC = () => {
 
                 {/* Input Section */}
                 <div className="space-y-4">
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-indigo-500" />
@@ -245,7 +245,7 @@ Student can use present simple tense."
 
                     {/* Stats Report */}
                     {stats && (
-                        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 animate-fade-in-up">
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm animate-fade-in-up">
                             <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                                 <CheckCircle2 className="w-5 h-5 text-green-500" />
                                 Processing Report
@@ -255,17 +255,17 @@ Student can use present simple tense."
                                     <div className="text-2xl font-black text-slate-700 dark:text-slate-300">{stats.originalRows}</div>
                                     <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Original Rows</div>
                                 </div>
-                                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-center">
-                                    <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{stats.newRows}</div>
-                                    <div className="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">New Version</div>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+                                    <div className="text-2xl font-black text-slate-700 dark:text-slate-300">{stats.newRows}</div>
+                                    <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">New Version</div>
                                 </div>
-                                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl text-center">
-                                    <div className="text-2xl font-black text-orange-500">{stats.createdCount}</div>
-                                    <div className="text-[10px] uppercase font-bold text-orange-400 tracking-wider">Invented</div>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+                                    <div className="text-2xl font-black text-slate-700 dark:text-slate-300">{stats.createdCount}</div>
+                                    <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Invented</div>
                                 </div>
-                                <div className="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-xl text-center">
-                                    <div className="text-2xl font-black text-teal-500">{stats.secondaryCreatedCount}</div>
-                                    <div className="text-[10px] uppercase font-bold text-teal-400 tracking-wider">Secondary</div>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+                                    <div className="text-2xl font-black text-slate-700 dark:text-slate-300">{stats.secondaryCreatedCount}</div>
+                                    <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Secondary</div>
                                 </div>
                             </div>
                         </div>
@@ -280,8 +280,8 @@ Student can use present simple tense."
 
                     {/* Results Preview */}
                     {rows.length > 0 && (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-[500px]">
-                            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/30">
+                        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-[500px]">
+                            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                                 <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm uppercase tracking-wide">Output Preview</h3>
                                 <button
                                     onClick={handleDownload}

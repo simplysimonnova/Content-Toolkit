@@ -80,22 +80,24 @@ export const LessonTools: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-8 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex justify-between items-center">
+      <div className="mb-8 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <PenTool className="w-8 h-8 text-orange-500" />
-            {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-800" />}
+            <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
+              <PenTool className="w-8 h-8 text-white" />
+            </div>
+            {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-900" />}
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
               Lesson Descriptions
               {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
-            </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Generate engaging front-facing blurbs and technical LLM descriptions.</p>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">Generate engaging front-facing blurbs and technical LLM descriptions.</p>
           </div>
         </div>
         {isAdmin && (
-          <button onClick={() => setShowSettings(true)} className="p-3 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 rounded-xl transition-all">
+          <button onClick={() => setShowSettings(true)} className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all">
             <Settings className="w-6 h-6" />
           </button>
         )}
@@ -113,8 +115,8 @@ export const LessonTools: React.FC = () => {
 
         <div className="flex flex-col h-full min-h-[500px]">
           {!hasGenerated ? (
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 h-full flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-colors">
-              <div className="p-4 rounded-full bg-slate-50 dark:bg-slate-700/50 mb-4">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm h-full flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-colors">
+              <div className="p-4 rounded-full bg-slate-50 dark:bg-slate-800 mb-4">
                 <Sparkles className="w-12 h-12 text-slate-300 dark:text-slate-600" />
               </div>
               <p className="text-lg font-medium text-slate-600 dark:text-slate-300">Ready to Generate</p>

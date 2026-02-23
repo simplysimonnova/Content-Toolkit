@@ -222,7 +222,7 @@ export const SubscriptionTracker: React.FC = () => {
 
         <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
           {items.map(sub => (
-            <div key={sub.id} className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm group hover:border-orange-500 transition-all">
+            <div key={sub.id} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm group hover:border-indigo-400 dark:hover:border-indigo-500 transition-all">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h4 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -253,13 +253,13 @@ export const SubscriptionTracker: React.FC = () => {
               </div>
 
               {sub.notes && (
-                <div className="bg-slate-50 dark:bg-[#0f172a] p-3 rounded-xl mb-6">
+                <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl mb-6">
                   <p className="text-xs italic text-slate-500 dark:text-slate-400 line-clamp-2">{sub.notes}</p>
                 </div>
               )}
 
               <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => handleOpenEdit(sub)} className="p-2 text-slate-400 hover:text-orange-500 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                <button onClick={() => handleOpenEdit(sub)} className="p-2 text-slate-400 hover:text-indigo-500 transition-colors"><Edit3 className="w-4 h-4" /></button>
                 <button onClick={() => handleDelete(sub.id!)} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
@@ -274,7 +274,7 @@ export const SubscriptionTracker: React.FC = () => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
           <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-orange-500 rounded-2xl shadow-lg shadow-orange-500/20">
+            <div className="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
               <Bot className="w-8 h-8 text-white" />
             </div>
             <div>
@@ -283,7 +283,7 @@ export const SubscriptionTracker: React.FC = () => {
                 <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded-lg">v1.7.0</span>
               </h2>
               <p className="text-lg text-slate-500 dark:text-slate-400 mt-1">
-                Total Estimated Monthly Cost: <span className="font-black text-orange-500">${totalMonthlyCost.toFixed(2)}</span>
+                Total Estimated Monthly Cost: <span className="font-black text-indigo-600 dark:text-indigo-400">${totalMonthlyCost.toFixed(2)}</span>
               </p>
             </div>
           </div>
@@ -314,7 +314,7 @@ export const SubscriptionTracker: React.FC = () => {
           >
             <PieChart className="w-4 h-4" />
           </button>
-          <button onClick={handleOpenAdd} className="w-full lg:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all">
+          <button onClick={handleOpenAdd} className="w-full lg:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black shadow-lg shadow-indigo-500/20 transition-all text-xs uppercase tracking-widest">
             <Plus className="w-5 h-5" /> Add Service
           </button>
         </div>
@@ -328,20 +328,20 @@ export const SubscriptionTracker: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search services..."
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white transition-all shadow-sm"
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all shadow-sm"
           />
         </div>
         <div className="flex gap-2">
-          <div className="bg-white dark:bg-[#1e293b] p-1 rounded-xl border border-slate-200 dark:border-slate-800 flex shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 flex shadow-sm">
             <button 
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-orange-500 text-white shadow-md' : 'text-slate-400'}`}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400'}`}
             >
               <LayoutGrid className="w-5 h-5" />
             </button>
             <button 
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-orange-500 text-white shadow-md' : 'text-slate-400'}`}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400'}`}
             >
               <List className="w-5 h-5" />
             </button>
@@ -351,7 +351,7 @@ export const SubscriptionTracker: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
         </div>
       ) : (
         <>
@@ -366,7 +366,7 @@ export const SubscriptionTracker: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl overflow-hidden border dark:border-slate-800 shadow-2xl flex flex-col max-h-[90vh]">
             <div className="px-6 py-5 border-b dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
                   {editingSub ? <Edit3 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 </div>
                 <div>
@@ -383,43 +383,43 @@ export const SubscriptionTracker: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Service Name</label>
-                  <input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. OpenAI, Midjourney" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white font-bold" />
+                  <input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. OpenAI, Midjourney" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white font-bold" />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Plan Name</label>
-                  <input value={formData.planName} onChange={e => setFormData({...formData, planName: e.target.value})} placeholder="e.g. Pro, Team, Enterprise" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white font-bold" />
+                  <input value={formData.planName} onChange={e => setFormData({...formData, planName: e.target.value})} placeholder="e.g. Pro, Team, Enterprise" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white font-bold" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Price (USD)</label>
-                  <input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="20.00" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white font-bold" />
+                  <input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="20.00" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white font-bold" />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Frequency</label>
-                  <select value={formData.frequency} onChange={e => setFormData({...formData, frequency: e.target.value as any})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white font-bold">
+                  <select value={formData.frequency} onChange={e => setFormData({...formData, frequency: e.target.value as any})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white font-bold">
                     <option value="Monthly">Monthly</option>
                     <option value="Yearly">Yearly</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Next Billing Date</label>
-                  <input type="date" value={formData.nextBillDate} onChange={e => setFormData({...formData, nextBillDate: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white font-bold" />
+                  <input type="date" value={formData.nextBillDate} onChange={e => setFormData({...formData, nextBillDate: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white font-bold" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Category</label>
-                  <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value as any})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white font-bold">
+                  <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value as any})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white font-bold">
                     <option value="Keep Active">Keep Active</option>
                     <option value="For Testing">For Testing</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Status</label>
-                  <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as any})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white font-bold">
+                  <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as any})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white font-bold">
                     <option value="Active">Active</option>
                     <option value="Paused">Paused</option>
                   </select>
@@ -427,7 +427,7 @@ export const SubscriptionTracker: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border dark:border-slate-700">
-                <input type="checkbox" id="essential" checked={formData.isEssential} onChange={e => setFormData({...formData, isEssential: e.target.checked})} className="w-5 h-5 text-orange-500 rounded border-slate-300" />
+                <input type="checkbox" id="essential" checked={formData.isEssential} onChange={e => setFormData({...formData, isEssential: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded border-slate-300" />
                 <label htmlFor="essential" className="flex-1 cursor-pointer">
                    <p className="text-sm font-bold dark:text-white">Essential Workspace Tool</p>
                    <p className="text-[10px] text-slate-500">Flags this subscription as critical infrastructure.</p>
@@ -436,13 +436,13 @@ export const SubscriptionTracker: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Internal Notes</label>
-                <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} rows={3} placeholder="User counts, billing owner, etc..." className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white resize-none" />
+                <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} rows={3} placeholder="User counts, billing owner, etc..." className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white resize-none" />
               </div>
             </div>
 
             <div className="px-6 py-4 border-t dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
               <button onClick={() => setShowForm(false)} className="px-6 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Cancel</button>
-              <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-8 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 active:scale-95 disabled:opacity-50">
+              <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-50 text-xs uppercase tracking-widest">
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {editingSub ? 'Update Record' : 'Save Subscription'}
               </button>
@@ -453,10 +453,10 @@ export const SubscriptionTracker: React.FC = () => {
 
       {showReport && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-          <div className="bg-[#1e293b] rounded-3xl w-full max-w-lg overflow-hidden border border-slate-700 shadow-2xl flex flex-col max-h-[85vh]">
-            <div className="p-6 border-b border-slate-700 flex justify-between items-center">
-              <h3 className="text-xl font-black text-teal-400">Subscription Report</h3>
-              <button onClick={() => setShowReport(false)} className="text-slate-400 hover:text-white"><X className="w-6 h-6" /></button>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">Subscription Report</h3>
+              <button onClick={() => setShowReport(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white"><X className="w-6 h-6" /></button>
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
@@ -466,25 +466,25 @@ export const SubscriptionTracker: React.FC = () => {
                 
                 return (
                   <div key={cat} className="space-y-4">
-                    <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                      <h4 className="flex items-center gap-2 font-black text-teal-400">
+                    <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
+                      <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-white">
                         {cat === 'Keep Active' ? <Lock className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                         {cat}
                       </h4>
-                      <span className="text-sm font-bold text-white">Total: ${catTotal.toFixed(2)}/mo</span>
+                      <span className="text-sm font-bold text-slate-700 dark:text-white">Total: ${catTotal.toFixed(2)}/mo</span>
                     </div>
                     <div className="space-y-2">
                       {items.map(sub => (
-                        <div key={sub.id} className="bg-[#0f172a] p-4 rounded-xl flex justify-between items-center group">
+                        <div key={sub.id} className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl flex justify-between items-center group">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-white truncate">{sub.name}</span>
+                              <span className="font-bold text-slate-900 dark:text-white truncate">{sub.name}</span>
                               <span className="px-1.5 py-0.5 bg-green-900/40 text-green-400 text-[8px] font-black uppercase rounded">Active</span>
                             </div>
                             <span className="text-[10px] text-slate-500">{sub.planName}</span>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <div className="text-sm font-bold text-white">${sub.price.toFixed(2)}</div>
+                            <div className="text-sm font-bold text-slate-900 dark:text-white">${sub.price.toFixed(2)}</div>
                             <div className="text-[10px] text-slate-500">{sub.frequency}</div>
                           </div>
                         </div>
