@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Settings, Info, Download, Play, TableProperties, ShieldCheck, AlertCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { normalizeCompetencies } from './ai';
+import { cleanText, normalizeText } from '../../utils/textNormalization';
 import { ToolSettingsModal } from '../ToolSettingsModal';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,6 +21,8 @@ interface ReportStats {
 
 export const CompetencyCsvNormaliser: React.FC = () => {
     const [inputCsv, setInputCsv] = useState('');
+    const [inputText, setInputText] = useState('');
+    const [activeTab, setActiveTab] = useState<'file' | 'text'>('file');
     const [outputCsv, setOutputCsv] = useState('');
     const [rows, setRows] = useState<CompetencyRow[]>([]);
     const [stats, setStats] = useState<ReportStats | null>(null);
@@ -30,7 +33,9 @@ export const CompetencyCsvNormaliser: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const handleNormalize = async () => {
-        if (!inputCsv.trim()) return;
+        if (activeTab === 'file' && !inputCsv.trim()) return;
+        if (activeTab === 'text' && !inputText.trim()) return;
+
         setLoading(true);
         setError(null);
         setStats(null);
@@ -38,7 +43,9 @@ export const CompetencyCsvNormaliser: React.FC = () => {
         setOutputCsv('');
 
         try {
-            const result = await normalizeCompetencies(inputCsv);
+            const inputData = activeTab === 'file' ? inputCsv : inputText;
+            const result = await normalizeCompetencies(inputData);
+            // We initially set output to raw result, but will overwrite with cleaned version below
             setOutputCsv(result);
 
             // Parse CSV result for display and stats
@@ -56,9 +63,9 @@ export const CompetencyCsvNormaliser: React.FC = () => {
                 const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (parts.length >= 3) {
                     parsedRows.push({
-                        can_do: parts[0]?.trim().replace(/^"|"$/g, '') || '',
-                        skill: parts[1]?.trim().replace(/^"|"$/g, '') || '',
-                        cefr: parts[2]?.trim().replace(/^"|"$/g, '') || '',
+                        can_do: cleanText(parts[0]?.replace(/^"|"$/g, '')), // Clean but preserve case
+                        skill: normalizeText(parts[1]?.replace(/^"|"$/g, ''), 'skill'), // Lowercase + Canonical
+                        cefr: normalizeText(parts[2]?.replace(/^"|"$/g, ''), 'cefr'), // Lowercase + Canonical
                         flag: parts[3]?.trim().replace(/^"|"$/g, '') || ''
                     });
                 }
@@ -66,8 +73,13 @@ export const CompetencyCsvNormaliser: React.FC = () => {
 
             setRows(parsedRows);
 
+            // Reconstruct CSV with normalized data to ensure download matches display
+            const header = 'can_do,skill,cefr,flag\n';
+            const csvBody = parsedRows.map(r => `"${r.can_do}","${r.skill}","${r.cefr}","${r.flag}"`).join('\n');
+            setOutputCsv(header + csvBody);
+
             // Input approximation (newlines in input)
-            const inputRowCount = inputCsv.trim().split('\n').length - (inputCsv.toLowerCase().includes('cefr') ? 1 : 0);
+            const inputRowCount = inputData.trim().split('\n').length - (inputData.toLowerCase().includes('cefr') ? 1 : 0);
 
             setStats({
                 originalRows: Math.max(0, inputRowCount),
@@ -141,48 +153,76 @@ export const CompetencyCsvNormaliser: React.FC = () => {
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-indigo-500" />
-                                Input CSV File
+                                Input Data
                             </h2>
-                        </div>
-
-                        <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer relative group">
-                            <div className="mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-full group-hover:scale-110 transition-transform">
-                                <FileText className="w-8 h-8 text-indigo-500" />
+                            <div className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
+                                <button
+                                    onClick={() => setActiveTab('file')}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${activeTab === 'file' ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                >
+                                    CSV Upload
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('text')}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${activeTab === 'text' ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                >
+                                    Direct Text
+                                </button>
                             </div>
-                            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">
-                                {inputCsv ? "CSV File Loaded" : "Upload Competency Data"}
-                            </h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mb-4">
-                                {inputCsv ? "Ready to normalize. Click the button below." : "Drag and drop your CSV file here, or click to browse."}
-                            </p>
-                            <input
-                                type="file"
-                                accept=".csv"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    const reader = new FileReader();
-                                    reader.onload = (ev) => {
-                                        const text = ev.target?.result as string;
-                                        if (text) setInputCsv(text);
-                                    };
-                                    reader.readAsText(file);
-                                }}
-                                className="absolute inset-0 opacity-0 cursor-pointer"
-                            />
                         </div>
 
-                        {inputCsv && (
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-600 dark:text-slate-400 overflow-hidden text-ellipsis whitespace-nowrap">
-                                File loaded ({inputCsv.length} bytes)
+                        {activeTab === 'file' ? (
+                            <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer relative group min-h-[250px]">
+                                <div className="mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-full group-hover:scale-110 transition-transform">
+                                    <FileText className="w-8 h-8 text-indigo-500" />
+                                </div>
+                                <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">
+                                    {inputCsv ? "CSV File Loaded" : "Upload Competency Data"}
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mb-4">
+                                    {inputCsv ? "Ready to normalize. Click the button below." : "Drag and drop your CSV file here, or click to browse."}
+                                </p>
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => {
+                                            const text = ev.target?.result as string;
+                                            if (text) setInputCsv(text);
+                                        };
+                                        reader.readAsText(file);
+                                    }}
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                />
+                                {inputCsv && (
+                                    <div className="absolute bottom-4 bg-slate-50 dark:bg-slate-900/80 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-600 text-[10px] font-mono text-slate-600 dark:text-slate-300">
+                                        File loaded ({inputCsv.length} bytes)
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="relative">
+                                <textarea
+                                    className="w-full h-[250px] p-4 text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                                    placeholder="Paste competency text here...
+Example:
+Student can understand basic greetings.
+Student can use present simple tense."
+                                    value={inputText}
+                                    onChange={(e) => setInputText(e.target.value)}
+                                />
                             </div>
                         )}
+
 
                         <div className="mt-4 flex justify-end">
                             <button
                                 onClick={handleNormalize}
-                                disabled={loading || !inputCsv.trim()}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 ${loading || !inputCsv.trim()
+                                disabled={loading || (activeTab === 'file' && !inputCsv.trim()) || (activeTab === 'text' && !inputText.trim())}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 ${loading || (activeTab === 'file' && !inputCsv.trim()) || (activeTab === 'text' && !inputText.trim())
                                     ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                                     : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20 hover:-translate-y-1'
                                     }`}

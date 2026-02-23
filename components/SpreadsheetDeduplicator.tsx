@@ -11,6 +11,7 @@ import { ToolSettingsModal } from './ToolSettingsModal';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { logUsage } from '../services/geminiService';
+import { normalizeColumnName, normalizeText } from '../utils/textNormalization';
 
 export const SpreadsheetDeduplicator: React.FC = () => {
   const { isAdmin } = useAuth();
@@ -59,102 +60,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
 
   const isCsv = (file: File) => file.type === 'text/csv' || file.name.endsWith('.csv');
 
-  /**
-   * Normalize column name to stable internal key for canonicalization lookup
-   * @param columnName - Raw column name from CSV header
-   * @returns Normalized column identifier
-   */
-  const normalizeColumnName = (columnName: string): string => {
-    return columnName
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, ''); // Remove all non-alphanumeric characters
-  };
 
-  // Canonical mappings for categorical columns (keyed by normalized column name)
-  const CANONICAL_MAPPINGS: Record<string, Record<string, string>> = {
-    skill: {
-      speaking: "speaking",
-      phonics: "phonics",
-      grammar: "grammar",
-      vocabulary: "vocabulary",
-      vocab: "vocabulary",
-      writing: "writing",
-      reading: "reading",
-      listening: "listening",
-      spelling: "spelling",
-    },
-    skillarea: { // Handles "Skill Area", "skill area", etc.
-      speaking: "speaking",
-      phonics: "phonics",
-      grammar: "grammar",
-      vocabulary: "vocabulary",
-      vocab: "vocabulary",
-      writing: "writing",
-      reading: "reading",
-      listening: "listening",
-      spelling: "spelling",
-    },
-  };
-
-  /**
-   * Normalize a single text value with Unicode-safe processing
-   * @param text - Raw text value
-   * @param columnName - Optional column name for canonical mapping
-   * @returns Normalized text
-   */
-  const normalizeText = (text: string | undefined, columnName?: string): string => {
-    if (!text) return '';
-
-    let normalized = text.toString();
-
-    // Step 1: Unicode normalization (NFKD) - handles accents, ligatures, etc.
-    normalized = normalized.normalize('NFKD');
-
-    // Step 2: Convert smart quotes, dashes, and non-breaking spaces to ASCII
-    normalized = normalized
-      .replace(/[\u2018\u2019]/g, '"')  // Smart single quotes → "
-      .replace(/'/g, '"')               // Straight single quotes → "
-      .replace(/[\u201C\u201D]/g, '"')  // Smart double quotes → "
-      .replace(/[\u2013\u2014]/g, '-')  // En/em dashes → -
-      .replace(/\u00A0/g, ' ')          // Non-breaking space → space
-      .replace(/\u2026/g, '...');       // Ellipsis → ...
-
-    // Step 3: Remove quotes and apostrophes (REMOVED - preserves quotes)
-    // normalized = normalized.replace(/['"]/g, '');
-
-    // Step 4: Whitespace normalization (NEW - replaces "remove all whitespace")
-    // - Trim leading/trailing whitespace
-    // - Replace sequences of whitespace with single space
-    normalized = normalized.trim().replace(/\s+/g, ' ');
-
-    // Step 5: Convert to lowercase
-    normalized = normalized.toLowerCase();
-
-    // Step 5.5: Special handling for CEFR columns
-    // Removes hyphens and other punctuation to handle "Pre-A1" vs "Pre A1"
-    if (columnName) {
-      const colKey = normalizeColumnName(columnName);
-      if (colKey === 'cefr' || colKey === 'cefrlevel') {
-        normalized = normalized
-          .replace(/[^a-z0-9]/g, ' ')  // Remove all non-alphanumeric
-          .replace(/\s+/g, ' ')         // Collapse whitespace
-          .trim();
-      }
-    }
-
-    // Step 6: Optional canonicalization for categorical columns
-    if (columnName) {
-      const normalizedColName = normalizeColumnName(columnName);
-      if (CANONICAL_MAPPINGS[normalizedColName]) {
-        const canonical = CANONICAL_MAPPINGS[normalizedColName][normalized];
-        if (canonical) {
-          normalized = canonical;
-        }
-      }
-    }
-
-    return normalized;
-  };
 
   /**
    * Create a composite key from multiple column values

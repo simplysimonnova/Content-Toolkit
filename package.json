@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@google/genai": "^1.32.0",
+    "@types/papaparse": "^5.5.2",
     "firebase": "^12.7.0",
     "lucide-react": "^0.556.0",
     "mammoth": "^1.8.0",
+    "papaparse": "^5.5.3",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "xlsx": "^0.18.5"

@@ -31,6 +31,8 @@ const VRValidator = React.lazy(() => import('./components/VRValidator').then(m =
 const ClassIdFinder = React.lazy(() => import('./components/ClassIdFinder').then(m => ({ default: m.ClassIdFinder })));
 const CompImportCreator = React.lazy(() => import('./components/CompImportCreator/CompImportCreator').then(m => ({ default: m.CompImportCreator })));
 const CompetencyCsvNormaliser = React.lazy(() => import('./components/CompetencyCsvNormaliser/CompetencyCsvNormaliser').then(m => ({ default: m.CompetencyCsvNormaliser })));
+const RowExpander = React.lazy(() => import('./components/RowExpander').then(m => ({ default: m.RowExpander })));
+const IDResolver = React.lazy(() => import('./components/IDResolver').then(m => ({ default: m.IDResolver })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -95,6 +97,10 @@ const App: React.FC = () => {
         return <CompImportCreator />;
       case 'competency-csv-normaliser':
         return <CompetencyCsvNormaliser />;
+      case 'row-expander':
+        return <RowExpander />;
+      case 'id-resolver':
+        return <IDResolver />;
 
       // Curriculum & Planning
       case 'ss-compactor':

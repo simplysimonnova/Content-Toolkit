@@ -44,7 +44,9 @@ export type AppPage =
   | 'vr-validator'
   | 'class-id-finder'
   | 'comp-import-creator'
-  | 'competency-csv-normaliser';
+  | 'competency-csv-normaliser'
+  | 'row-expander'
+  | 'id-resolver';
 
 export interface ResourceLink {
   id?: string;

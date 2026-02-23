@@ -11,6 +11,8 @@ import {
 import { collection, query, doc, onSnapshot, orderBy, limit, deleteDoc, setDoc, serverTimestamp, addDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
+import { SubscriptionTracker } from './SubscriptionTracker';
+
 interface AdminConsoleModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,7 +33,7 @@ interface NavGroup {
 }
 
 export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'usage' | 'users' | 'navigation' | 'links' | 'directus' | 'rules'>('usage');
+  const [activeTab, setActiveTab] = useState<'usage' | 'users' | 'navigation' | 'links' | 'directus' | 'rules' | 'subscriptions'>('usage');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -163,7 +165,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
           { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
           { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' },
-          { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' }
+          { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' },
+          { id: 'w8', label: 'Row Expander', icon: 'ListFilter', page: 'row-expander' },
+          { id: 'w9', label: 'ID Resolver', icon: 'Link2', page: 'id-resolver' }
         ]
       },
       {
@@ -184,6 +188,15 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'm4', label: 'Sound Generator', icon: 'Volume2', page: 'sound-generator' },
           { id: 'm5', label: 'Nano Banana Studio', icon: 'Palette', page: 'nano-banana' },
           { id: 'm6', label: 'Image Renamer', icon: 'Search', page: 'image-renamer' }
+        ]
+      },
+      {
+        id: 'resources',
+        title: 'Resources',
+        items: [
+          { id: 'r1', label: 'Internal Notes', icon: 'StickyNote', page: 'internal-notes' },
+          { id: 'r2', label: 'Useful Links', icon: 'Link2', page: 'useful-links' },
+          { id: 'r3', label: 'Directus Guides', icon: 'Presentation', page: 'directus-guides' }
         ]
       }
     ];
@@ -315,7 +328,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
             { id: 'navigation', icon: ListOrdered, label: 'Nav Editor' },
             { id: 'links', icon: Link2, label: 'Links' },
             { id: 'directus', icon: Presentation, label: 'Directus' },
-            { id: 'rules', icon: Terminal, label: 'Tool Configs' }
+            { id: 'rules', icon: Terminal, label: 'Tool Configs' },
+            { id: 'subscriptions', icon: CreditCard, label: 'Subscriptions' }
           ].map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id ? 'border-orange-50 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
               <tab.icon className="w-4 h-4" /> {tab.label}
@@ -567,6 +581,13 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
               ))}
             </div>
           )}
+
+          {activeTab === 'subscriptions' && (
+            <div className="animate-fade-in">
+              <SubscriptionTracker />
+            </div>
+          )}
+
 
         </div>
       </div>

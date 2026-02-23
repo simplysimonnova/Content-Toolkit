@@ -2,10 +2,10 @@ import { GoogleGenAI } from "@google/genai";
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const normalizeCompetencies = async (csvData: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
-    // Fetch user-configurable prompt from Firestore, or use default
-    const config = await fetchConfig('competency-csv-normaliser', `
+  // Fetch user-configurable prompt from Firestore, or use default
+  const config = await fetchConfig('competency-csv-normaliser', `
 You are a curriculum data-preparation tool designed to create import-ready competency rows while deliberately avoiding fine-grained pedagogical decisions.
 
 Goal:
@@ -85,20 +85,20 @@ Output Guarantee
 - Return strictly the CSV content.
 `);
 
-    const model = 'gemini-2.0-flash'; // Using a capable model for complex logic
+  const model = 'gemini-2.0-flash-exp'; // Using a capable model for complex logic
 
-    const prompt = `
+  const prompt = `
 ${config.instruction}
 
-Input CSV Data:
+Input Data:
 ${csvData}
 `;
 
-    const response = await ai.models.generateContent({
-        model,
-        contents: { parts: [{ text: prompt }] }
-    });
+  const response = await ai.models.generateContent({
+    model,
+    contents: prompt
+  });
 
-    await logUsage("Competency Normalization", model, 0.05); // Estimated cost
-    return response.text || "";
+  await logUsage("Competency Normalization", model, 0.05); // Estimated cost
+  return response.text || "";
 };

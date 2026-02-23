@@ -70,7 +70,9 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
       { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
       { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
       { id: 'w6', label: 'Comp Import Creator', icon: 'TableProperties', page: 'comp-import-creator' },
-      { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' }
+      { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' },
+      { id: 'w8', label: 'Row Expander', icon: 'ListFilter', page: 'row-expander' },
+      { id: 'w9', label: 'ID Resolver', icon: 'Link2', page: 'id-resolver' }
     ]
   },
   {
@@ -91,6 +93,15 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
       { id: 'm4', label: 'Sound Generator', icon: 'Volume2', page: 'sound-generator' },
       { id: 'm5', label: 'Nano Banana Studio', icon: 'Palette', page: 'nano-banana' },
       { id: 'm6', label: 'Image Renamer', icon: 'Search', page: 'image-renamer' }
+    ]
+  },
+  {
+    id: 'resources',
+    title: 'Resources',
+    items: [
+      { id: 'r1', label: 'Internal Notes', icon: 'StickyNote', page: 'internal-notes' },
+      { id: 'r2', label: 'Useful Links', icon: 'Link2', page: 'useful-links' },
+      { id: 'r3', label: 'Directus Guides', icon: 'Presentation', page: 'directus-guides' }
     ]
   }
 ];
@@ -129,7 +140,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
     'Lesson Creation': true,
     'LLM Tools': true,
     'Proofing Tools': true,
-    'Media & Assets': true
+    'Media & Assets': true,
+    'Resources': true
   });
   const [navGroups, setNavGroups] = useState<NavGroupConfig[]>([]);
   const [lockedTools, setLockedTools] = useState<Set<string>>(new Set());
@@ -308,10 +320,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
         </div>
 
         <div className="p-4 border-t border-slate-800 space-y-2 mt-auto">
-          <NavLink page="internal-notes" iconName="StickyNote" label="Internal Notes" />
-          <NavLink page="useful-links" iconName="Link2" label="Useful Links" />
-          <NavLink page="directus-guides" iconName="Presentation" label="Directus Guides" />
-          <NavLink page="subscription-tracker" iconName="CreditCard" label="AI Subscriptions" adminOnly={true} />
 
           <button onClick={toggleTheme} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 transition-all">
             {theme === 'light' ? <Moon className="w-5 h-5 text-slate-500" /> : <Sun className="w-5 h-5 text-orange-400" />}
