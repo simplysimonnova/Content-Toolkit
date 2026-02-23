@@ -46,7 +46,8 @@ export type AppPage =
   | 'comp-import-creator'
   | 'competency-csv-normaliser'
   | 'row-expander'
-  | 'id-resolver';
+  | 'id-resolver'
+  | 'jira-ticketer';
 
 export interface ResourceLink {
   id?: string;

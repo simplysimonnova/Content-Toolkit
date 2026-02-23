@@ -33,6 +33,7 @@ const CompImportCreator = React.lazy(() => import('./components/CompImportCreato
 const CompetencyCsvNormaliser = React.lazy(() => import('./components/CompetencyCsvNormaliser/CompetencyCsvNormaliser').then(m => ({ default: m.CompetencyCsvNormaliser })));
 const RowExpander = React.lazy(() => import('./components/RowExpander').then(m => ({ default: m.RowExpander })));
 const IDResolver = React.lazy(() => import('./components/IDResolver').then(m => ({ default: m.IDResolver })));
+const JiraTicketer = React.lazy(() => import('./components/JiraTicketer').then(m => ({ default: m.JiraTicketer })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -101,6 +102,8 @@ const App: React.FC = () => {
         return <RowExpander />;
       case 'id-resolver':
         return <IDResolver />;
+      case 'jira-ticketer':
+        return <JiraTicketer />;
 
       // Curriculum & Planning
       case 'ss-compactor':

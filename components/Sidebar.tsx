@@ -6,7 +6,7 @@ import {
   TableProperties, ListFilter, Tag, ShieldBan, Search,
   CreditCard, Palette, ClipboardCheck, Compass, Sparkles, PenTool,
   Zap, Map, Presentation, MessageSquareText, Mic2, Wand2, PenLine, SearchCheck,
-  ChevronDown, ShieldCheck, Loader2, ListOrdered, Shield, StickyNote, Hash, Terminal
+  ChevronDown, ShieldCheck, Loader2, ListOrdered, Shield, StickyNote, Hash, Terminal, Ticket
 } from 'lucide-react';
 import { doc, onSnapshot, collection } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
@@ -24,7 +24,7 @@ const ICON_MAP: Record<string, any> = {
   'Tag': Tag, 'TableProperties': TableProperties, 'FileText': FileText,
   'ShieldBan': ShieldBan, 'Link2': Link2, 'CreditCard': CreditCard,
   'ClipboardCheck': ClipboardCheck, 'ListOrdered': ListOrdered,
-  'StickyNote': StickyNote, 'Hash': Hash, 'Terminal': Terminal
+  'StickyNote': StickyNote, 'Hash': Hash, 'Terminal': Terminal, 'Ticket': Ticket
 };
 
 const FALLBACK_GROUPS: NavGroupConfig[] = [
@@ -40,7 +40,8 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
     id: 'tech_tools',
     title: 'Tech Tools',
     items: [
-      { id: 't1', label: 'Class ID Finder', icon: 'Hash', page: 'class-id-finder' }
+      { id: 't1', label: 'Class ID Finder', icon: 'Hash', page: 'class-id-finder' },
+      { id: 't2', label: 'Jira Ticketer', icon: 'Ticket', page: 'jira-ticketer' }
     ]
   },
   {

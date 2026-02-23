@@ -7,6 +7,10 @@ This is the hardcoded fallback navigation used by the Content Toolkit if the dyn
 - Lesson Descriptions (`lesson-descriptions`)
 - TAF Generator (`taf-generator`)
 
+### Tech Tools
+- Class ID Finder (`class-id-finder`)
+- Jira Ticketer (`jira-ticketer`)
+
 ### Curriculum & Planning
 - S&S Compactor (`ss-compactor`)
 - Curriculum Gap Spotter (`gap-spotter`)

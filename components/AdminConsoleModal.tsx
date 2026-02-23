@@ -135,7 +135,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
         id: 'tech_tools',
         title: 'Tech Tools',
         items: [
-          { id: 't1', label: 'Class ID Finder', icon: 'Hash', page: 'class-id-finder' }
+          { id: 't1', label: 'Class ID Finder', icon: 'Hash', page: 'class-id-finder' },
+          { id: 't2', label: 'Jira Ticketer', icon: 'Ticket', page: 'jira-ticketer' }
         ]
       },
       {
