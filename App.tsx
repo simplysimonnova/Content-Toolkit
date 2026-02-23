@@ -35,6 +35,7 @@ const RowExpander = React.lazy(() => import('./components/RowExpander').then(m =
 const IDResolver = React.lazy(() => import('./components/IDResolver').then(m => ({ default: m.IDResolver })));
 const JiraTicketer = React.lazy(() => import('./components/JiraTicketer').then(m => ({ default: m.JiraTicketer })));
 const DirectusJsonBuilder = React.lazy(() => import('./components/DirectusJsonBuilder').then(m => ({ default: m.DirectusJsonBuilder })));
+const TNStandardizer = React.lazy(() => import('./components/TNStandardizer').then(m => ({ default: m.TNStandardizer })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -107,6 +108,8 @@ const App: React.FC = () => {
         return <JiraTicketer />;
       case 'directus-json-builder':
         return <DirectusJsonBuilder />;
+      case 'tn-standardizer':
+        return <TNStandardizer />;
 
       // Curriculum & Planning
       case 'ss-compactor':

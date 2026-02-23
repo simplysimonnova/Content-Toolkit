@@ -381,9 +381,13 @@ export const InternalNotes: React.FC = () => {
                       value={formData.tags}
                       onChange={e => setFormData({...formData, tags: e.target.value})}
                       placeholder="curriculum, vocabulary, tips..."
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none dark:text-white transition-all"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Shared Note</label>
+                  <label className="flex items-center gap-3 cursor-pointer">
                     <input 
                       type="checkbox"
                       checked={formData.isShared}
@@ -393,6 +397,7 @@ export const InternalNotes: React.FC = () => {
                     <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.isShared ? 'bg-indigo-600' : 'bg-slate-300'}`}>
                       <div className={`absolute top-1 bg-white w-4 h-4 rounded-full transition-all ${formData.isShared ? 'left-5' : 'left-1'}`} />
                     </div>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">{formData.isShared ? 'Visible to all' : 'Private'}</span>
                   </label>
                 </div>
               </div>

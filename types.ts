@@ -48,7 +48,8 @@ export type AppPage =
   | 'row-expander'
   | 'id-resolver'
   | 'jira-ticketer'
-  | 'directus-json-builder';
+  | 'directus-json-builder'
+  | 'tn-standardizer';
 
 export interface ResourceLink {
   id?: string;
