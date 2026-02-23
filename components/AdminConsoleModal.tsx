@@ -128,7 +128,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
         title: 'Lesson Tools',
         items: [
           { id: 'l1', label: 'Lesson Descriptions', icon: 'FileText', page: 'lesson-descriptions' },
-          { id: 'l2', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' }
+          { id: 'l2', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' },
+          { id: 'l3', label: 'TN Standardizer', icon: 'FileText', page: 'tn-standardizer' }
         ]
       },
       {
