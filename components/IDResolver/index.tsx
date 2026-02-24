@@ -76,8 +76,13 @@ export const IDResolver: React.FC = () => {
             const matchResult = resolveIDs(expandedFile, libraryFile, lessonFile, mapping);
             setResult(matchResult);
 
-            if (matchResult.stats.competency_misses > 0 || matchResult.stats.lesson_misses > 0) {
-                setError(`Completed with ${matchResult.stats.competency_misses + matchResult.stats.lesson_misses} misses. Review summary below.`);
+            const { competency_misses, skill_conflicts, lesson_misses } = matchResult.stats;
+            if (competency_misses > 0 || skill_conflicts > 0 || lesson_misses > 0) {
+                const parts = [];
+                if (competency_misses > 0) parts.push(`${competency_misses} comp miss${competency_misses > 1 ? 'es' : ''}`);
+                if (skill_conflicts > 0) parts.push(`${skill_conflicts} skill conflict${skill_conflicts > 1 ? 's' : ''}`);
+                if (lesson_misses > 0) parts.push(`${lesson_misses} lesson miss${lesson_misses > 1 ? 'es' : ''}`);
+                setError(`Completed with ${parts.join(', ')}. Review summary below.`);
             }
         } catch (err) {
             console.error(err);
@@ -394,14 +399,18 @@ export const IDResolver: React.FC = () => {
                                 <CheckCircle2 className="w-5 h-5 text-green-500" />
                                 ID Resolution Summary
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                                 <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl text-center">
                                     <div className="text-2xl font-black text-slate-700 dark:text-slate-300">{result.stats.total_rows}</div>
                                     <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Rows</div>
                                 </div>
-                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
-                                    <div className="text-2xl font-black text-slate-700 dark:text-slate-300">{result.stats.competency_matches}</div>
-                                    <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Comp Matches</div>
+                                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl text-center">
+                                    <div className="text-2xl font-black text-green-600 dark:text-green-400">{result.stats.competency_matches}</div>
+                                    <div className="text-[10px] uppercase font-bold text-green-500 tracking-wider">Comp Matches</div>
+                                </div>
+                                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-center">
+                                    <div className="text-2xl font-black text-amber-600 dark:text-amber-400">{result.stats.skill_conflicts}</div>
+                                    <div className="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Skill Conflicts</div>
                                 </div>
                                 <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl text-center">
                                     <div className="text-2xl font-black text-red-600 dark:text-red-400">{result.stats.competency_misses}</div>
@@ -429,7 +438,7 @@ export const IDResolver: React.FC = () => {
                                     Download Resolved CSV
                                 </button>
                             )}
-                            {(result.stats.competency_misses > 0 || result.stats.lesson_misses > 0) && (
+                            {(result.stats.competency_misses > 0 || result.stats.skill_conflicts > 0 || result.stats.lesson_misses > 0) && (
                                 <button
                                     onClick={handleDownloadErrors}
                                     className="flex items-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-xl font-black transition-all shadow-lg text-xs uppercase tracking-widest"
@@ -457,9 +466,15 @@ export const IDResolver: React.FC = () => {
                                             <td className="p-2 font-mono text-[10px]">{row.competency_id || '---'}</td>
                                             <td className="p-2 font-mono text-[10px]">{row.lesson_id || '---'}</td>
                                             <td className="p-2">
-                                                <div className="flex gap-1">
-                                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${row.competency_match_found ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                        Comp {row.competency_match_found ? '✓' : '✗'}
+                                                <div className="flex gap-1 flex-wrap">
+                                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                        row.competency_match_found
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : row.skill_mismatch
+                                                                ? 'bg-amber-100 text-amber-700'
+                                                                : 'bg-red-100 text-red-700'
+                                                    }`}>
+                                                        {row.competency_match_found ? 'Comp ✓' : row.skill_mismatch ? 'Skill Conflict' : 'Comp ✗'}
                                                     </span>
                                                     <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${row.lesson_match_found ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                         Lesson {row.lesson_match_found ? '✓' : '✗'}
