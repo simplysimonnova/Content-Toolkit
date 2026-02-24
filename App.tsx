@@ -36,6 +36,7 @@ const IDResolver = React.lazy(() => import('./components/IDResolver').then(m => 
 const JiraTicketer = React.lazy(() => import('./components/JiraTicketer').then(m => ({ default: m.JiraTicketer })));
 const DirectusJsonBuilder = React.lazy(() => import('./components/DirectusJsonBuilder').then(m => ({ default: m.DirectusJsonBuilder })));
 const TNStandardizer = React.lazy(() => import('./components/TNStandardizer').then(m => ({ default: m.TNStandardizer })));
+const ThematicQA = React.lazy(() => import('./components/ThematicQA').then(m => ({ default: m.ThematicQA })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -110,6 +111,8 @@ const App: React.FC = () => {
         return <DirectusJsonBuilder />;
       case 'tn-standardizer':
         return <TNStandardizer />;
+      case 'thematic-qa':
+        return <ThematicQA />;
 
       // Curriculum & Planning
       case 'ss-compactor':

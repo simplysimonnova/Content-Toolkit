@@ -1,0 +1,169 @@
+import { GoogleGenAI, Type } from "@google/genai";
+import { logUsage } from "../../services/geminiService";
+
+export interface ThematicMatch {
+  slide: string;
+  matched_term: string;
+  context: string;
+}
+
+export interface VisualMatch {
+  slide: string;
+  matched_element: string;
+  confidence: "clear";
+}
+
+export interface ThematicQAResult {
+  theme: string;
+  generated_keywords: {
+    direct_terms: string[];
+    characters: string[];
+    objects: string[];
+    symbols: string[];
+    phrases: string[];
+    visual_indicators: string[];
+  };
+  text_matches: ThematicMatch[];
+  visual_matches: VisualMatch[];
+  risk_level: "none" | "low" | "moderate" | "high";
+  summary: string;
+}
+
+const SYSTEM_PROMPT = `You are a compliance-focused thematic QA engine.
+
+RULES:
+1. Stay strictly relevant to the theme.
+2. Do NOT include weak, abstract, or loosely related associations.
+3. Do NOT speculate.
+4. No narrative explanation.
+5. No commentary.
+6. No redundancy.
+7. Lowercase all generated keywords.
+8. Maximum 60 total generated keywords.
+9. Only flag findings with clear evidence.
+10. If uncertain visually, do NOT flag.
+
+STAGE 1 — THEME EXPANSION
+Generate structured keyword sets under:
+- direct_terms
+- characters
+- objects
+- symbols
+- phrases
+- visual_indicators
+Only include items strongly and recognizably associated with the theme.
+
+STAGE 2 — TEXT SCAN
+Scan PDF_TEXT for exact matches, plural variations, short phrase matches.
+Record: slide number (if available), matched term, surrounding sentence.
+
+STAGE 3 — VISUAL SCAN
+Analyze slide images for objects, symbols, and scenes matching the keyword sets.
+Only flag clear, identifiable elements.
+Do NOT infer based on color alone unless explicitly symbolic.
+
+STAGE 4 — RISK ASSESSMENT
+Assign:
+- none (no matches)
+- low (1 minor indirect match)
+- moderate (multiple indirect matches)
+- high (direct thematic content present)
+
+Return ONLY valid JSON matching the schema exactly. No markdown. No commentary.`;
+
+export async function runThematicQA(
+  theme: string,
+  parsedText: string,
+  slideImages: { slide: number; dataUrl: string }[]
+): Promise<ThematicQAResult> {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const model = "gemini-2.0-flash";
+
+  // Build contents array: text prompt + inline images
+  const imageParts = slideImages.map((img) => ({
+    inlineData: {
+      mimeType: "image/png" as const,
+      data: img.dataUrl.replace(/^data:image\/png;base64,/, ""),
+    },
+  }));
+
+  const textPrompt = `THEME: ${theme}
+
+PDF_TEXT:
+${parsedText}
+
+PDF_IMAGES: ${slideImages.length} slide images are attached above (one per slide in order).
+
+Analyze all content and return the compliance report as JSON.`;
+
+  const contents: any[] = [
+    ...imageParts.map((part, i) => ({
+      role: "user" as const,
+      parts: [{ text: `Slide ${slideImages[i].slide} image:` }, part],
+    })),
+    {
+      role: "user" as const,
+      parts: [{ text: textPrompt }],
+    },
+  ];
+
+  const response = await ai.models.generateContent({
+    model,
+    contents: contents.flatMap((c) => c.parts),
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      temperature: 0.1,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          theme: { type: Type.STRING },
+          generated_keywords: {
+            type: Type.OBJECT,
+            properties: {
+              direct_terms: { type: Type.ARRAY, items: { type: Type.STRING } },
+              characters: { type: Type.ARRAY, items: { type: Type.STRING } },
+              objects: { type: Type.ARRAY, items: { type: Type.STRING } },
+              symbols: { type: Type.ARRAY, items: { type: Type.STRING } },
+              phrases: { type: Type.ARRAY, items: { type: Type.STRING } },
+              visual_indicators: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ["direct_terms", "characters", "objects", "symbols", "phrases", "visual_indicators"],
+          },
+          text_matches: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                slide: { type: Type.STRING },
+                matched_term: { type: Type.STRING },
+                context: { type: Type.STRING },
+              },
+              required: ["slide", "matched_term", "context"],
+            },
+          },
+          visual_matches: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                slide: { type: Type.STRING },
+                matched_element: { type: Type.STRING },
+                confidence: { type: Type.STRING },
+              },
+              required: ["slide", "matched_element", "confidence"],
+            },
+          },
+          risk_level: { type: Type.STRING },
+          summary: { type: Type.STRING },
+        },
+        required: ["theme", "generated_keywords", "text_matches", "visual_matches", "risk_level", "summary"],
+      },
+    },
+  });
+
+  await logUsage("Thematic QA", model, 0.05);
+
+  const json = JSON.parse(response.text || "{}");
+  return json as ThematicQAResult;
+}

@@ -123,7 +123,7 @@ export const TNStandardizer: React.FC = () => {
     setParsingFile(true); setError(null);
     try {
       const lib = await import('pdfjs-dist' as any);
-      lib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+      lib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@5.4.624/build/pdf.worker.min.mjs';
       const pdf = await lib.getDocument({ data: await file.arrayBuffer() }).promise;
       let text = '';
       for (let i = 1; i <= pdf.numPages; i++) {
