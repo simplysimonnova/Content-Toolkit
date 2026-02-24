@@ -77,7 +77,7 @@ export async function runThematicQA(
   slideImages: { slide: number; dataUrl: string }[]
 ): Promise<ThematicQAResult> {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const model = "gemini-2.0-flash";
+  const model = "gemini-3-flash-preview";
 
   // Build contents array: text prompt + inline images
   const imageParts = slideImages.map((img) => ({
