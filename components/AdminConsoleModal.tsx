@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   X, LayoutDashboard, Shield, Terminal, History, Trash2, Plus,
-  Loader2, UserPlus, Link2, Lightbulb, Save, AlertCircle,
+  Loader2, UserPlus, Link2, Lightbulb, Wrench, Save, AlertCircle,
   Menu, ChevronUp, ChevronDown, ListOrdered, Edit3, Settings2,
   LayoutGrid, List, Check, RotateCcw, Presentation, UserCog, UserMinus,
   RefreshCw, LifeBuoy, GripVertical, Hash, Zap, SearchCheck, Wand2, Palette,
   Volume2, PenLine, ClipboardCheck, ShieldCheck, CreditCard, Tag, ListFilter,
-  ShieldBan, Map, Search
+  ShieldBan, Map, Search, SlidersHorizontal
 } from 'lucide-react';
 import { collection, query, doc, onSnapshot, orderBy, limit, deleteDoc, setDoc, serverTimestamp, addDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -33,7 +33,7 @@ interface NavGroup {
 }
 
 export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'usage' | 'users' | 'navigation' | 'links' | 'directus' | 'rules' | 'subscriptions'>('usage');
+  const [activeTab, setActiveTab] = useState<'usage' | 'users' | 'navigation' | 'links' | 'directus' | 'rules' | 'subscriptions' | 'ideas'>('usage');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -62,6 +62,14 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
   // --- Module State: User Management ---
   const [manualUser, setManualUser] = useState({ email: '', displayName: '', role: 'user' });
+
+  // --- Module State: Ideas & Fixes ---
+  const [ideas, setIdeas] = useState<any[]>([]);
+  const [ideasTypeFilter, setIdeasTypeFilter] = useState<'all' | 'idea' | 'fix'>('all');
+  const [ideasStatusFilter, setIdeasStatusFilter] = useState<string>('all');
+  const [ideasSearch, setIdeasSearch] = useState('');
+  const [ideasSort, setIdeasSort] = useState<'newest' | 'oldest'>('newest');
+  const [ideasView, setIdeasView] = useState<'card' | 'list'>('card');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -99,6 +107,10 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
     unsubscribes.push(onSnapshot(collection(db, 'configurations'), (snap) => {
       setConfigs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }));
+
+    unsubscribes.push(onSnapshot(query(collection(db, 'tool_ideas'), orderBy('timestamp', 'desc')), (snap) => {
+      setIdeas(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }));
 
     return () => unsubscribes.forEach(unsub => unsub());
@@ -335,7 +347,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
             { id: 'links', icon: Link2, label: 'Links' },
             { id: 'directus', icon: Presentation, label: 'Directus' },
             { id: 'rules', icon: Terminal, label: 'Tool Configs' },
-            { id: 'subscriptions', icon: CreditCard, label: 'Subscriptions' }
+            { id: 'subscriptions', icon: CreditCard, label: 'Subscriptions' },
+        { id: 'ideas', icon: Lightbulb, label: 'Ideas & Fixes' }
           ].map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
               <tab.icon className="w-4 h-4" /> {tab.label}
@@ -594,6 +607,162 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
             </div>
           )}
 
+          {activeTab === 'ideas' && (() => {
+            const STATUS_OPTIONS = ['New', 'In Review', 'Done', 'Rejected'];
+            const STATUS_STYLES: Record<string, string> = {
+              'New': 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
+              'In Review': 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+              'Done': 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
+              'Rejected': 'bg-slate-100 dark:bg-slate-700 text-slate-500',
+            };
+            const filtered = ideas
+              .filter(i => ideasTypeFilter === 'all' || i.type === ideasTypeFilter)
+              .filter(i => ideasStatusFilter === 'all' || i.status === ideasStatusFilter)
+              .filter(i => !ideasSearch || i.text?.toLowerCase().includes(ideasSearch.toLowerCase()) || i.userName?.toLowerCase().includes(ideasSearch.toLowerCase()))
+              .sort((a, b) => {
+                const ta = a.timestamp?.toMillis?.() ?? 0;
+                const tb = b.timestamp?.toMillis?.() ?? 0;
+                return ideasSort === 'newest' ? tb - ta : ta - tb;
+              });
+
+            const updateStatus = async (id: string, status: string) => {
+              try { await updateDoc(doc(db, 'tool_ideas', id), { status }); } catch (e) { alert('Update failed'); }
+            };
+            const deleteIdea = async (id: string) => {
+              if (confirm('Delete this entry?')) try { await deleteDoc(doc(db, 'tool_ideas', id)); } catch (e) { alert('Delete failed'); }
+            };
+
+            return (
+              <div className="space-y-5 animate-fade-in">
+                {/* Toolbar */}
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border dark:border-slate-700 shadow-sm flex flex-wrap gap-3 items-center">
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 rounded-xl p-1">
+                    {(['all', 'idea', 'fix'] as const).map(t => (
+                      <button key={t} onClick={() => setIdeasTypeFilter(t)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
+                          ideasTypeFilter === t ? 'bg-white dark:bg-slate-700 shadow text-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700'
+                        }`}>
+                        {t === 'all' ? 'All' : t === 'idea' ? '💡 Ideas' : '🔧 Fixes'}
+                      </button>
+                    ))}
+                  </div>
+                  <select value={ideasStatusFilter} onChange={e => setIdeasStatusFilter(e.target.value)}
+                    className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold dark:text-white">
+                    <option value="all">All Statuses</option>
+                    {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                  <div className="relative flex-1 min-w-[160px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <input value={ideasSearch} onChange={e => setIdeasSearch(e.target.value)}
+                      placeholder="Search text or user…"
+                      className="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-xs dark:text-white" />
+                  </div>
+                  <div className="flex items-center gap-1 ml-auto">
+                    <button onClick={() => setIdeasSort(s => s === 'newest' ? 'oldest' : 'newest')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300">
+                      <SlidersHorizontal className="w-3.5 h-3.5" />{ideasSort === 'newest' ? 'Newest' : 'Oldest'}
+                    </button>
+                    <button onClick={() => setIdeasView(v => v === 'card' ? 'list' : 'card')}
+                      className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
+                      {ideasView === 'card' ? <List className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{filtered.length} entr{filtered.length === 1 ? 'y' : 'ies'}</p>
+
+                {filtered.length === 0 && (
+                  <div className="text-center py-16 text-slate-400">
+                    <Lightbulb className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">No entries match your filters.</p>
+                  </div>
+                )}
+
+                {ideasView === 'card' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filtered.map(idea => (
+                      <div key={idea.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border dark:border-slate-700 shadow-sm group flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-black text-slate-500 shrink-0">
+                            {(idea.userName || idea.userEmail || '?')[0].toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold dark:text-white truncate">{idea.userName || 'Unknown'}</p>
+                            <p className="text-[10px] text-slate-400 truncate">{idea.userEmail}</p>
+                          </div>
+                          <div className="ml-auto flex gap-1 shrink-0">
+                            <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
+                              idea.type === 'fix' ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' : 'bg-teal-50 dark:bg-teal-900/20 text-teal-600'
+                            }`}>{idea.type === 'fix' ? 'Fix' : 'Idea'}</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed flex-1">{idea.text}</p>
+                        <div className="flex items-center justify-between pt-2 border-t dark:border-slate-700">
+                          <select value={idea.status || 'New'} onChange={e => updateStatus(idea.id, e.target.value)}
+                            className={`text-[9px] font-black uppercase px-2 py-1 rounded border-0 cursor-pointer ${STATUS_STYLES[idea.status || 'New']} bg-transparent`}>
+                            {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] text-slate-400 font-mono">{idea.timestamp?.toDate?.()?.toLocaleDateString() || '—'}</span>
+                            <button onClick={() => deleteIdea(idea.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b dark:border-slate-700">
+                        <tr>
+                          <th className="px-4 py-3">User</th>
+                          <th className="px-4 py-3">Type</th>
+                          <th className="px-4 py-3">Text</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3">Date</th>
+                          <th className="px-4 py-3"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y dark:divide-slate-700">
+                        {filtered.map(idea => (
+                          <tr key={idea.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 group">
+                            <td className="px-4 py-3">
+                              <p className="text-xs font-bold dark:text-white">{idea.userName || '—'}</p>
+                              <p className="text-[10px] text-slate-400">{idea.userEmail}</p>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                idea.type === 'fix' ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' : 'bg-teal-50 dark:bg-teal-900/20 text-teal-600'
+                              }`}>{idea.type === 'fix' ? 'Fix' : 'Idea'}</span>
+                            </td>
+                            <td className="px-4 py-3 max-w-xs">
+                              <p className="text-xs dark:text-slate-300 line-clamp-2">{idea.text}</p>
+                            </td>
+                            <td className="px-4 py-3">
+                              <select value={idea.status || 'New'} onChange={e => updateStatus(idea.id, e.target.value)}
+                                className={`text-[9px] font-black uppercase px-2 py-1 rounded cursor-pointer border-0 ${STATUS_STYLES[idea.status || 'New']}`}>
+                                {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                              </select>
+                            </td>
+                            <td className="px-4 py-3 text-[10px] text-slate-400 font-mono whitespace-nowrap">
+                              {idea.timestamp?.toDate?.()?.toLocaleDateString() || '—'}
+                            </td>
+                            <td className="px-4 py-3">
+                              <button onClick={() => deleteIdea(idea.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
         </div>
       </div>

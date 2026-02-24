@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Lightbulb, Send, History, Trash2, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, Lightbulb, Wrench, Send, History, Trash2, CheckCircle2, Loader2 } from 'lucide-react';
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
@@ -10,11 +10,14 @@ interface FeedbackModalProps {
   onClose: () => void;
 }
 
+type EntryType = 'idea' | 'fix';
+
 interface IdeaItem {
   id: string;
   text: string;
   timestamp: any;
   status?: string;
+  type?: EntryType;
   userId: string;
 }
 
@@ -22,6 +25,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'form' | 'history'>('form');
   const [ideaText, setIdeaText] = useState('');
+  const [entryType, setEntryType] = useState<EntryType>('idea');
   const [ideas, setIdeas] = useState<IdeaItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,6 +59,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
       // Logic aligns with rules: userId is used for 'allow create' and 'allow read'
       await addDoc(collection(db, 'tool_ideas'), {
         text: ideaText.trim(),
+        type: entryType,
         userId: user.uid,
         userEmail: user.email,
         userName: user.displayName || 'Anonymous User',
@@ -74,7 +79,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this idea from your history?")) {
+    if (confirm("Delete this entry from your history?")) {
       try {
         await deleteDoc(doc(db, 'tool_ideas', id));
       } catch (e) {
@@ -95,8 +100,8 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
                   <Lightbulb className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Tool Ideas</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Suggest new features (v1.6.0)</p>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Ideas & Fixes</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Suggest features or report issues</p>
                 </div>
              </div>
              <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1">
@@ -113,7 +118,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
                   : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
-              New Idea
+              Submit
             </button>
             <button
               onClick={() => setActiveTab('history')}
@@ -130,15 +135,34 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
           <div className="p-6 overflow-y-auto flex-1 bg-white dark:bg-slate-800">
              {activeTab === 'form' ? (
                <div className="space-y-4">
+                 {/* Type selector */}
+                 <div className="flex gap-3">
+                   {(['idea', 'fix'] as EntryType[]).map(t => (
+                     <button
+                       key={t}
+                       onClick={() => setEntryType(t)}
+                       className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 border-2 transition-all ${
+                         entryType === t
+                           ? t === 'idea'
+                             ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                             : 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
+                           : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
+                       }`}
+                     >
+                       {t === 'idea' ? <Lightbulb className="w-3.5 h-3.5" /> : <Wrench className="w-3.5 h-3.5" />}
+                       {t === 'idea' ? 'New Idea' : 'Bug / Fix'}
+                     </button>
+                   ))}
+                 </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                     What tool should we build next?
+                     {entryType === 'idea' ? 'What should we build or improve?' : 'What needs fixing?'}
                    </label>
                    <textarea
                      value={ideaText}
                      onChange={(e) => setIdeaText(e.target.value)}
                      disabled={isSubmitting}
-                     placeholder="e.g., A quiz generator that takes a vocabulary list..."
+                     placeholder={entryType === 'idea' ? 'e.g., A quiz generator that takes a vocabulary list...' : 'e.g., The export button crashes when the list is empty...'}
                      className="w-full h-32 rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm focus:border-orange-500 focus:ring-orange-500 dark:focus:border-orange-400 p-3 resize-none transition-colors"
                    />
                  </div>
@@ -156,7 +180,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
                    className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium shadow-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                  >
                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                   Submit Idea
+                   {entryType === 'idea' ? 'Submit Idea' : 'Report Fix'}
                  </button>
                </div>
              ) : (
@@ -170,9 +194,18 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
                    ideas.map((idea) => (
                      <div key={idea.id} className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700 group transition-colors">
                        <div className="flex justify-between items-start mb-2">
-                         <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
-                           {idea.timestamp?.toDate().toLocaleString() || 'Syncing...'}
-                         </span>
+                         <div className="flex items-center gap-2">
+                           <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${
+                             idea.type === 'fix'
+                               ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                               : 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
+                           }`}>
+                             {idea.type === 'fix' ? 'Fix' : 'Idea'}
+                           </span>
+                           <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-900/30 text-orange-600">
+                             {idea.status || 'New'}
+                           </span>
+                         </div>
                          <button 
                            onClick={() => handleDelete(idea.id)}
                            className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
@@ -181,11 +214,9 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
                          </button>
                        </div>
                        <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{idea.text}</p>
-                       <div className="mt-2 flex">
-                          <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-900/30 text-orange-600">
-                            {idea.status || 'New'}
-                          </span>
-                       </div>
+                       <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-2">
+                         {idea.timestamp?.toDate().toLocaleString() || 'Syncing...'}
+                       </p>
                      </div>
                    ))
                  )}
