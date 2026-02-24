@@ -12,6 +12,20 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.2.0',
+    date: 'February 2026',
+    title: 'Workflow Navigation & ID Resolver Enhancement',
+    type: 'Improvement',
+    changes: [
+      'Reorganized sidebar navigation into 8 workflow-based sections: Planning & Curriculum, Lesson Creation, Validation & QA, LLM & Content Processing, Competency Pipeline, Media & Assets, Utilities, and Resources.',
+      'Added step numbers to Competency Pipeline tools (1-6) for clear sequential workflow.',
+      'All sidebar sections now default to collapsed state for cleaner UI.',
+      'ID Resolver: Added Skill Mismatch Flagging — detects when can_do + CEFR match but skill differs.',
+      'ID Resolver: New amber "Skill Conflicts" stat card in summary, separate from true competency misses.',
+      'ID Resolver: Skill mismatch rows flagged with amber badge in preview table and included in error report download.'
+    ]
+  },
+  {
     version: '1.1.0',
     date: 'February 2026',
     title: 'TN Standardization Module',

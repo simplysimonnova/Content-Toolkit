@@ -29,61 +29,53 @@ const ICON_MAP: Record<string, any> = {
 
 const FALLBACK_GROUPS: NavGroupConfig[] = [
   {
-    id: 'lesson_tools',
-    title: 'Lesson Tools',
+    id: 'planning_curriculum',
+    title: 'Planning & Curriculum',
     items: [
-      { id: 'l1', label: 'Lesson Descriptions', icon: 'FileText', page: 'lesson-descriptions' },
-      { id: 'l2', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' },
-      { id: 'l3', label: 'TN Standardizer', icon: 'FileText', page: 'tn-standardizer' }
-    ]
-  },
-  {
-    id: 'tech_tools',
-    title: 'Tech Tools',
-    items: [
-      { id: 't1', label: 'Class ID Finder', icon: 'Hash', page: 'class-id-finder' },
-      { id: 't2', label: 'Jira Ticketer', icon: 'Ticket', page: 'jira-ticketer' }
-    ]
-  },
-  {
-    id: 'curriculum_planning',
-    title: 'Curriculum & Planning',
-    items: [
-      { id: 'cp1', label: 'S&S Compactor', icon: 'Zap', page: 'ss-compactor' },
-      { id: 'cp2', label: 'Curriculum Gap Spotter', icon: 'SearchCheck', page: 'gap-spotter' }
+      { id: 'pc1', label: 'S&S Compactor', icon: 'Zap', page: 'ss-compactor' },
+      { id: 'pc2', label: 'Curriculum Gap Spotter', icon: 'SearchCheck', page: 'gap-spotter' }
     ]
   },
   {
     id: 'lesson_creation',
     title: 'Lesson Creation',
     items: [
-      { id: 'lc1', label: 'Lesson Plan Generator', icon: 'Wand2', page: 'plan-generator' },
-      { id: 'lc2', label: 'Slide-creator Studio', icon: 'Presentation', page: 'slide-creator' },
-      { id: 'lc3', label: 'VR Validator', icon: 'Map', page: 'vr-validator' }
+      { id: 'lc1', label: 'Lesson Descriptions', icon: 'FileText', page: 'lesson-descriptions' },
+      { id: 'lc2', label: 'Lesson Plan Generator', icon: 'Wand2', page: 'plan-generator' },
+      { id: 'lc3', label: 'Slide-creator Studio', icon: 'Presentation', page: 'slide-creator' },
+      { id: 'lc4', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' },
+      { id: 'lc5', label: 'TN Standardizer', icon: 'FileText', page: 'tn-standardizer' }
     ]
   },
   {
-    id: 'llm_tools',
-    title: 'LLM Tools',
+    id: 'validation_qa',
+    title: 'Validation & QA',
     items: [
-      { id: 'w1', label: 'Word Cleaner', icon: 'ListFilter', page: 'word-cleaner' },
-      { id: 'w2', label: 'Topic Assigner', icon: 'Tag', page: 'topic-assigner' },
-      { id: 'w3', label: 'List Merger', icon: 'ListOrdered', page: 'list-merger' },
-      { id: 'w4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
-      { id: 'w5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
-      { id: 'w6', label: 'Competency Builder', icon: 'TableProperties', page: 'comp-import-creator' },
-      { id: 'w7', label: 'Competency CSV Normaliser', icon: 'TableProperties', page: 'competency-csv-normaliser' },
-      { id: 'w8', label: 'Row Expander', icon: 'ListFilter', page: 'row-expander' },
-      { id: 'w9', label: 'ID Resolver', icon: 'Link2', page: 'id-resolver' },
-      { id: 'w10', label: 'Directus JSON Builder', icon: 'Braces', page: 'directus-json-builder' }
+      { id: 'vq1', label: 'General Proofing Bot', icon: 'ClipboardCheck', page: 'proofing-bot' },
+      { id: 'vq2', label: 'Lesson Proofing Bot', icon: 'ShieldCheck', page: 'lesson-proofing-bot' }
     ]
   },
   {
-    id: 'proofing_tools',
-    title: 'Proofing Tools',
+    id: 'llm_content',
+    title: 'LLM & Content Processing',
     items: [
-      { id: 'p1', label: 'General Proofing Bot', icon: 'ClipboardCheck', page: 'proofing-bot' },
-      { id: 'p2', label: 'Lesson Proofing Bot', icon: 'ShieldCheck', page: 'lesson-proofing-bot' }
+      { id: 'lp1', label: 'Word Cleaner', icon: 'ListFilter', page: 'word-cleaner' },
+      { id: 'lp2', label: 'Topic Assigner', icon: 'Tag', page: 'topic-assigner' },
+      { id: 'lp3', label: 'List Merger', icon: 'ListOrdered', page: 'list-merger' },
+      { id: 'lp4', label: 'LLM Content Checker', icon: 'Search', page: 'llm-content-checker' },
+      { id: 'lp5', label: 'Deduplicator', icon: 'ShieldBan', page: 'deduplicator' }
+    ]
+  },
+  {
+    id: 'competency_pipeline',
+    title: 'Competency Pipeline',
+    items: [
+      { id: 'cp1', label: '1 Competency Builder', icon: 'TableProperties', page: 'comp-import-creator' },
+      { id: 'cp2', label: '2 Competency CSV Normalizer', icon: 'TableProperties', page: 'competency-csv-normaliser' },
+      { id: 'cp3', label: '3 Deduplicator', icon: 'ShieldBan', page: 'deduplicator' },
+      { id: 'cp4', label: '4 Row Expander', icon: 'ListFilter', page: 'row-expander' },
+      { id: 'cp5', label: '5 ID Resolver', icon: 'Link2', page: 'id-resolver' },
+      { id: 'cp6', label: '6 Directus JSON Builder', icon: 'Braces', page: 'directus-json-builder' }
     ]
   },
   {
@@ -91,11 +83,20 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
     title: 'Media & Assets',
     items: [
       { id: 'm1', label: 'Image Extractor', icon: 'Link2', page: 'image-extractor' },
-      { id: 'm2', label: 'Prompt Writer', icon: 'PenLine', page: 'prompt-writer' },
-      { id: 'm3', label: 'Prompt Redesigner', icon: 'Wand2', page: 'prompt-rewriter' },
-      { id: 'm4', label: 'Sound Generator', icon: 'Volume2', page: 'sound-generator' },
-      { id: 'm5', label: 'Nano Banana Studio', icon: 'Palette', page: 'nano-banana' },
-      { id: 'm6', label: 'Image Renamer', icon: 'Search', page: 'image-renamer' }
+      { id: 'm2', label: 'Image Renamer', icon: 'Search', page: 'image-renamer' },
+      { id: 'm3', label: 'Sound Generator', icon: 'Volume2', page: 'sound-generator' },
+      { id: 'm4', label: 'Nano Banana Studio', icon: 'Palette', page: 'nano-banana' },
+      { id: 'm5', label: 'Prompt Writer', icon: 'PenLine', page: 'prompt-writer' },
+      { id: 'm6', label: 'Prompt Redesigner', icon: 'Wand2', page: 'prompt-rewriter' }
+    ]
+  },
+  {
+    id: 'utilities',
+    title: 'Utilities',
+    items: [
+      { id: 'u1', label: 'Class ID Finder', icon: 'Hash', page: 'class-id-finder' },
+      { id: 'u2', label: 'Jira Ticketer', icon: 'Ticket', page: 'jira-ticketer' },
+      { id: 'u3', label: 'VR Validator', icon: 'Map', page: 'vr-validator' }
     ]
   },
   {
@@ -136,16 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
   const [showAdmin, setShowAdmin] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    'Lesson Tools': true,
-    'Tech Tools': true,
-    'Curriculum & Planning': true,
-    'Lesson Creation': true,
-    'LLM Tools': true,
-    'Proofing Tools': true,
-    'Media & Assets': true,
-    'Resources': true
-  });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [navGroups, setNavGroups] = useState<NavGroupConfig[]>([]);
   const [lockedTools, setLockedTools] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -153,14 +145,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'navigation', 'sidebar_config'), (snap) => {
       if (snap.exists() && snap.data().groups?.length > 0) {
-        setNavGroups(snap.data().groups);
+        const groups = snap.data().groups;
+        setNavGroups(groups);
+        // Initialize all groups as collapsed
+        const initialOpenState: Record<string, boolean> = {};
+        groups.forEach((g: NavGroupConfig) => {
+          initialOpenState[g.title] = false;
+        });
+        setOpenGroups(initialOpenState);
       } else {
         setNavGroups(FALLBACK_GROUPS);
+        // Initialize all fallback groups as collapsed
+        const initialOpenState: Record<string, boolean> = {};
+        FALLBACK_GROUPS.forEach(g => {
+          initialOpenState[g.title] = false;
+        });
+        setOpenGroups(initialOpenState);
       }
       setLoading(false);
     }, (err) => {
       console.error("Sidebar feed failed, using fallback:", err);
       setNavGroups(FALLBACK_GROUPS);
+      // Initialize all fallback groups as collapsed
+      const initialOpenState: Record<string, boolean> = {};
+      FALLBACK_GROUPS.forEach(g => {
+        initialOpenState[g.title] = false;
+      });
+      setOpenGroups(initialOpenState);
       setLoading(false);
     });
     return unsub;
@@ -261,7 +272,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
                 <h1 className="text-sm font-black tracking-tight text-white uppercase leading-tight">Content Toolkit</h1>
                 <div className="flex items-center gap-2">
                   <p className="text-[10px] text-slate-500 font-bold tracking-tighter">TOOLKIT PRO</p>
-                  <button onClick={() => setShowChangelog(true)} className="text-[9px] text-slate-600 hover:text-orange-500 font-mono transition-colors">v1.0.2</button>
+                  <button onClick={() => setShowChangelog(true)} className="text-[9px] text-slate-600 hover:text-orange-500 font-mono transition-colors">v1.2.0</button>
                 </div>
               </div>
             )}
