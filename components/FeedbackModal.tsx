@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Lightbulb, Wrench, Send, History, Trash2, CheckCircle2, Loader2 } from 'lucide-react';
-import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, query, where, onSnapshot, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 
@@ -34,16 +34,15 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
     if (isOpen && user) {
         // Query only the current user's ideas for the "My History" tab
         const q = query(
-          collection(db, 'tool_ideas'), 
-          where('userId', '==', user.uid),
-          orderBy('timestamp', 'desc')
+          collection(db, 'tool_ideas'),
+          where('userId', '==', user.uid)
         );
         
         const unsubscribe = onSnapshot(q, (snapshot) => {
-          setIdeas(snapshot.docs.map(d => ({ 
-            id: d.id, 
-            ...d.data() 
-          } as IdeaItem)));
+          const sorted = snapshot.docs
+            .map(d => ({ id: d.id, ...d.data() } as IdeaItem))
+            .sort((a, b) => (b.timestamp?.toMillis?.() ?? 0) - (a.timestamp?.toMillis?.() ?? 0));
+          setIdeas(sorted);
         }, (error) => {
           console.error("Snapshot error:", error);
         });
