@@ -195,7 +195,7 @@ export const IDResolver: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-indigo-500" />
-                        Expanded Rows
+                        Expanded Rows - Methods Doc
                     </h3>
                     <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center mb-4">
                         <input
@@ -247,7 +247,7 @@ export const IDResolver: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-green-500" />
-                        Full Library
+                        Full Competency Library Export
                     </h3>
                     <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center mb-4">
                         <input
@@ -299,7 +299,7 @@ export const IDResolver: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
                     <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-purple-500" />
-                        Lessons
+                        Lessons - Full Export
                     </h3>
                     <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center mb-4">
                         <input
@@ -542,7 +542,7 @@ export const IDResolver: React.FC = () => {
                             <div className="grid md:grid-cols-3 gap-8">
                                 {/* Expanded Rows Mapping */}
                                 <div className="space-y-4">
-                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-blue-500" /> Expanded Rows</h4>
+                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-blue-500" /> Expanded Rows - Methods Doc</h4>
                                     {[
                                         { label: 'LuL', key: 'triad_column' },
                                         { label: 'Can-do', key: 'can_do_column' },
@@ -565,7 +565,7 @@ export const IDResolver: React.FC = () => {
 
                                 {/* Full Library Mapping */}
                                 <div className="space-y-4">
-                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-green-500" /> Full Library</h4>
+                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-green-500" /> Full Competency Library Export</h4>
                                     {[
                                         { label: 'Comp ID', key: 'library_id_column' },
                                         { label: 'Can-do', key: 'library_can_do_column' },
@@ -588,7 +588,7 @@ export const IDResolver: React.FC = () => {
 
                                 {/* Lessons Mapping */}
                                 <div className="space-y-4">
-                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-purple-500" /> Lessons</h4>
+                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-purple-500" /> Lessons - Full Export</h4>
                                     {[
                                         { label: 'Lesson ID', key: 'lesson_id_column' },
                                         { label: 'LuL', key: 'lesson_lul_column' },
