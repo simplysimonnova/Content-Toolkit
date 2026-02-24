@@ -11,12 +11,9 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react()],
     define: {
-      'process.env': JSON.stringify({
-        API_KEY: env.GEMINI_API_KEY || process.env.GEMINI_API_KEY,
-        GEMINI_API_KEY: env.GEMINI_API_KEY || process.env.GEMINI_API_KEY,
-        NODE_ENV: mode
-      }),
-      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY || process.env.GEMINI_API_KEY),
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || process.env.GEMINI_API_KEY),
+      'process.env.NODE_ENV': JSON.stringify(mode),
       global: 'window',
     },
     resolve: {

@@ -37,6 +37,7 @@ const JiraTicketer = React.lazy(() => import('./components/JiraTicketer').then(m
 const DirectusJsonBuilder = React.lazy(() => import('./components/DirectusJsonBuilder').then(m => ({ default: m.DirectusJsonBuilder })));
 const TNStandardizer = React.lazy(() => import('./components/TNStandardizer').then(m => ({ default: m.TNStandardizer })));
 const ThematicQA = React.lazy(() => import('./components/ThematicQA').then(m => ({ default: m.ThematicQA })));
+const AIQARunner = React.lazy(() => import('./components/AIQARunner').then(m => ({ default: m.AIQARunner })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -113,6 +114,8 @@ const App: React.FC = () => {
         return <TNStandardizer />;
       case 'thematic-qa':
         return <ThematicQA />;
+      case 'ai-qa-runner':
+        return <AIQARunner />;
 
       // Curriculum & Planning
       case 'ss-compactor':

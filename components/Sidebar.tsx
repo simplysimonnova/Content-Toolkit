@@ -53,7 +53,8 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
     items: [
       { id: 'vq1', label: 'General Proofing Bot', icon: 'ClipboardCheck', page: 'proofing-bot' },
       { id: 'vq2', label: 'Lesson Proofing Bot', icon: 'ShieldCheck', page: 'lesson-proofing-bot' },
-      { id: 'vq3', label: 'Thematic QA', icon: 'ShieldCheck', page: 'thematic-qa' }
+      { id: 'vq3', label: 'Thematic QA', icon: 'ShieldCheck', page: 'thematic-qa' },
+      { id: 'vq4', label: 'Run AI QA', icon: 'ShieldCheck', page: 'ai-qa-runner' }
     ]
   },
   {

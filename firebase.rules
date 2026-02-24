@@ -84,5 +84,20 @@ service cloud.firestore {
       allow create: if request.auth != null;
       allow read, delete: if isAdmin();
     }
+
+    // --- QA Runs (immutable — no update/delete allowed) ---
+    match /qa_runs/{runId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && (
+        resource.data.triggered_by_user_id == request.auth.uid || isAdmin()
+      );
+      allow update, delete: if false;
+    }
+
+    // --- QA Prompt Versions (admin-only write, all auth users can read active prompts) ---
+    match /qa_versions/{versionId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
   }
 }
