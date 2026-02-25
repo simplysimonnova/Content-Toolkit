@@ -1,4 +1,5 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
+import { ai } from '../lib/aiClient';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import type { NormalizedSlide, QAMode, QAResult, QARun, QAVersion, PDFSourceType } from '../components/AIQARunner/types';
@@ -182,10 +183,6 @@ function buildUserPrompt(slides: NormalizedSlide[]): string {
 }
 
 async function callAI(systemPrompt: string, userPrompt: string): Promise<{ raw: string; parsed: QAResult }> {
-  const apiKey = process.env.API_KEY
-    || (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY)
-    || (typeof import.meta !== 'undefined' && (import.meta as any).env?.GEMINI_API_KEY);
-  const ai = new GoogleGenAI({ apiKey: apiKey as string });
 
   const response = await ai.models.generateContent({
     model: MODEL,

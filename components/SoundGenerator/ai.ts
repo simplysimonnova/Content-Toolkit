@@ -1,8 +1,8 @@
-import { GoogleGenAI, Modality } from "@google/genai";
+import { Modality } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const generateAudioSound = async (prompt: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const config = await fetchConfig('sound-generator', "Generate success chimes and effects.");
     const model = "gemini-2.5-flash-preview-tts";
     const response = await ai.models.generateContent({

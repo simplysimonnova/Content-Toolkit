@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export interface TicketData {
@@ -10,7 +10,6 @@ export interface TicketData {
 }
 
 export const generateJiraTicket = async (data: TicketData): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const fallbackInstruction = `
 Your job is to take raw notes and/or screenshots and generate a clean, short, structured Jira/Trello ticket draft.
 

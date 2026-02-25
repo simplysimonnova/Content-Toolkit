@@ -1,4 +1,5 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 import { logUsage } from "../../services/geminiService";
 
 export interface TopicAssignmentResult {
@@ -10,7 +11,6 @@ export interface TopicAssignmentResult {
 }
 
 export const assignTopicsWithAI = async (words: string[], references: any[], onProgress: any): Promise<TopicAssignmentResult[]> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const model = 'gemini-3-flash-preview';
     const response = await ai.models.generateContent({
         model,

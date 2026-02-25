@@ -1,8 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const validateVRLink = async (url: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const model = 'gemini-3-flash-preview';
     const config = await fetchConfig('vr-validator', "You are a validation tool for Novakid classroom VR links.");
 

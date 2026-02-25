@@ -1,5 +1,6 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 
 export interface TNResult {
   fixedNotes: string;
@@ -7,7 +8,6 @@ export interface TNResult {
 }
 
 export async function fixTeacherNotes(rawNotes: string, systemPrompt: string): Promise<TNResult> {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const prompt = `
 [INPUT DATA]:

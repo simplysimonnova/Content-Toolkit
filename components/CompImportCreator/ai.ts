@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 import { logUsage } from "../../services/geminiService";
 
 interface CompImportResult {
@@ -42,7 +42,6 @@ Output format API Requirement
 `;
 
 export const generateCompImport = async (text: string): Promise<CompImportResult[]> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     // Using a robust model for complex instruction following
     const model = 'gemini-2.0-flash';
 

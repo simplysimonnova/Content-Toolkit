@@ -1,4 +1,5 @@
-import { GoogleGenAI, Type, Modality } from "@google/genai";
+import { Type, Modality } from "@google/genai";
+import { ai } from '../lib/aiClient';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "./firebase";
 import { LessonInfo, OutputMode, Subscription } from '../types';
@@ -94,7 +95,6 @@ export const logToolUsage = async (params: {
 };
 
 export const parseSubscriptionsFromPDF = async (base64Data: string): Promise<Partial<Subscription>[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const model = 'gemini-3-flash-preview';
 
   const prompt = `Extract all AI services from this subscription report PDF table. 
@@ -147,7 +147,6 @@ export const parseSubscriptionsFromPDF = async (base64Data: string): Promise<Par
 };
 
 export const rewriteImagePrompt = async (source: string, instruction: string): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const config = await fetchConfig('prompt-rewriter', "Follow image consistency rules.");
   const model = 'gemini-3-flash-preview';
   const response = await ai.models.generateContent({
@@ -160,7 +159,6 @@ export const rewriteImagePrompt = async (source: string, instruction: string): P
 };
 
 export const generateNewImagePrompt = async (keywords: string): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const model = 'gemini-3-flash-preview';
 
   // Use explicit tool ID 'prompt-writer' to match the UI settings

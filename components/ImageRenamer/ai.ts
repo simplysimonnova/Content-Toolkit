@@ -1,8 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 import { logUsage } from "../../services/geminiService";
 
 export const analyzeImageForRenaming = async (base64Data: string, mimeType: string, stylePrefix: string): Promise<any> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const model = 'gemini-3-flash-preview';
 
     const prompt = `Visually analyze this image and provide a standardized filename following these Novakid rules:

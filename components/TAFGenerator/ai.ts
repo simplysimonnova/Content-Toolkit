@@ -1,8 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const generateTAF = async (lessonData: any, metadata: string, ruleset: any): Promise<any> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const config = await fetchConfig('taf-generator', "Generate TAF rows based on ruleset.");
     const model = 'gemini-3-flash-preview';
     const stabilityHint = config.isLocked ? "\nSTABILITY NOTE: This is a verified production prompt. Do not deviate from these logic constraints." : "";

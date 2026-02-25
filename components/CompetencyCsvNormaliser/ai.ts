@@ -1,8 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
+import { ai } from '../../lib/aiClient';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const normalizeCompetencies = async (csvData: string): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   // Fetch user-configurable prompt from Firestore, or use default
   const config = await fetchConfig('competency-csv-normaliser', `
