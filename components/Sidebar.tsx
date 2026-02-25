@@ -276,7 +276,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
                 <h1 className="text-sm font-black tracking-tight text-white uppercase leading-tight">Content Workspace</h1>
                 <div className="flex items-center gap-2">
                   <p className="text-[10px] text-slate-500 font-bold tracking-tighter">TOOLKIT PRO</p>
-                  <button onClick={() => setShowChangelog(true)} className="text-[9px] text-slate-600 hover:text-orange-500 font-mono transition-colors">v1.5.0</button>
+                  <button onClick={() => setShowChangelog(true)} className="text-[9px] text-slate-600 hover:text-orange-500 font-mono transition-colors">v1.6.0</button>
                 </div>
               </div>
             )}

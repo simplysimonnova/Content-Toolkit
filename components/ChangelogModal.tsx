@@ -12,6 +12,23 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.6.0',
+    date: 'February 2026',
+    title: 'AI Model Governance Phase 2: Tier System & Admin Override',
+    type: 'Improvement',
+    changes: [
+      'Model Registry expanded: added reasoning and vision capability tiers (all currently resolve to gemini-3-flash-preview — single-file upgrade path for future).',
+      'Created lib/toolTierResolver.ts: async Firestore-backed resolver that reads tool_settings/{tool_id}, validates against ALLOWED_TIERS, and silently falls back to default.',
+      'Each AI tool now declares ALLOWED_TIERS and a unique TOOL_ID — model resolution is per-call, not module-level.',
+      'All 17 AI tools migrated from resolveModel() to getResolvedModelForTool() — zero behaviour change, all still use Flash.',
+      'logUsage() extended with tier parameter; logToolUsage() extended with model and tier parameters — backward compatible.',
+      'qaEngine.ts: tier and model now tracked per-run in qa_runs documents and usage logs.',
+      'New Firestore collection tool_settings: admin-write, all-authenticated-read.',
+      'Admin Console: new AI Tool Settings tab — tier dropdown per tool, real-time Firestore sync, saving indicator.',
+      'Firestore rules updated to enforce admin-only writes to tool_settings.',
+    ]
+  },
+  {
     version: '1.5.0',
     date: 'February 2026',
     title: 'AI Key Governance, Usage Logging Expansion & Ideas/Fixes Improvements',
