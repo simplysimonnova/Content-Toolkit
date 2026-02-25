@@ -42,7 +42,7 @@ Output format API Requirement
 `;
 
 export const generateCompImport = async (text: string): Promise<CompImportResult[]> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     // Using a robust model for complex instruction following
     const model = 'gemini-2.0-flash';
 
