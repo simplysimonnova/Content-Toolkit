@@ -12,6 +12,23 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.3.0',
+    date: 'February 2026',
+    title: 'Lesson QA Module & Ideas/Fixes System',
+    type: 'Feature',
+    changes: [
+      'New Lesson QA tool — upload a lesson PDF, select QA mode (Full Lesson, Slide Structure, Speaker Notes, or Grammar), and run a full AI-powered quality review.',
+      'Supports both Google Slides exports and Slides.com exports via smart PDF normalization and slide/notes pairing.',
+      'Deterministic pre-checks block AI review on critical structural issues (e.g. missing slides, empty notes).',
+      'Per-mode prompt editor (admin-only) stored in Firestore with lock/unlock controls.',
+      'QA results saved to Firestore qa_runs collection with full scored report and flag breakdown.',
+      'Renamed from "Run AI QA" to "Lesson QA" and moved into the Lesson Creation sidebar section.',
+      'Feedback button renamed to "Ideas & Fixes" — users can now tag submissions as Idea (teal) or Bug/Fix (amber).',
+      'Admin Console: new Ideas & Fixes tab showing all submissions with filter by type/status/search, card and list view, status update dropdown (New → In Review → Done → Rejected), and delete.',
+      'My History tab in the Ideas & Fixes modal shows type and status badges per entry.'
+    ]
+  },
+  {
     version: '1.2.0',
     date: 'February 2026',
     title: 'Workflow Navigation & ID Resolver Enhancement',
