@@ -91,6 +91,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // --- Unified Tool Reports ---
+    match /tool_reports/{reportId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow delete: if isAdmin();
+    }
+
     // --- Thematic QA Reports ---
     match /tqa_reports/{reportId} {
       allow create: if request.auth != null;

@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Settings, Info, X, AlertTriangle, Copy, Check, Upload, Loader2, Shield } from 'lucide-react';
-import { fixTeacherNotes, TNResult } from './ai';
+import { FileText, Settings, Info, AlertTriangle, Copy, Check, Upload, Loader2, Shield } from 'lucide-react';
+import { fixTeacherNotes } from './ai';
 import { TNInfoModal } from './TNInfoModal';
 import { UnifiedToolSettingsModal } from '../UnifiedToolSettingsModal';
 import { getToolConfig } from '../../services/toolConfig';
+import { saveReport } from '../../services/reportService';
+import { ReportViewer } from '../ReportViewer';
 import { useAuth } from '../../context/AuthContext';
+import type { ToolReport, ReportData } from '../../types/report';
 
 const LOCKED_PROMPT = `ROLE
 You are "Novakid Teacher Notes Fixer Bot." Your job is to rewrite Teacher Notes (TNs) into the correct Novakid TN format using the rules below.
@@ -76,14 +79,15 @@ const STANDARDS = [
 ];
 
 export const TNStandardizer: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
   const [originalTNs, setOriginalTNs] = useState('');
-  const [result, setResult] = useState<TNResult | null>(null);
+  const [report, setReport] = useState<ToolReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [parsingFile, setParsingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const fixedNotesRef = useRef<string>('');
   const [isFullLesson, setIsFullLesson] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -104,10 +108,55 @@ export const TNStandardizer: React.FC = () => {
 
   const handleFix = async () => {
     if (!originalTNs.trim()) { setError('Please paste some teacher notes or upload a file to fix.'); return; }
-    setLoading(true); setError(null); setResult(null);
-    try { setResult(await fixTeacherNotes(originalTNs, activePrompt)); }
-    catch (err: any) { setError(err.message || 'An unexpected error occurred.'); }
-    finally { setLoading(false); }
+    setLoading(true); setError(null); setReport(null);
+    try {
+      const tnResult = await fixTeacherNotes(originalTNs, activePrompt);
+      fixedNotesRef.current = tnResult.fixedNotes;
+
+      const reportData: ReportData = {
+        sections: [
+          {
+            type: 'summary',
+            title: 'TN Standardization Result',
+            status: 'success',
+            text: `Successfully standardized ${isFullLesson ? 'full lesson' : 'single slide'} teacher notes.`,
+          },
+          {
+            type: 'text',
+            title: 'Standardized Notes',
+            content: tnResult.fixedNotes,
+          },
+          {
+            type: 'text',
+            title: 'Fix Log',
+            content: tnResult.fixLog,
+          },
+        ],
+      };
+
+      const savedId = await saveReport({
+        toolId: 'tn-standardizer',
+        userId: user?.uid ?? 'anonymous',
+        status: 'success',
+        summary: `Standardized ${isFullLesson ? 'full lesson' : 'single slide'} TN.`,
+        reportData,
+      });
+
+      setReport({
+        id: savedId ?? undefined,
+        tool_id: 'tn-standardizer',
+        user_id: user?.uid ?? 'anonymous',
+        created_at: new Date().toISOString(),
+        status: 'success',
+        summary: `Standardized ${isFullLesson ? 'full lesson' : 'single slide'} TN.`,
+        report_data: reportData,
+        schema_version: '1.0',
+      });
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,8 +212,8 @@ export const TNStandardizer: React.FC = () => {
   };
 
   const handleCopy = () => {
-    if (!result) return;
-    navigator.clipboard.writeText(result.fixedNotes);
+    if (!fixedNotesRef.current) return;
+    navigator.clipboard.writeText(fixedNotesRef.current);
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
@@ -174,45 +223,6 @@ export const TNStandardizer: React.FC = () => {
       setIsLocked(cfg.isLocked);
       if (cfg.prompt_template !== undefined) setAdditionalInstructions(cfg.prompt_template);
     });
-  };
-
-  const renderFixedNotes = (text: string) => {
-    const lines = text.split('\n');
-    const slides: { title: string; content: string[] }[] = [];
-    let cur: { title: string; content: string[] } | null = null;
-    lines.forEach(line => {
-      const t = line.trim();
-      if (t.startsWith('### SLIDE') || (t.startsWith('Slide') && t.endsWith(':'))) {
-        cur = { title: t.replace(/###|SLIDE|Slide|:|#/g, '').trim(), content: [] };
-        slides.push(cur);
-      } else {
-        if (!cur) { cur = { title: 'General Info', content: [] }; slides.push(cur); }
-        cur.content.push(line);
-      }
-    });
-    if (!slides.length && text.trim()) {
-      return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <pre className="font-sans text-sm leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{text}</pre>
-        </div>
-      );
-    }
-    return slides.map((slide, i) => (
-      <div key={i} className="mb-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 px-5 py-3 border-b border-indigo-100 dark:border-indigo-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase">SLIDE</span>
-            <span className="text-indigo-900 dark:text-indigo-200 font-bold text-sm">{slide.title}</span>
-          </div>
-          <span className="text-indigo-300 dark:text-indigo-600 text-[10px] font-bold">#{i + 1}</span>
-        </div>
-        <div className="p-5">
-          {slide.content.map((l, j) => (
-            <p key={j} className={`${/^\d+ /.test(l.trim()) ? 'mt-2 text-slate-900 dark:text-white font-bold' : 'mb-1 text-slate-700 dark:text-slate-300'} last:mb-0 min-h-[1.2em] text-sm leading-relaxed`}>{l}</p>
-          ))}
-        </div>
-      </div>
-    ));
   };
 
   return (
@@ -345,13 +355,13 @@ export const TNStandardizer: React.FC = () => {
 
         {/* Right: Output */}
         <div className="flex flex-col gap-6">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-indigo-600 rounded-full" />
-                Standardized Result
-              </h2>
-              {result && (
+          {report ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-indigo-600 rounded-full" />
+                  Standardized Result
+                </h2>
                 <button
                   onClick={handleCopy}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -363,46 +373,31 @@ export const TNStandardizer: React.FC = () => {
                   {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   {copied ? 'Copied' : 'Copy TNs'}
                 </button>
-              )}
+              </div>
+              <ReportViewer report={report} onRerun={handleFix} />
             </div>
-
-            <div className="p-6 overflow-y-auto max-h-[70vh] bg-slate-50/30 dark:bg-slate-900/30 min-h-[300px]">
-              {result ? (
-                <div>{renderFixedNotes(result.fixedNotes)}</div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full min-h-[260px] text-slate-400 text-center px-8">
-                  {loading ? (
-                    <div className="space-y-4 flex flex-col items-center">
-                      <div className="relative w-16 h-16">
-                        <div className="absolute inset-0 border-4 border-indigo-100 dark:border-indigo-900/30 rounded-full" />
-                        <div className="absolute inset-0 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                      </div>
-                      <p className="font-bold text-slate-600 dark:text-slate-300">Fixing Notes...</p>
-                      <p className="text-xs text-slate-400">Applying TN Conventions</p>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
+              <div className="p-6 flex flex-col items-center justify-center min-h-[300px] text-slate-400 text-center px-8">
+                {loading ? (
+                  <div className="space-y-4 flex flex-col items-center">
+                    <div className="relative w-16 h-16">
+                      <div className="absolute inset-0 border-4 border-indigo-100 dark:border-indigo-900/30 rounded-full" />
+                      <div className="absolute inset-0 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
                     </div>
-                  ) : (
-                    <>
-                      <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl flex items-center justify-center mb-6">
-                        <FileText className="w-10 h-10 text-indigo-200 dark:text-indigo-800" />
-                      </div>
-                      <p className="max-w-[280px] font-medium leading-relaxed text-sm">
-                        Standardized TNs will appear here in slide blocks with numbered steps.
-                      </p>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {result && (
-            <div className="bg-slate-900 dark:bg-slate-950 rounded-2xl p-6 border border-slate-800 shadow-xl">
-              <h3 className="text-indigo-400 font-bold text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-                Fix Log
-              </h3>
-              <div className="text-slate-300 text-sm leading-relaxed font-medium whitespace-pre-wrap opacity-90">
-                {result.fixLog}
+                    <p className="font-bold text-slate-600 dark:text-slate-300">Fixing Notes...</p>
+                    <p className="text-xs text-slate-400">Applying TN Conventions</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl flex items-center justify-center mb-6">
+                      <FileText className="w-10 h-10 text-indigo-200 dark:text-indigo-800" />
+                    </div>
+                    <p className="max-w-[280px] font-medium leading-relaxed text-sm">
+                      Standardized TNs will appear here in slide blocks with numbered steps.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           )}
