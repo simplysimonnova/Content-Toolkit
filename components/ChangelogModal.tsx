@@ -12,6 +12,28 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.5.0',
+    date: 'February 2026',
+    title: 'AI Key Governance, Usage Logging Expansion & Ideas/Fixes Improvements',
+    type: 'Improvement',
+    changes: [
+      'AI Key Governance: centralised all AI client initialisation into a single lib/aiClient.ts — removed 17 individual GoogleGenAI instantiations across all tools.',
+      'Governance rule enforced: fail-fast on missing API_KEY; no tool may create its own AI client.',
+      'Fixed Competency Builder and Competency CSV Normaliser: were using undefined VITE_GEMINI_API_KEY instead of process.env.API_KEY.',
+      'Usage Logging: extended schema with tool_id, tool_name, is_ai_tool, status fields — all existing AI tool callers remain unchanged.',
+      'Added logToolUsage() for non-AI tools; migrated SpreadsheetDeduplicator as first example.',
+      'Admin Console Usage tab: replaced static 50-record list with paginated getDocs (50/page) and "See more" cursor-based pagination.',
+      'Admin Console Usage tab: added server-side filters — tool ID, user email, and AI / Non-AI / All toggle.',
+      'Usage table now shows Type badge (AI / Tool) and Status badge (success / error).',
+      'Ideas & Fixes: users can now edit and delete only their own entries (ownership enforced in UI and Firestore rules).',
+      'Ideas & Fixes: status field aligned to new schema — new / reviewed / actioned — with colour-coded badges.',
+      'Ideas & Fixes: added optional linkedTaskUrl field (Jira/Linear link) editable by entry owner.',
+      'Ideas & Fixes: entries now store updatedAt timestamp; edited entries show "(edited)" note in history.',
+      'Admin Console Ideas tab: status dropdown updated to new schema; linkedTaskUrl rendered as clickable link in card and list views.',
+      'Firestore rules: owners can update their own entries but cannot change status; admins can update all fields.',
+    ]
+  },
+  {
     version: '1.4.0',
     date: 'February 2026',
     title: 'Content Workspace Rebrand, Thematic QA History & ID Resolver Overhaul',
