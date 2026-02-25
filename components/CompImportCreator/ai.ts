@@ -1,4 +1,5 @@
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { logUsage } from "../../services/geminiService";
 
 interface CompImportResult {
@@ -43,7 +44,7 @@ Output format API Requirement
 
 export const generateCompImport = async (text: string): Promise<CompImportResult[]> => {
     // Using a robust model for complex instruction following
-    const model = 'gemini-3-flash-preview';
+    const model = resolveModel();
 
     try {
         const response = await ai.models.generateContent({

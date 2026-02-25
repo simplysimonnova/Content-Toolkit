@@ -1,5 +1,6 @@
 import { Type } from "@google/genai";
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { logUsage } from "../../services/geminiService";
 import { ThematicQAResult, QASettings, DEFAULT_SETTINGS } from "./types";
 
@@ -63,7 +64,7 @@ export async function runThematicQA(
   slideImages: { slide: number; dataUrl: string }[],
   settings: QASettings = DEFAULT_SETTINGS
 ): Promise<ThematicQAResult> {
-  const model = "gemini-3-flash-preview";
+  const model = resolveModel();
 
   // Build contents array: text prompt + inline images
   const imageParts = slideImages.map((img) => ({

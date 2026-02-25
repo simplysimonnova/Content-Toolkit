@@ -1,5 +1,6 @@
 import { Type, Modality } from "@google/genai";
 import { ai } from '../lib/aiClient';
+import { resolveModel } from '../lib/modelRegistry';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "./firebase";
 import { LessonInfo, OutputMode, Subscription } from '../types';
@@ -95,7 +96,7 @@ export const logToolUsage = async (params: {
 };
 
 export const parseSubscriptionsFromPDF = async (base64Data: string): Promise<Partial<Subscription>[]> => {
-  const model = 'gemini-3-flash-preview';
+  const model = resolveModel();
 
   const prompt = `Extract all AI services from this subscription report PDF table. 
   
@@ -148,7 +149,7 @@ export const parseSubscriptionsFromPDF = async (base64Data: string): Promise<Par
 
 export const rewriteImagePrompt = async (source: string, instruction: string): Promise<string> => {
   const config = await fetchConfig('prompt-rewriter', "Follow image consistency rules.");
-  const model = 'gemini-3-flash-preview';
+  const model = resolveModel();
   const response = await ai.models.generateContent({
     model,
     contents: `${config.instruction}\nRewrite image prompt: ${source}\nInst: ${instruction}`,
@@ -159,7 +160,7 @@ export const rewriteImagePrompt = async (source: string, instruction: string): P
 };
 
 export const generateNewImagePrompt = async (keywords: string): Promise<string> => {
-  const model = 'gemini-3-flash-preview';
+  const model = resolveModel();
 
   // Use explicit tool ID 'prompt-writer' to match the UI settings
   const config = await fetchConfig('prompt-writer', "You are an expert AI image prompt engineer for Novakid materials.");

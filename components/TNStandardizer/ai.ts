@@ -1,5 +1,6 @@
 import { Type } from "@google/genai";
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { logUsage } from "../../services/geminiService";
 
 export interface TNResult {
@@ -8,7 +9,7 @@ export interface TNResult {
 }
 
 export async function fixTeacherNotes(rawNotes: string, systemPrompt: string): Promise<TNResult> {
-  const model = 'gemini-3-flash-preview';
+  const model = resolveModel();
 
   const prompt = `
 [INPUT DATA]:

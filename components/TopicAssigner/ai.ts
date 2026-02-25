@@ -1,5 +1,6 @@
 import { Type } from "@google/genai";
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { logUsage } from "../../services/geminiService";
 
 export interface TopicAssignmentResult {
@@ -11,7 +12,7 @@ export interface TopicAssignmentResult {
 }
 
 export const assignTopicsWithAI = async (words: string[], references: any[], onProgress: any): Promise<TopicAssignmentResult[]> => {
-    const model = 'gemini-3-flash-preview';
+    const model = resolveModel();
     const response = await ai.models.generateContent({
         model,
         contents: `Assign topics for: ${words.join(', ')}. Use references: ${JSON.stringify(references)}`,

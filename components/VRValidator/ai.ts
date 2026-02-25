@@ -1,8 +1,9 @@
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const validateVRLink = async (url: string): Promise<string> => {
-    const model = 'gemini-3-flash-preview';
+    const model = resolveModel();
     const config = await fetchConfig('vr-validator', "You are a validation tool for Novakid classroom VR links.");
 
     const response = await ai.models.generateContent({

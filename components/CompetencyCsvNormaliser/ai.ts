@@ -1,4 +1,5 @@
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const normalizeCompetencies = async (csvData: string): Promise<string> => {
@@ -84,7 +85,7 @@ Output Guarantee
 - Return strictly the CSV content.
 `);
 
-  const model = 'gemini-3-flash-preview';
+  const model = resolveModel();
 
   const prompt = `
 ${config.instruction}

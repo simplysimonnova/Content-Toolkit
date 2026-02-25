@@ -4,8 +4,9 @@ import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc
 import { db, auth } from './firebase';
 import type { NormalizedSlide, QAMode, QAResult, QARun, QAVersion, PDFSourceType } from '../components/AIQARunner/types';
 import { validateQAResult } from './resultValidator';
+import { resolveModel } from '../lib/modelRegistry';
 
-const MODEL = 'gemini-3-flash-preview';
+const MODEL = resolveModel();
 
 const DEFAULT_PROMPTS: Record<QAMode, string> = {
   'full-lesson': `You are a senior instructional quality reviewer for Novakid, an online English school for children aged 4–12.

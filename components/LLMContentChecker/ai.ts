@@ -1,9 +1,10 @@
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const generateProofReport = async (data: any): Promise<string> => {
     const config = await fetchConfig('proofing-bot', `Proofread this text for UK English spelling and grammar. Ensure all headings follow the same format. Only suggest tonal changes if the tone is inconsistent within the document or if the writing feels unfinished. Output the findings in a simple, clear list for the user to action.`);
-    const model = 'gemini-3-flash-preview';
+    const model = resolveModel();
 
     const parts: any[] = [{ text: config.instruction }];
 

@@ -1,9 +1,10 @@
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export const generateTAF = async (lessonData: any, metadata: string, ruleset: any): Promise<any> => {
     const config = await fetchConfig('taf-generator', "Generate TAF rows based on ruleset.");
-    const model = 'gemini-3-flash-preview';
+    const model = resolveModel();
     const stabilityHint = config.isLocked ? "\nSTABILITY NOTE: This is a verified production prompt. Do not deviate from these logic constraints." : "";
 
     const parts: any[] = [

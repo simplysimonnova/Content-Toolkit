@@ -1,11 +1,12 @@
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 import { LessonInfo, OutputMode } from "../../types";
 import { SYSTEM_INSTRUCTION } from "../../constants";
 
 export const generateLessonContent = async (info: LessonInfo, mode: OutputMode): Promise<string> => {
     const config = await fetchConfig('lesson-descriptions', SYSTEM_INSTRUCTION);
-    const model = 'gemini-3-flash-preview';
+    const model = resolveModel();
     const stabilityHint = config.isLocked ? "\nSTABILITY NOTE: This is a verified production prompt. Do not deviate from these logic constraints." : "";
 
     const response = await ai.models.generateContent({

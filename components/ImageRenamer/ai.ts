@@ -1,8 +1,9 @@
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { logUsage } from "../../services/geminiService";
 
 export const analyzeImageForRenaming = async (base64Data: string, mimeType: string, stylePrefix: string): Promise<any> => {
-    const model = 'gemini-3-flash-preview';
+    const model = resolveModel();
 
     const prompt = `Visually analyze this image and provide a standardized filename following these Novakid rules:
   1. Format: ${stylePrefix}[type]-[subject]-[descriptor]-[variant]

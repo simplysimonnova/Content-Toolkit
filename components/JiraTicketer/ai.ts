@@ -1,4 +1,5 @@
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 import { fetchConfig, logUsage } from "../../services/geminiService";
 
 export interface TicketData {
@@ -35,7 +36,7 @@ Noise filter: If no clear reproduction steps are found, leave blank — don’t 
   `.trim();
 
     const config = await fetchConfig('jira-ticketer', fallbackInstruction);
-    const model = 'gemini-3-flash-preview';
+    const model = resolveModel();
 
     const parts: any[] = [{ text: config.instruction }];
 

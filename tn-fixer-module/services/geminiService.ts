@@ -1,6 +1,7 @@
 
 import { Type } from "@google/genai";
 import { ai } from '../../lib/aiClient';
+import { resolveModel } from '../../lib/modelRegistry';
 
 export interface TNResult {
   fixedNotes: string;
@@ -18,7 +19,7 @@ REWRITE NOW.
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: resolveModel(),
       contents: prompt,
       config: {
         systemInstruction: systemPrompt,
