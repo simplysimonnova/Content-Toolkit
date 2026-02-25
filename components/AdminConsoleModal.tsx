@@ -849,8 +849,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                           </a>
                         )}
                         <div className="flex items-center justify-between pt-2 border-t dark:border-slate-700">
-                          <select value={idea.status || 'new'} onChange={e => updateStatus(idea.id, e.target.value)}
-                            className={`text-[9px] font-black uppercase px-2 py-1 rounded border-0 cursor-pointer ${STATUS_STYLES[idea.status || 'new']} bg-transparent`}>
+                          <select value={(idea.status || 'new').toLowerCase()} onChange={e => updateStatus(idea.id, e.target.value)}
+                            className={`text-[9px] font-black uppercase px-2 py-1 rounded border-0 cursor-pointer ${STATUS_STYLES[(idea.status || 'new').toLowerCase()] ?? STATUS_STYLES['new']} bg-transparent`}>
                             {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
                           <div className="flex items-center gap-2">
@@ -898,8 +898,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                               )}
                             </td>
                             <td className="px-4 py-3">
-                              <select value={idea.status || 'new'} onChange={e => updateStatus(idea.id, e.target.value)}
-                                className={`text-[9px] font-black uppercase px-2 py-1 rounded cursor-pointer border-0 ${STATUS_STYLES[idea.status || 'new']}`}>
+                              <select value={(idea.status || 'new').toLowerCase()} onChange={e => updateStatus(idea.id, e.target.value)}
+                                className={`text-[9px] font-black uppercase px-2 py-1 rounded cursor-pointer border-0 ${STATUS_STYLES[(idea.status || 'new').toLowerCase()] ?? STATUS_STYLES['new']}`}>
                                 {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                               </select>
                             </td>
