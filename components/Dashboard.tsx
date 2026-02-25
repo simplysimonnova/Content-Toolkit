@@ -52,6 +52,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-6 text-slate-800 dark:text-white font-bold">
+              <Star className="w-5 h-5 text-orange-500" />
+              Quick Start
+            </div>
+            <div className="space-y-2">
+              {[
+                { label: 'Lesson Descriptions', page: 'lesson-descriptions' as AppPage },
+                { label: 'General Proofing', page: 'proofing-bot' as AppPage },
+                { label: 'TAF Generator', page: 'taf-generator' as AppPage }
+              ].map((btn) => (
+                <button
+                  key={btn.page}
+                  onClick={() => onNavigate(btn.page)}
+                  className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-800 transition-all text-sm font-bold text-slate-600 dark:text-slate-300 group"
+                >
+                  {btn.label}
+                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-orange-500 transition-colors" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6 text-slate-800 dark:text-white font-bold">
@@ -89,31 +114,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   </div>
                 ))
               )}
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-6 text-slate-800 dark:text-white font-bold">
-              <Star className="w-5 h-5 text-orange-500" />
-              Quick Start
-            </div>
-            <div className="space-y-2">
-              {[
-                { label: 'Lesson Descriptions', page: 'lesson-descriptions' as AppPage },
-                { label: 'General Proofing', page: 'proofing-bot' as AppPage },
-                { label: 'TAF Generator', page: 'taf-generator' as AppPage }
-              ].map((btn) => (
-                <button
-                  key={btn.page}
-                  onClick={() => onNavigate(btn.page)}
-                  className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/10 border border-transparent hover:border-orange-200 dark:hover:border-orange-800 transition-all text-sm font-bold text-slate-600 dark:text-slate-300 group"
-                >
-                  {btn.label}
-                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-orange-500 transition-colors" />
-                </button>
-              ))}
             </div>
           </div>
         </div>
