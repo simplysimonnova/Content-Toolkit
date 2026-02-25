@@ -85,6 +85,12 @@ service cloud.firestore {
       allow read, delete: if isAdmin();
     }
 
+    // --- Tool Config (unified configuration layer) ---
+    match /tool_config/{toolId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
     // --- Thematic QA Reports ---
     match /tqa_reports/{reportId} {
       allow create: if request.auth != null;

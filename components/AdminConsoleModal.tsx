@@ -6,12 +6,13 @@ import {
   LayoutGrid, List, Check, RotateCcw, Presentation, UserCog, UserMinus,
   RefreshCw, LifeBuoy, GripVertical, Hash, Zap, SearchCheck, Wand2, Palette,
   Volume2, PenLine, ClipboardCheck, ShieldCheck, CreditCard, Tag, ListFilter,
-  ShieldBan, Map, Search, SlidersHorizontal
+  ShieldBan, Map, Search, SlidersHorizontal, Lock, Unlock
 } from 'lucide-react';
 import { collection, query, doc, onSnapshot, orderBy, limit, deleteDoc, setDoc, serverTimestamp, addDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 import { SubscriptionTracker } from './SubscriptionTracker';
+import { UnifiedToolSettingsModal } from './UnifiedToolSettingsModal';
 
 interface AdminConsoleModalProps {
   isOpen: boolean;
@@ -62,6 +63,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
   // --- Module State: User Management ---
   const [manualUser, setManualUser] = useState({ email: '', displayName: '', role: 'user' });
+
+  // --- Module State: Tool Config Settings ---
+  const [openSettingsToolId, setOpenSettingsToolId] = useState<string | null>(null);
 
   // --- Module State: Ideas & Fixes ---
   const [ideas, setIdeas] = useState<any[]>([]);
@@ -594,12 +598,34 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                 <div key={c.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl border dark:border-slate-700 flex justify-between items-center group">
                   <div className="flex items-center gap-4">
                     <div className="p-2 bg-slate-100 dark:bg-slate-900 rounded-lg text-orange-500"><Settings2 className="w-4 h-4" /></div>
-                    <div><h5 className="font-bold text-sm capitalize dark:text-white">{c.id.replace(/-/g, ' ')}</h5><p className="text-[10px] text-slate-400 font-bold uppercase">{c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : 'System'}</p></div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h5 className="font-bold text-sm capitalize dark:text-white">{c.id.replace(/-/g, ' ')}</h5>
+                        {c.isLocked
+                          ? <span className="flex items-center gap-1 text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 border border-teal-100 dark:border-teal-800"><Lock className="w-2.5 h-2.5" />Locked</span>
+                          : <span className="flex items-center gap-1 text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500"><Unlock className="w-2.5 h-2.5" />Unlocked</span>
+                        }
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">{c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : 'System'}</p>
+                    </div>
                   </div>
-                  <button onClick={() => deleteDoc(doc(db, 'configurations', c.id))} className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setOpenSettingsToolId(c.id)} className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100">Open Settings</button>
+                    <button onClick={() => deleteDoc(doc(db, 'configurations', c.id))} className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  </div>
                 </div>
               ))}
             </div>
+          )}
+
+          {openSettingsToolId && (
+            <UnifiedToolSettingsModal
+              toolId={openSettingsToolId}
+              isOpen={Boolean(openSettingsToolId)}
+              onClose={() => setOpenSettingsToolId(null)}
+              defaultPrompt=""
+              toolLabel={openSettingsToolId.replace(/-/g, ' ')}
+            />
           )}
 
           {activeTab === 'subscriptions' && (

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Settings, Info, X, AlertTriangle, Copy, Check, Upload, Loader2, Shield } from 'lucide-react';
 import { fixTeacherNotes, TNResult } from './ai';
 import { TNInfoModal } from './TNInfoModal';
-import { TNSettingsModal } from './TNSettingsModal';
+import { UnifiedToolSettingsModal } from '../UnifiedToolSettingsModal';
+import { getToolConfig } from '../../services/toolConfig';
 import { useAuth } from '../../context/AuthContext';
 
 const LOCKED_PROMPT = `ROLE
@@ -88,14 +89,13 @@ export const TNStandardizer: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [additionalInstructions, setAdditionalInstructions] = useState('');
   const [isLocked, setIsLocked] = useState(false);
-  const [settingsSaving, setSettingsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('tn_standardizer_additional');
-    if (saved !== null) setAdditionalInstructions(saved);
-    const savedLock = localStorage.getItem('tn_standardizer_locked');
-    if (savedLock !== null) setIsLocked(savedLock === 'true');
+    getToolConfig('tn-standardizer').then(cfg => {
+      setIsLocked(cfg.isLocked);
+      if (cfg.prompt_template) setAdditionalInstructions(cfg.prompt_template);
+    });
   }, []);
 
   const activePrompt = additionalInstructions.trim()
@@ -168,11 +168,12 @@ export const TNStandardizer: React.FC = () => {
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSaveSettings = () => {
-    setSettingsSaving(true);
-    localStorage.setItem('tn_standardizer_additional', additionalInstructions);
-    localStorage.setItem('tn_standardizer_locked', String(isLocked));
-    setTimeout(() => { setSettingsSaving(false); setShowSettings(false); }, 500);
+  const handleSettingsClose = () => {
+    setShowSettings(false);
+    getToolConfig('tn-standardizer').then(cfg => {
+      setIsLocked(cfg.isLocked);
+      if (cfg.prompt_template !== undefined) setAdditionalInstructions(cfg.prompt_template);
+    });
   };
 
   const renderFixedNotes = (text: string) => {
@@ -415,17 +416,14 @@ export const TNStandardizer: React.FC = () => {
 
       {showInfo && <TNInfoModal onClose={() => setShowInfo(false)} />}
 
-      {showSettings && (
-        <TNSettingsModal
-          additionalInstructions={additionalInstructions}
-          setAdditionalInstructions={setAdditionalInstructions}
-          isLocked={isLocked}
-          setIsLocked={setIsLocked}
-          saving={settingsSaving}
-          onSave={handleSaveSettings}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
+      <UnifiedToolSettingsModal
+        toolId="tn-standardizer"
+        isOpen={showSettings}
+        onClose={handleSettingsClose}
+        defaultPrompt={additionalInstructions}
+        lockedPromptDisplay={LOCKED_PROMPT}
+        toolLabel="TN Standardizer"
+      />
     </div>
   );
 };
