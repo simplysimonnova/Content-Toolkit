@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   X, LayoutDashboard, Shield, Terminal, History, Trash2, Plus,
   Loader2, UserPlus, Link2, Lightbulb, Wrench, Save, AlertCircle,
@@ -8,7 +8,7 @@ import {
   Volume2, PenLine, ClipboardCheck, ShieldCheck, CreditCard, Tag, ListFilter,
   ShieldBan, Map, Search, SlidersHorizontal, Lock, Unlock
 } from 'lucide-react';
-import { collection, query, doc, onSnapshot, orderBy, limit, deleteDoc, setDoc, serverTimestamp, addDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, doc, onSnapshot, orderBy, limit, deleteDoc, setDoc, serverTimestamp, addDoc, updateDoc, getDocs, startAfter, where, type DocumentSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 import { SubscriptionTracker } from './SubscriptionTracker';
@@ -40,6 +40,15 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
   // --- Shared Data ---
   const [usage, setUsage] = useState<any[]>([]);
+  const [usageLoading, setUsageLoading] = useState(false);
+  const [usageHasMore, setUsageHasMore] = useState(false);
+  const usageCursorRef = useRef<DocumentSnapshot | null>(null);
+
+  // --- Usage Filters ---
+  const [filterTool, setFilterTool] = useState('');
+  const [filterUser, setFilterUser] = useState('');
+  const [filterAI, setFilterAI] = useState<'all' | 'ai' | 'non-ai'>('all');
+
   const [users, setUsers] = useState<any[]>([]);
   const [navGroups, setNavGroups] = useState<NavGroup[]>([]);
   const [configs, setConfigs] = useState<any[]>([]);
@@ -81,10 +90,6 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
     const unsubscribes: (() => void)[] = [];
 
-    unsubscribes.push(onSnapshot(query(collection(db, 'usage'), orderBy('timestamp', 'desc'), limit(50)), (snap) => {
-      setUsage(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }));
-
     unsubscribes.push(onSnapshot(query(collection(db, 'users'), orderBy('lastLogin', 'desc')), (snap) => {
       setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }));
@@ -119,6 +124,38 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
     return () => unsubscribes.forEach(unsub => unsub());
   }, [isOpen]);
+
+  const PAGE_SIZE = 50;
+
+  const fetchUsage = useCallback(async (append = false) => {
+    setUsageLoading(true);
+    try {
+      const constraints: any[] = [orderBy('timestamp', 'desc'), limit(PAGE_SIZE + 1)];
+      if (filterTool.trim()) constraints.push(where('tool_id', '==', filterTool.trim()));
+      if (filterUser.trim()) constraints.push(where('userEmail', '==', filterUser.trim()));
+      if (filterAI === 'ai') constraints.push(where('is_ai_tool', '==', true));
+      if (filterAI === 'non-ai') constraints.push(where('is_ai_tool', '==', false));
+      if (append && usageCursorRef.current) constraints.push(startAfter(usageCursorRef.current));
+
+      const snap = await getDocs(query(collection(db, 'usage'), ...constraints));
+      const docs = snap.docs.slice(0, PAGE_SIZE);
+      const items = docs.map(d => ({ id: d.id, ...d.data() }));
+
+      usageCursorRef.current = docs[docs.length - 1] ?? null;
+      setUsageHasMore(snap.docs.length > PAGE_SIZE);
+      setUsage(prev => append ? [...prev, ...items] : items);
+    } catch (e) {
+      console.error('Failed to fetch usage', e);
+    } finally {
+      setUsageLoading(false);
+    }
+  }, [filterTool, filterUser, filterAI]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    usageCursorRef.current = null;
+    fetchUsage(false);
+  }, [isOpen, filterTool, filterUser, filterAI, fetchUsage]);
 
   const saveNavigation = async (updatedGroups: NavGroup[]) => {
     setIsSaving(true);
@@ -364,17 +401,99 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
         <div className="flex-1 overflow-y-auto p-6 bg-slate-100 dark:bg-[#0b1120] custom-scrollbar">
 
           {activeTab === 'usage' && (
-            <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b dark:border-slate-700">
-                  <tr><th className="px-6 py-4">User</th><th className="px-6 py-4">Tool</th><th className="px-6 py-4 text-right">Time</th></tr>
-                </thead>
-                <tbody className="divide-y dark:divide-slate-700">
-                  {usage.map(u => (
-                    <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20"><td className="px-6 py-3 dark:text-slate-300">{u.userEmail}</td><td className="px-6 py-3 dark:text-slate-300 font-bold">{u.tool}</td><td className="px-6 py-3 text-right text-xs dark:text-slate-400">{u.timestamp?.toDate().toLocaleString()}</td></tr>
+            <div className="space-y-4">
+              {/* Filter bar */}
+              <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 shadow-sm flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 flex-1 min-w-[160px]">
+                  <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                  <input
+                    value={filterTool}
+                    onChange={e => setFilterTool(e.target.value)}
+                    placeholder="Filter by tool ID…"
+                    className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs w-full dark:text-white"
+                  />
+                </div>
+                <div className="flex items-center gap-2 flex-1 min-w-[160px]">
+                  <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                  <input
+                    value={filterUser}
+                    onChange={e => setFilterUser(e.target.value)}
+                    placeholder="Filter by email…"
+                    className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs w-full dark:text-white"
+                  />
+                </div>
+                <div className="flex items-center gap-1 rounded-lg border dark:border-slate-700 overflow-hidden text-xs font-bold">
+                  {(['all', 'ai', 'non-ai'] as const).map(v => (
+                    <button
+                      key={v}
+                      onClick={() => setFilterAI(v)}
+                      className={`px-3 py-1.5 transition-colors ${filterAI === v ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                    >
+                      {v === 'all' ? 'All' : v === 'ai' ? 'AI' : 'Non-AI'}
+                    </button>
                   ))}
-                </tbody>
-              </table>
+                </div>
+                {(filterTool || filterUser || filterAI !== 'all') && (
+                  <button
+                    onClick={() => { setFilterTool(''); setFilterUser(''); setFilterAI('all'); }}
+                    className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 flex items-center gap-1"
+                  >
+                    <X className="w-3 h-3" /> Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Table */}
+              <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b dark:border-slate-700">
+                    <tr>
+                      <th className="px-6 py-4">User</th>
+                      <th className="px-6 py-4">Tool</th>
+                      <th className="px-6 py-4">Type</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y dark:divide-slate-700">
+                    {usage.length === 0 && !usageLoading && (
+                      <tr><td colSpan={5} className="px-6 py-8 text-center text-xs text-slate-400">No usage records match the current filters.</td></tr>
+                    )}
+                    {usage.map(u => (
+                      <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20">
+                        <td className="px-6 py-3 text-xs dark:text-slate-300">{u.userEmail}</td>
+                        <td className="px-6 py-3 dark:text-slate-300 font-bold text-xs">{u.tool_name ?? u.tool}</td>
+                        <td className="px-6 py-3">
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${u.is_ai_tool ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                            {u.is_ai_tool ? 'AI' : 'Tool'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3">
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${u.status === 'error' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'}`}>
+                            {u.status ?? 'success'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3 text-right text-xs dark:text-slate-400">{u.timestamp?.toDate().toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Pagination footer */}
+                {(usageHasMore || usageLoading) && (
+                  <div className="px-6 py-4 border-t dark:border-slate-700 flex items-center justify-between">
+                    <span className="text-xs text-slate-400">{usage.length} records loaded</span>
+                    <button
+                      onClick={() => fetchUsage(true)}
+                      disabled={usageLoading}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                    >
+                      {usageLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                      See more
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

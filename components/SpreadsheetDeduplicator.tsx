@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { ToolSettingsModal } from './ToolSettingsModal';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { logUsage } from '../services/geminiService';
+import { logToolUsage } from '../services/geminiService';
 import { normalizeColumnName, normalizeText } from '../utils/textNormalization';
 
 export const SpreadsheetDeduplicator: React.FC = () => {
@@ -348,7 +348,7 @@ export const SpreadsheetDeduplicator: React.FC = () => {
         setShowDuplicateDetails(false); // Ensure collapsed on new result
 
         // Log usage (fire and forget)
-        logUsage("Deduplicator", "Deterministic", 0).catch(err => console.error("Logging failed", err));
+        logToolUsage({ tool_id: 'deduplicator', tool_name: 'Deduplicator', status: 'success' });
 
       } catch (err) {
         setError("An error occurred during de-duplication.");

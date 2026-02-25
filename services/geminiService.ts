@@ -47,12 +47,49 @@ export const logUsage = async (tool: string, model: string, cost: number = 0.01)
       userId: user.uid,
       userEmail: user.email,
       tool,
+      tool_id: tool.toLowerCase().replace(/\s+/g, '-'),
+      tool_name: tool,
       model,
       timestamp: serverTimestamp(),
-      cost
+      cost,
+      is_ai_tool: true,
+      status: 'success',
     });
   } catch (e) {
     console.error("Failed to log usage", e);
+  }
+};
+
+/**
+ * Log usage for non-AI tools. Writes to the same `usage` collection.
+ * Fire-and-forget — never throws, never blocks execution.
+ */
+export const logToolUsage = async (params: {
+  tool_id: string;
+  tool_name: string;
+  status?: 'success' | 'error';
+  execution_time_ms?: number;
+  metadata?: Record<string, unknown>;
+}): Promise<void> => {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await addDoc(collection(db, "usage"), {
+      userId: user.uid,
+      userEmail: user.email,
+      tool: params.tool_name,
+      tool_id: params.tool_id,
+      tool_name: params.tool_name,
+      model: null,
+      cost: 0,
+      timestamp: serverTimestamp(),
+      is_ai_tool: false,
+      status: params.status ?? 'success',
+      ...(params.execution_time_ms !== undefined ? { execution_time_ms: params.execution_time_ms } : {}),
+      ...(params.metadata ? { metadata: params.metadata } : {}),
+    });
+  } catch (e) {
+    console.error("Failed to log tool usage", e);
   }
 };
 
