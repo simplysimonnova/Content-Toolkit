@@ -84,7 +84,7 @@ Output Guarantee
 - Return strictly the CSV content.
 `);
 
-  const model = 'gemini-2.0-flash-exp'; // Using a capable model for complex logic
+  const model = 'gemini-3-flash-preview';
 
   const prompt = `
 ${config.instruction}

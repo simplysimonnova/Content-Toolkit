@@ -43,7 +43,7 @@ Output format API Requirement
 
 export const generateCompImport = async (text: string): Promise<CompImportResult[]> => {
     // Using a robust model for complex instruction following
-    const model = 'gemini-2.0-flash';
+    const model = 'gemini-3-flash-preview';
 
     try {
         const response = await ai.models.generateContent({
