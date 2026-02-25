@@ -1,6 +1,7 @@
 import { Type, Modality } from "@google/genai";
 import { ai } from '../lib/aiClient';
 import { type CapabilityTier } from '../lib/modelRegistry';
+import { MODEL_COST_ESTIMATE } from '../lib/modelCostMap';
 import { getResolvedModelForTool } from '../lib/toolTierResolver';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "./firebase";
@@ -45,6 +46,7 @@ export const fetchConfig = async (toolId: string, fallback: string): Promise<Too
 export const logUsage = async (tool: string, model: string, cost: number = 0.01, tier: CapabilityTier = 'default') => {
   const user = auth.currentUser;
   if (!user) return;
+  const cost_units = MODEL_COST_ESTIMATE[model] ?? 1;
   try {
     await addDoc(collection(db, "usage"), {
       userId: user.uid,
@@ -54,6 +56,7 @@ export const logUsage = async (tool: string, model: string, cost: number = 0.01,
       tool_name: tool,
       model,
       tier,
+      cost_units,
       timestamp: serverTimestamp(),
       cost,
       is_ai_tool: true,

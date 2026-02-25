@@ -12,6 +12,19 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.7.0',
+    date: 'February 2026',
+    title: 'AI Model Governance Phase 3: Reasoning Tier + Cost Visibility',
+    type: 'Improvement',
+    changes: [
+      'Reasoning tier activated: gemini-3-pro now resolves for tools set to reasoning tier (default remains Flash).',
+      'Created lib/modelCostMap.ts: relative cost multipliers — Flash = 1 unit, Pro = 5 units.',
+      'logUsage() now writes cost_units field per usage record — backward compatible, missing models default to 1.',
+      'Admin Console Usage tab: new summary panel showing Flash Runs, Pro Runs, and Total Cost Units aggregated from loaded records.',
+      'Admin Console AI Tool Settings: reasoning tier dropdown now shows inline warning ⚠ Reasoning tier uses higher-cost model.',
+    ]
+  },
+  {
     version: '1.6.0',
     date: 'February 2026',
     title: 'AI Model Governance Phase 2: Tier System & Admin Override',

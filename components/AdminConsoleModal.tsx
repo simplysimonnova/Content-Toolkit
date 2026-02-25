@@ -413,6 +413,29 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
           {activeTab === 'usage' && (
             <div className="space-y-4">
+              {/* Tier cost summary */}
+              {(() => {
+                const aiRuns = usage.filter(u => u.is_ai_tool);
+                const flashRuns = aiRuns.filter(u => u.tier !== 'reasoning').length;
+                const proRuns = aiRuns.filter(u => u.tier === 'reasoning').length;
+                const totalCostUnits = aiRuns.reduce((sum, u) => sum + (u.cost_units ?? 1), 0);
+                return (
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 shadow-sm">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Flash Runs</p>
+                      <p className="text-2xl font-black text-slate-700 dark:text-slate-100">{flashRuns}</p>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 shadow-sm">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Pro Runs</p>
+                      <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{proRuns}</p>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 shadow-sm">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Cost Units</p>
+                      <p className="text-2xl font-black text-amber-600 dark:text-amber-400">{totalCostUnits}</p>
+                    </div>
+                  </div>
+                );
+              })()}
               {/* Filter bar */}
               <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 shadow-sm flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2 flex-1 min-w-[160px]">
@@ -962,6 +985,11 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
               reasoning: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400',
               vision:    'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400',
             };
+            const TIER_WARNINGS: Record<string, string | null> = {
+              default:   null,
+              reasoning: '⚠ Reasoning tier uses higher-cost model.',
+              vision:    null,
+            };
             const updateTier = async (toolId: string, tier: string) => {
               setToolSettingsSaving(toolId);
               try {
@@ -1008,6 +1036,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                               >
                                 {TIER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                               </select>
+                              {TIER_WARNINGS[currentTier] && (
+                                <p className="text-[9px] text-amber-500 dark:text-amber-400 mt-1">{TIER_WARNINGS[currentTier]}</p>
+                              )}
                             </td>
                             <td className="px-4 py-3">
                               {isSaving
