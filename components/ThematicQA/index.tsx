@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   ShieldCheck, Upload, Loader2,
   FileText, Eye, Tag, AlertCircle, Info, Settings, Layers, X,
-  Play,
+  Play, Clock,
 } from 'lucide-react';
 import { runThematicQA } from './ai';
 import { ThematicQAResult, BatchItem, QASettings } from './types';
@@ -10,6 +10,7 @@ import { ResultPanel, RISK_CONFIG } from './ResultPanel';
 import { saveReport } from './firebaseService';
 import { InfoModal } from './InfoModal';
 import { SettingsModal, loadSettings, persistSettings } from './SettingsModal';
+import { ReportsDashboard } from './ReportsDashboard';
 const genId = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
 // ─── PDF extraction helper ────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ export const ThematicQA: React.FC = () => {
   const [settings, setSettings] = useState<QASettings>(() => loadSettings());
   const [mode, setMode] = useState<'single' | 'batch'>('single');
   const [showInfo, setShowInfo] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   // ── Single mode state ──
@@ -181,8 +183,9 @@ export const ThematicQA: React.FC = () => {
               </button>
             ))}
           </div>
-          <button onClick={()=>setShowSettings(true)} title="Settings" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Settings className="w-5 h-5"/></button>
           <button onClick={()=>setShowInfo(true)} title="About" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Info className="w-5 h-5"/></button>
+          <button onClick={()=>setShowHistory(true)} title="Scan History" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Clock className="w-5 h-5"/></button>
+          <button onClick={()=>setShowSettings(true)} title="Settings" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Settings className="w-5 h-5"/></button>
         </div>
       </div>
 
@@ -291,6 +294,20 @@ export const ThematicQA: React.FC = () => {
 
       <InfoModal isOpen={showInfo} onClose={()=>setShowInfo(false)}/>
       <SettingsModal isOpen={showSettings} onClose={()=>setShowSettings(false)} settings={settings} onChange={s=>{setSettings(s);persistSettings(s);}}/>
+
+      {/* History Modal */}
+      {showHistory && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/40 backdrop-blur-sm overflow-y-auto" onClick={()=>setShowHistory(false)}>
+          <div className="w-full max-w-6xl" onClick={e=>e.stopPropagation()}>
+            <div className="flex justify-end mb-2">
+              <button onClick={()=>setShowHistory(false)} className="p-2 bg-white dark:bg-slate-900 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white border border-slate-200 dark:border-slate-700 shadow transition-all">
+                <X className="w-4 h-4"/>
+              </button>
+            </div>
+            <ReportsDashboard />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

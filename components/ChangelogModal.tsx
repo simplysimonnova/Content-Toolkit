@@ -12,6 +12,20 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.4.0',
+    date: 'February 2026',
+    title: 'Content Workspace Rebrand, Thematic QA History & ID Resolver Overhaul',
+    type: 'Feature',
+    changes: [
+      'Rebranded application name from "Content Toolkit" to "Content Workspace" in the sidebar header.',
+      'Thematic QA: Added inline Scan History accessible via a clock icon in the tool header — opens the full Reports Dashboard as an overlay modal without leaving the page.',
+      'Thematic QA: Header icon order standardised to Info (ℹ) → History (🕐) → Settings (⚙) across the tool.',
+      'ID Resolver v2: Settings modal completely overhauled — removed duplicate column mapping (already on main page) and replaced with three toggle-based setting groups: Text Normalisation, Match Logic, and Output.',
+      'ID Resolver v2: Added Reset button in the tool header — clears all uploaded files, column mappings, and results in one click without requiring a page refresh.',
+      'ID Resolver v2: Settings modal footer now includes a "Reset to defaults" option alongside Save & Close.',
+    ]
+  },
+  {
     version: '1.3.0',
     date: 'February 2026',
     title: 'Lesson QA Module & Ideas/Fixes System',

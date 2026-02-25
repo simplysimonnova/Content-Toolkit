@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Info, Download, Play, Link2, AlertCircle, FileText, CheckCircle2, XCircle } from 'lucide-react';
+import { Settings, Info, Download, Play, Link2, AlertCircle, FileText, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { resolveIDs } from './matcher';
 import { ColumnMapping, MatchResult } from './types';
 import Papa from 'papaparse';
@@ -31,6 +31,43 @@ export const IDResolver: React.FC = () => {
     const [showInfo, setShowInfo] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const [resolverSettings, setResolverSettings] = useState({
+        normalizeWhitespace: true,
+        caseSensitive: false,
+        strictSkillMatch: true,
+        allowPartialCEFR: false,
+        flagSkillConflicts: true,
+        includeUnmatched: true,
+    });
+
+    const handleReset = () => {
+        setExpandedFile(null);
+        setLibraryFile(null);
+        setLessonFile(null);
+        setExpandedHeaders([]);
+        setLibraryHeaders([]);
+        setLessonHeaders([]);
+        setMapping({
+            can_do_column: '',
+            cefr_column: '',
+            skill_column: '',
+            triad_column: '',
+            library_id_column: '',
+            library_can_do_column: '',
+            library_cefr_column: '',
+            library_skill_column: '',
+            lesson_id_column: '',
+            lesson_lul_column: ''
+        });
+        setResult(null);
+        setError(null);
+        const ids = ['expanded-upload', 'library-upload', 'lesson-upload'];
+        ids.forEach(id => {
+            const el = document.getElementById(id) as HTMLInputElement | null;
+            if (el) el.value = '';
+        });
+    };
 
     const handleFileUpload = (
         file: File,
@@ -172,6 +209,16 @@ export const IDResolver: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    {(expandedFile || libraryFile || lessonFile || result) && (
+                        <button
+                            onClick={handleReset}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-slate-800 transition-all text-xs font-bold"
+                            title="Reset — clear all files and results"
+                        >
+                            <RotateCcw className="w-4 h-4" />
+                            Reset
+                        </button>
+                    )}
                     <button
                         onClick={() => setShowInfo(true)}
                         className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all"
@@ -182,7 +229,7 @@ export const IDResolver: React.FC = () => {
                     <button
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-2.5 rounded-xl transition-all ${showSettings ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800'}`}
-                        title="Manual Column Mapping"
+                        title="Resolver Settings"
                     >
                         <Settings className="w-6 h-6" />
                     </button>
@@ -525,92 +572,115 @@ export const IDResolver: React.FC = () => {
                 </div>
             )}
 
-            {/* Column Mapping Modal */}
+            {/* Settings Modal */}
             {showSettings && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <h3 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                                <Settings className="w-5 h-5 text-blue-500" />
-                                Manual Column Mapping
+                                <Settings className="w-5 h-5 text-indigo-500" />
+                                Resolver Settings
                             </h3>
-                            <button onClick={() => setShowSettings(false)} className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                                <XCircle className="w-5 h-5 text-slate-500" />
+                            <button onClick={() => setShowSettings(false)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                <XCircle className="w-5 h-5 text-slate-400" />
                             </button>
                         </div>
-                        <div className="p-8 overflow-y-auto">
-                            <div className="grid md:grid-cols-3 gap-8">
-                                {/* Expanded Rows Mapping */}
-                                <div className="space-y-4">
-                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-blue-500" /> Expanded Rows - Methods Doc</h4>
-                                    {[
-                                        { label: 'LuL', key: 'triad_column' },
-                                        { label: 'Can-do', key: 'can_do_column' },
-                                        { label: 'CEFR', key: 'cefr_column' },
-                                        { label: 'Skill', key: 'skill_column' },
-                                    ].map(f => (
-                                        <div key={f.key}>
-                                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">{f.label}</label>
-                                            <select
-                                                value={(mapping as any)[f.key]}
-                                                onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value })}
-                                                className="w-full p-2 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900"
-                                            >
-                                                <option value="">Select...</option>
-                                                {expandedHeaders.map(h => <option key={h} value={h}>{h}</option>)}
-                                            </select>
-                                        </div>
-                                    ))}
-                                </div>
+                        <div className="p-6 overflow-y-auto space-y-6">
 
-                                {/* Full Library Mapping */}
-                                <div className="space-y-4">
-                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-green-500" /> Full Competency Library Export</h4>
+                            {/* Text Normalisation */}
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Text Normalisation</p>
+                                <div className="space-y-3">
                                     {[
-                                        { label: 'Comp ID', key: 'library_id_column' },
-                                        { label: 'Can-do', key: 'library_can_do_column' },
-                                        { label: 'CEFR', key: 'library_cefr_column' },
-                                        { label: 'Skill', key: 'library_skill_column' },
-                                    ].map(f => (
-                                        <div key={f.key}>
-                                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">{f.label}</label>
-                                            <select
-                                                value={(mapping as any)[f.key]}
-                                                onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value })}
-                                                className="w-full p-2 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900"
+                                        { key: 'normalizeWhitespace', label: 'Normalize whitespace', desc: 'Collapse multiple spaces and trim before matching' },
+                                        { key: 'caseSensitive', label: 'Case-sensitive matching', desc: 'Treat uppercase and lowercase as distinct values' },
+                                        { key: 'allowPartialCEFR', label: 'Allow partial CEFR match', desc: 'Match A2 to A2+ and vice versa when no exact match found' },
+                                    ].map(({ key, label, desc }) => (
+                                        <label key={key} className="flex items-start justify-between gap-4 cursor-pointer group">
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 transition-colors">{label}</p>
+                                                <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+                                            </div>
+                                            <div
+                                                onClick={() => setResolverSettings(s => ({ ...s, [key]: !s[key as keyof typeof s] }))}
+                                                className={`relative shrink-0 w-10 h-5 rounded-full transition-colors cursor-pointer mt-0.5 ${
+                                                    resolverSettings[key as keyof typeof resolverSettings] ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'
+                                                }`}
                                             >
-                                                <option value="">Select...</option>
-                                                {libraryHeaders.map(h => <option key={h} value={h}>{h}</option>)}
-                                            </select>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Lessons Mapping */}
-                                <div className="space-y-4">
-                                    <h4 className="font-bold text-slate-900 dark:text-white border-b pb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-purple-500" /> Lessons - Full Export</h4>
-                                    {[
-                                        { label: 'Lesson ID', key: 'lesson_id_column' },
-                                        { label: 'LuL', key: 'lesson_lul_column' },
-                                    ].map(f => (
-                                        <div key={f.key}>
-                                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">{f.label}</label>
-                                            <select
-                                                value={(mapping as any)[f.key]}
-                                                onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value })}
-                                                className="w-full p-2 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900"
-                                            >
-                                                <option value="">Select...</option>
-                                                {lessonHeaders.map(h => <option key={h} value={h}>{h}</option>)}
-                                            </select>
-                                        </div>
+                                                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                                                    resolverSettings[key as keyof typeof resolverSettings] ? 'translate-x-5' : ''
+                                                }`} />
+                                            </div>
+                                        </label>
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Match Logic */}
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Match Logic</p>
+                                <div className="space-y-3">
+                                    {[
+                                        { key: 'strictSkillMatch', label: 'Strict skill matching', desc: 'Require exact skill field match in addition to can-do and CEFR' },
+                                        { key: 'flagSkillConflicts', label: 'Flag skill conflicts', desc: 'Mark rows where can-do and CEFR match but skill differs' },
+                                    ].map(({ key, label, desc }) => (
+                                        <label key={key} className="flex items-start justify-between gap-4 cursor-pointer group">
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 transition-colors">{label}</p>
+                                                <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+                                            </div>
+                                            <div
+                                                onClick={() => setResolverSettings(s => ({ ...s, [key]: !s[key as keyof typeof s] }))}
+                                                className={`relative shrink-0 w-10 h-5 rounded-full transition-colors cursor-pointer mt-0.5 ${
+                                                    resolverSettings[key as keyof typeof resolverSettings] ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'
+                                                }`}
+                                            >
+                                                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                                                    resolverSettings[key as keyof typeof resolverSettings] ? 'translate-x-5' : ''
+                                                }`} />
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Output */}
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Output</p>
+                                <div className="space-y-3">
+                                    {[
+                                        { key: 'includeUnmatched', label: 'Include unmatched rows', desc: 'Keep rows with no match in the output CSV (with empty ID fields)' },
+                                    ].map(({ key, label, desc }) => (
+                                        <label key={key} className="flex items-start justify-between gap-4 cursor-pointer group">
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 transition-colors">{label}</p>
+                                                <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+                                            </div>
+                                            <div
+                                                onClick={() => setResolverSettings(s => ({ ...s, [key]: !s[key as keyof typeof s] }))}
+                                                className={`relative shrink-0 w-10 h-5 rounded-full transition-colors cursor-pointer mt-0.5 ${
+                                                    resolverSettings[key as keyof typeof resolverSettings] ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'
+                                                }`}
+                                            >
+                                                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                                                    resolverSettings[key as keyof typeof resolverSettings] ? 'translate-x-5' : ''
+                                                }`} />
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
                         </div>
-                        <div className="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 text-center">
-                            <button onClick={() => setShowSettings(false)} className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/20">
-                                Save Mapping & Close
+                        <div className="p-5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <button
+                                onClick={() => setResolverSettings({ normalizeWhitespace: true, caseSensitive: false, strictSkillMatch: true, allowPartialCEFR: false, flagSkillConflicts: true, includeUnmatched: true })}
+                                className="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                            >
+                                Reset to defaults
+                            </button>
+                            <button onClick={() => setShowSettings(false)} className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/20 text-sm">
+                                Save & Close
                             </button>
                         </div>
                     </div>
