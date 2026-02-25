@@ -1,35 +1,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { logUsage } from "../../services/geminiService";
+import { ThematicQAResult, QASettings, DEFAULT_SETTINGS } from "./types";
 
-export interface ThematicMatch {
-  slide: string;
-  matched_term: string;
-  context: string;
-}
+export type { ThematicQAResult } from "./types";
 
-export interface VisualMatch {
-  slide: string;
-  matched_element: string;
-  confidence: "clear";
-}
+function buildSystemPrompt(settings: QASettings): string {
+  const visualRule =
+    settings.visualSensitivity === 'conservative'
+      ? '10. If uncertain visually, do NOT flag. Only flag unmistakably clear elements.'
+      : settings.visualSensitivity === 'aggressive'
+      ? '10. Flag any visual element that could plausibly relate to the theme, including ambiguous cases.'
+      : '10. If uncertain visually, do NOT flag.';
 
-export interface ThematicQAResult {
-  theme: string;
-  generated_keywords: {
-    direct_terms: string[];
-    characters: string[];
-    objects: string[];
-    symbols: string[];
-    phrases: string[];
-    visual_indicators: string[];
-  };
-  text_matches: ThematicMatch[];
-  visual_matches: VisualMatch[];
-  risk_level: "none" | "low" | "moderate" | "high";
-  summary: string;
-}
-
-const SYSTEM_PROMPT = `You are a compliance-focused thematic QA engine.
+  return `You are a compliance-focused thematic QA engine.
 
 RULES:
 1. Stay strictly relevant to the theme.
@@ -39,9 +22,10 @@ RULES:
 5. No commentary.
 6. No redundancy.
 7. Lowercase all generated keywords.
-8. Maximum 60 total generated keywords.
+8. Maximum ${settings.maxKeywords} total generated keywords.
 9. Only flag findings with clear evidence.
-10. If uncertain visually, do NOT flag.
+${visualRule}
+${settings.strictMode ? '11. STRICT MODE: Even a single ambiguous indirect match must be escalated to moderate risk.' : ''}
 
 STAGE 1 — THEME EXPANSION
 Generate structured keyword sets under:
@@ -70,11 +54,13 @@ Assign:
 - high (direct thematic content present)
 
 Return ONLY valid JSON matching the schema exactly. No markdown. No commentary.`;
+}
 
 export async function runThematicQA(
   theme: string,
   parsedText: string,
-  slideImages: { slide: number; dataUrl: string }[]
+  slideImages: { slide: number; dataUrl: string }[],
+  settings: QASettings = DEFAULT_SETTINGS
 ): Promise<ThematicQAResult> {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const model = "gemini-3-flash-preview";
@@ -111,7 +97,7 @@ Analyze all content and return the compliance report as JSON.`;
     model,
     contents: contents.flatMap((c) => c.parts),
     config: {
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: buildSystemPrompt(settings),
       temperature: 0.1,
       responseMimeType: "application/json",
       responseSchema: {

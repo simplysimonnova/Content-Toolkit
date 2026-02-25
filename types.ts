@@ -51,6 +51,7 @@ export type AppPage =
   | 'directus-json-builder'
   | 'tn-standardizer'
   | 'thematic-qa'
+  | 'tqa-reports'
   | 'ai-qa-runner';
 
 export interface ResourceLink {

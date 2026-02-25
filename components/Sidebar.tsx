@@ -6,7 +6,7 @@ import {
   TableProperties, ListFilter, Tag, ShieldBan, Search,
   CreditCard, Palette, ClipboardCheck, Compass, Sparkles, PenTool,
   Zap, Map, Presentation, MessageSquareText, Mic2, Wand2, PenLine, SearchCheck,
-  ChevronDown, ShieldCheck, Loader2, ListOrdered, Shield, StickyNote, Hash, Terminal, Ticket, Braces
+  ChevronDown, ShieldCheck, Loader2, ListOrdered, Shield, StickyNote, Hash, Terminal, Ticket, Braces, BarChart2
 } from 'lucide-react';
 import { doc, onSnapshot, collection } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
@@ -24,7 +24,7 @@ const ICON_MAP: Record<string, any> = {
   'Tag': Tag, 'TableProperties': TableProperties, 'FileText': FileText,
   'ShieldBan': ShieldBan, 'Link2': Link2, 'CreditCard': CreditCard,
   'ClipboardCheck': ClipboardCheck, 'ListOrdered': ListOrdered,
-  'StickyNote': StickyNote, 'Hash': Hash, 'Terminal': Terminal, 'Ticket': Ticket, 'Braces': Braces
+  'StickyNote': StickyNote, 'Hash': Hash, 'Terminal': Terminal, 'Ticket': Ticket, 'Braces': Braces, 'BarChart2': BarChart2
 };
 
 const FALLBACK_GROUPS: NavGroupConfig[] = [
@@ -55,6 +55,7 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
       { id: 'vq1', label: 'General Proofing Bot', icon: 'ClipboardCheck', page: 'proofing-bot' },
       { id: 'vq2', label: 'Lesson Proofing Bot', icon: 'ShieldCheck', page: 'lesson-proofing-bot' },
       { id: 'vq3', label: 'Thematic QA', icon: 'ShieldCheck', page: 'thematic-qa' },
+      { id: 'vq3r', label: 'TQA Reports', icon: 'BarChart2', page: 'tqa-reports' },
       { id: 'vq4', label: 'Lesson QA', icon: 'ShieldCheck', page: 'ai-qa-runner' }
     ]
   },
