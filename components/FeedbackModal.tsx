@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Lightbulb, Wrench, Send, History, Trash2, CheckCircle2, Loader2 } from 'lucide-react';
-import { collection, addDoc, query, where, onSnapshot, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import { X, Lightbulb, Wrench, Send, History, Trash2, CheckCircle2, Loader2, Pencil, Link, Check } from 'lucide-react';
+import { collection, addDoc, query, where, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 
@@ -16,9 +16,11 @@ interface IdeaItem {
   id: string;
   text: string;
   timestamp: any;
+  updatedAt?: any;
   status?: string;
   type?: EntryType;
   userId: string;
+  linkedTaskUrl?: string;
 }
 
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
@@ -29,6 +31,11 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
   const [ideas, setIdeas] = useState<IdeaItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [editLinkedUrl, setEditLinkedUrl] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -63,7 +70,9 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
         userEmail: user.email,
         userName: user.displayName || 'Anonymous User',
         timestamp: serverTimestamp(),
-        status: 'New'
+        updatedAt: serverTimestamp(),
+        status: 'new',
+        linkedTaskUrl: null,
       });
       
       setIdeaText('');
@@ -85,7 +94,45 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
         console.error("Delete failed:", e);
       }
     }
-  }
+  };
+
+  const startEdit = (idea: IdeaItem) => {
+    setEditingId(idea.id);
+    setEditText(idea.text);
+    setEditLinkedUrl(idea.linkedTaskUrl ?? '');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditText('');
+    setEditLinkedUrl('');
+  };
+
+  const saveEdit = async (idea: IdeaItem) => {
+    if (!editText.trim()) return;
+    setIsSavingEdit(true);
+    try {
+      await updateDoc(doc(db, 'tool_ideas', idea.id), {
+        text: editText.trim(),
+        linkedTaskUrl: editLinkedUrl.trim() || null,
+        updatedAt: serverTimestamp(),
+      });
+      cancelEdit();
+    } catch (e) {
+      console.error('Edit failed:', e);
+      alert('Failed to save edit.');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const statusBadgeClass = (status?: string) => {
+    switch (status) {
+      case 'reviewed':  return 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+      case 'actioned':  return 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400';
+      default:          return 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400';
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -190,34 +237,80 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
                      <p>No ideas submitted yet.</p>
                    </div>
                  ) : (
-                   ideas.map((idea) => (
-                     <div key={idea.id} className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700 group transition-colors">
-                       <div className="flex justify-between items-start mb-2">
-                         <div className="flex items-center gap-2">
-                           <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${
-                             idea.type === 'fix'
-                               ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-                               : 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
-                           }`}>
-                             {idea.type === 'fix' ? 'Fix' : 'Idea'}
-                           </span>
-                           <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-900/30 text-orange-600">
-                             {idea.status || 'New'}
-                           </span>
-                         </div>
-                         <button 
-                           onClick={() => handleDelete(idea.id)}
-                           className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
-                         >
-                           <Trash2 className="w-3.5 h-3.5" />
-                         </button>
-                       </div>
-                       <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{idea.text}</p>
-                       <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-2">
-                         {idea.timestamp?.toDate().toLocaleString() || 'Syncing...'}
-                       </p>
-                     </div>
-                   ))
+                   ideas.map((idea) => {
+                    const isEditing = editingId === idea.id;
+                    const isOwner = user?.uid === idea.userId;
+                    return (
+                    <div key={idea.id} className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700 group transition-colors">
+                      {/* Header row */}
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${
+                            idea.type === 'fix'
+                              ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                              : 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
+                          }`}>
+                            {idea.type === 'fix' ? 'Fix' : 'Idea'}
+                          </span>
+                          <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${statusBadgeClass(idea.status)}`}>
+                            {idea.status ?? 'new'}
+                          </span>
+                        </div>
+                        {isOwner && !isEditing && (
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => startEdit(idea)} className="text-slate-400 hover:text-indigo-500 transition-colors p-1" title="Edit">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => handleDelete(idea.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1" title="Delete">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Body: view or edit */}
+                      {isEditing ? (
+                        <div className="space-y-2 mt-2">
+                          <textarea
+                            value={editText}
+                            onChange={e => setEditText(e.target.value)}
+                            className="w-full h-24 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm p-2 resize-none focus:outline-none focus:border-indigo-500"
+                          />
+                          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5">
+                            <Link className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <input
+                              value={editLinkedUrl}
+                              onChange={e => setEditLinkedUrl(e.target.value)}
+                              placeholder="Linked task URL (optional)"
+                              className="flex-1 text-xs bg-transparent text-slate-700 dark:text-slate-300 outline-none placeholder:text-slate-400"
+                            />
+                          </div>
+                          <div className="flex gap-2 justify-end">
+                            <button onClick={cancelEdit} className="text-xs px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">Cancel</button>
+                            <button onClick={() => saveEdit(idea)} disabled={isSavingEdit || !editText.trim()} className="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50">
+                              {isSavingEdit ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{idea.text}</p>
+                          {idea.linkedTaskUrl && (
+                            <a href={idea.linkedTaskUrl} target="_blank" rel="noopener noreferrer" className="mt-2 flex items-center gap-1.5 text-[10px] text-indigo-500 hover:text-indigo-600 font-mono truncate">
+                              <Link className="w-3 h-3 shrink-0" />{idea.linkedTaskUrl}
+                            </a>
+                          )}
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-2">
+                            {idea.timestamp?.toDate().toLocaleString() || 'Syncing...'}
+                            {idea.updatedAt && idea.updatedAt?.seconds !== idea.timestamp?.seconds && (
+                              <span className="ml-2 text-slate-300 dark:text-slate-600">(edited)</span>
+                            )}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  );
+                  })
                  )}
                </div>
              )}

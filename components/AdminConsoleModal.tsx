@@ -754,12 +754,11 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           )}
 
           {activeTab === 'ideas' && (() => {
-            const STATUS_OPTIONS = ['New', 'In Review', 'Done', 'Rejected'];
+            const STATUS_OPTIONS = ['new', 'reviewed', 'actioned'];
             const STATUS_STYLES: Record<string, string> = {
-              'New': 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
-              'In Review': 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
-              'Done': 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
-              'Rejected': 'bg-slate-100 dark:bg-slate-700 text-slate-500',
+              'new':      'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
+              'reviewed': 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+              'actioned': 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
             };
             const filtered = ideas
               .filter(i => ideasTypeFilter === 'all' || i.type === ideasTypeFilter)
@@ -793,7 +792,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                     ))}
                   </div>
                   <select value={ideasStatusFilter} onChange={e => setIdeasStatusFilter(e.target.value)}
-                    className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold dark:text-white">
+                    className="bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold dark:text-white capitalize">
                     <option value="all">All Statuses</option>
                     {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -843,9 +842,15 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                           </div>
                         </div>
                         <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed flex-1">{idea.text}</p>
+                        {idea.linkedTaskUrl && (
+                          <a href={idea.linkedTaskUrl} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-[10px] text-indigo-500 hover:text-indigo-600 font-mono truncate">
+                            <Link2 className="w-3 h-3 shrink-0" />{idea.linkedTaskUrl}
+                          </a>
+                        )}
                         <div className="flex items-center justify-between pt-2 border-t dark:border-slate-700">
-                          <select value={idea.status || 'New'} onChange={e => updateStatus(idea.id, e.target.value)}
-                            className={`text-[9px] font-black uppercase px-2 py-1 rounded border-0 cursor-pointer ${STATUS_STYLES[idea.status || 'New']} bg-transparent`}>
+                          <select value={idea.status || 'new'} onChange={e => updateStatus(idea.id, e.target.value)}
+                            className={`text-[9px] font-black uppercase px-2 py-1 rounded border-0 cursor-pointer ${STATUS_STYLES[idea.status || 'new']} bg-transparent`}>
                             {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
                           <div className="flex items-center gap-2">
@@ -885,10 +890,16 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                             </td>
                             <td className="px-4 py-3 max-w-xs">
                               <p className="text-xs dark:text-slate-300 line-clamp-2">{idea.text}</p>
+                              {idea.linkedTaskUrl && (
+                                <a href={idea.linkedTaskUrl} target="_blank" rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-[10px] text-indigo-500 font-mono truncate mt-1">
+                                  <Link2 className="w-3 h-3 shrink-0" />{idea.linkedTaskUrl}
+                                </a>
+                              )}
                             </td>
                             <td className="px-4 py-3">
-                              <select value={idea.status || 'New'} onChange={e => updateStatus(idea.id, e.target.value)}
-                                className={`text-[9px] font-black uppercase px-2 py-1 rounded cursor-pointer border-0 ${STATUS_STYLES[idea.status || 'New']}`}>
+                              <select value={idea.status || 'new'} onChange={e => updateStatus(idea.id, e.target.value)}
+                                className={`text-[9px] font-black uppercase px-2 py-1 rounded cursor-pointer border-0 ${STATUS_STYLES[idea.status || 'new']}`}>
                                 {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                               </select>
                             </td>
