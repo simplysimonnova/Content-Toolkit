@@ -150,8 +150,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'lc1', label: 'Lesson Descriptions', icon: 'FileText', page: 'lesson-descriptions' },
           { id: 'lc2', label: 'Lesson Plan Generator', icon: 'Wand2', page: 'plan-generator' },
           { id: 'lc3', label: 'Slide-creator Studio', icon: 'Presentation', page: 'slide-creator' },
-          { id: 'lc4', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' },
-          { id: 'lc5', label: 'TN Standardizer', icon: 'FileText', page: 'tn-standardizer' }
+          { id: 'lc4', label: 'TN Standardizer', icon: 'FileText', page: 'tn-standardizer' },
+          { id: 'lc5', label: 'Lesson QA', icon: 'ShieldCheck', page: 'ai-qa-runner' },
+          { id: 'lc6', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' }
         ]
       },
       {
@@ -161,7 +162,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'vq1', label: 'General Proofing Bot', icon: 'ClipboardCheck', page: 'proofing-bot' },
           { id: 'vq2', label: 'Lesson Proofing Bot', icon: 'ShieldCheck', page: 'lesson-proofing-bot' },
           { id: 'vq3', label: 'Thematic QA', icon: 'ShieldCheck', page: 'thematic-qa' },
-          { id: 'vq4', label: 'Run AI QA', icon: 'ShieldCheck', page: 'ai-qa-runner' }
+          { id: 'vq4', label: 'Lesson QA', icon: 'ShieldCheck', page: 'ai-qa-runner' }
         ]
       },
       {
