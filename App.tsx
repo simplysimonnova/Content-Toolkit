@@ -114,7 +114,7 @@ const App: React.FC = () => {
       case 'tn-standardizer':
         return <TNStandardizer />;
       case 'thematic-qa':
-        return <ThematicQA />;
+        return <ThematicQA sidebarCollapsed={isSidebarCollapsed} />;
       case 'tqa-reports':
         return <TQAReports />;
       case 'ai-qa-runner':

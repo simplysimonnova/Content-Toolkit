@@ -34,7 +34,7 @@ async function extractPDF(file: File): Promise<{ text: string; images: { slide: 
   return { text: text.trim(), images, pageCount: pdf.numPages };
 }
 
-export const ThematicQA: React.FC = () => {
+export const ThematicQA: React.FC<{ sidebarCollapsed?: boolean }> = ({ sidebarCollapsed = false }) => {
   const [settings, setSettings] = useState<QASettings>(() => loadSettings());
   const [mode, setMode] = useState<'single' | 'batch'>('single');
   const [showInfo, setShowInfo] = useState(false);
@@ -297,7 +297,7 @@ export const ThematicQA: React.FC = () => {
 
       {/* History Modal */}
       {showHistory && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/40 backdrop-blur-sm overflow-y-auto" onClick={()=>setShowHistory(false)}>
+        <div className="fixed inset-0 z-[80] flex items-start justify-center p-4 pt-8 bg-black/40 backdrop-blur-sm overflow-y-auto" onClick={()=>setShowHistory(false)}>
           <div className="w-full max-w-6xl" onClick={e=>e.stopPropagation()}>
             <div className="flex justify-end mb-2">
               <button onClick={()=>setShowHistory(false)} className="p-2 bg-white dark:bg-slate-900 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white border border-slate-200 dark:border-slate-700 shadow transition-all">
