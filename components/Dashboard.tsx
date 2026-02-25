@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Clock, Zap, Star, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Clock, Zap, Star, ChevronRight, AlertTriangle, Info, X, Check } from 'lucide-react';
 import { AppPage } from '../types';
 
 interface DashboardProps {
@@ -15,6 +15,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [recentActions, setRecentActions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -46,9 +47,100 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   return (
     <div className="animate-fade-in space-y-8">
+
+      {showInfo && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <h3 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+                <Info className="w-5 h-5 text-orange-500" />
+                About This Toolkit
+              </h3>
+              <button onClick={() => setShowInfo(false)} className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-8 overflow-y-auto space-y-6 text-slate-600 dark:text-slate-300 leading-relaxed">
+              <div>
+                <h4 className="font-black text-slate-900 dark:text-white mb-3 text-xs uppercase tracking-widest">What This Tool Is</h4>
+                <ul className="space-y-2">
+                  {[
+                    'A central AI-powered content toolkit for our internal workflows',
+                    'A single place to run quality checks, generate content, and automate repetitive tasks',
+                    'A governance-controlled AI environment (not random AI usage)',
+                    'Designed specifically for our content, QA, and curriculum processes',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <Check className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-black text-slate-900 dark:text-white mb-3 text-xs uppercase tracking-widest">What It Does</h4>
+                <ul className="space-y-2">
+                  {[
+                    'Speeds up content production (descriptions, competencies, tickets, notes, etc.)',
+                    'Standardises quality across lessons and materials',
+                    'Reduces manual admin work',
+                    'Automates repetitive formatting and validation tasks',
+                    'Supports structured QA checks before release',
+                    'Tracks usage and activity for transparency',
+                    'Allows controlled AI upgrades without disrupting workflows',
+                    'Gives admin-level control over how AI is used',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <Check className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-black text-slate-900 dark:text-white mb-3 text-xs uppercase tracking-widest">Why It Matters</h4>
+                <ul className="space-y-2">
+                  {[
+                    'Saves time without sacrificing quality',
+                    'Keeps AI usage controlled and measurable',
+                    'Reduces operational risk',
+                    'Creates consistency across teams',
+                    'Scales with our content production needs',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <Check className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 text-center">
+              <button
+                onClick={() => setShowInfo(false)}
+                className="px-8 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl p-8 text-white shadow-lg shadow-orange-500/20">
-        <h1 className="text-3xl font-black mb-2 uppercase tracking-tight">Welcome back, {user?.displayName?.split(' ')[0] || 'Teacher'}!</h1>
-        <p className="text-orange-100 font-medium">Ready to create some amazing A2 English content today?</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-black mb-2 uppercase tracking-tight">Welcome back, {user?.displayName?.split(' ')[0] || 'Teacher'}!</h1>
+            <p className="text-orange-100 font-medium">Ready to create some amazing A2 English content today?</p>
+          </div>
+          <button
+            onClick={() => setShowInfo(true)}
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors shrink-0"
+            title="About this toolkit"
+          >
+            <Info className="w-5 h-5 text-white" />
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
