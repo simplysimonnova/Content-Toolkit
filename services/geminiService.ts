@@ -1,6 +1,7 @@
 import { Type, Modality } from "@google/genai";
 import { ai } from '../lib/aiClient';
-import { resolveModel } from '../lib/modelRegistry';
+import { type CapabilityTier } from '../lib/modelRegistry';
+import { getResolvedModelForTool } from '../lib/toolTierResolver';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "./firebase";
 import { LessonInfo, OutputMode, Subscription } from '../types';
@@ -41,7 +42,7 @@ export const fetchConfig = async (toolId: string, fallback: string): Promise<Too
   }
 };
 
-export const logUsage = async (tool: string, model: string, cost: number = 0.01) => {
+export const logUsage = async (tool: string, model: string, cost: number = 0.01, tier: CapabilityTier = 'default') => {
   const user = auth.currentUser;
   if (!user) return;
   try {
@@ -52,6 +53,7 @@ export const logUsage = async (tool: string, model: string, cost: number = 0.01)
       tool_id: tool.toLowerCase().replace(/\s+/g, '-'),
       tool_name: tool,
       model,
+      tier,
       timestamp: serverTimestamp(),
       cost,
       is_ai_tool: true,
@@ -69,6 +71,8 @@ export const logUsage = async (tool: string, model: string, cost: number = 0.01)
 export const logToolUsage = async (params: {
   tool_id: string;
   tool_name: string;
+  model?: string | null;
+  tier?: CapabilityTier;
   status?: 'success' | 'error';
   execution_time_ms?: number;
   metadata?: Record<string, unknown>;
@@ -82,7 +86,8 @@ export const logToolUsage = async (params: {
       tool: params.tool_name,
       tool_id: params.tool_id,
       tool_name: params.tool_name,
-      model: null,
+      model: params.model ?? null,
+      tier: params.tier ?? null,
       cost: 0,
       timestamp: serverTimestamp(),
       is_ai_tool: false,
@@ -95,8 +100,9 @@ export const logToolUsage = async (params: {
   }
 };
 
+const SUBSCRIPTION_ALLOWED_TIERS: CapabilityTier[] = ['default'];
 export const parseSubscriptionsFromPDF = async (base64Data: string): Promise<Partial<Subscription>[]> => {
-  const model = resolveModel();
+  const { model, tier } = await getResolvedModelForTool('subscription-tracker', SUBSCRIPTION_ALLOWED_TIERS);
 
   const prompt = `Extract all AI services from this subscription report PDF table. 
   
@@ -142,25 +148,26 @@ export const parseSubscriptionsFromPDF = async (base64Data: string): Promise<Par
     }
   });
 
-  await logUsage("Subscription PDF Import", model, 0.05);
+  await logUsage("Subscription PDF Import", model, 0.05, tier);
   // Fix: Access .text property directly as per GenAI guidelines
   return JSON.parse(response.text || "[]");
 };
 
+const IMAGE_ALLOWED_TIERS: CapabilityTier[] = ['default'];
 export const rewriteImagePrompt = async (source: string, instruction: string): Promise<string> => {
   const config = await fetchConfig('prompt-rewriter', "Follow image consistency rules.");
-  const model = resolveModel();
+  const { model, tier } = await getResolvedModelForTool('prompt-rewriter', IMAGE_ALLOWED_TIERS);
   const response = await ai.models.generateContent({
     model,
     contents: `${config.instruction}\nRewrite image prompt: ${source}\nInst: ${instruction}`,
   });
-  await logUsage("Image Rewrite", model, 0.01);
+  await logUsage("Image Rewrite", model, 0.01, tier);
   // Fix: Access .text property directly
   return response.text || "";
 };
 
 export const generateNewImagePrompt = async (keywords: string): Promise<string> => {
-  const model = resolveModel();
+  const { model, tier } = await getResolvedModelForTool('prompt-writer', IMAGE_ALLOWED_TIERS);
 
   // Use explicit tool ID 'prompt-writer' to match the UI settings
   const config = await fetchConfig('prompt-writer', "You are an expert AI image prompt engineer for Novakid materials.");
@@ -169,7 +176,7 @@ export const generateNewImagePrompt = async (keywords: string): Promise<string> 
     model,
     contents: `${config.instruction}\n\nUSER KEYWORDS: ${keywords}\n\nSTRICT OUTPUT RULE: Return exactly ONE single paragraph. No lists. No intro text. No options. Only the prompt.`,
   });
-  await logUsage("Prompt Creator", model, 0.01);
+  await logUsage("Prompt Creator", model, 0.01, tier);
   // Fix: Access .text property directly
   return response.text || "";
 };

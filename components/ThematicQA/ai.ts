@@ -1,8 +1,12 @@
 import { Type } from "@google/genai";
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { logUsage } from "../../services/geminiService";
 import { ThematicQAResult, QASettings, DEFAULT_SETTINGS } from "./types";
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'thematic-qa';
 
 export type { ThematicQAResult } from "./types";
 
@@ -64,7 +68,7 @@ export async function runThematicQA(
   slideImages: { slide: number; dataUrl: string }[],
   settings: QASettings = DEFAULT_SETTINGS
 ): Promise<ThematicQAResult> {
-  const model = resolveModel();
+  const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
 
   // Build contents array: text prompt + inline images
   const imageParts = slideImages.map((img) => ({
@@ -149,7 +153,7 @@ Analyze all content and return the compliance report as JSON.`;
     },
   });
 
-  await logUsage("Thematic QA", model, 0.05);
+  await logUsage("Thematic QA", model, 0.05, tier);
 
   const json = JSON.parse(response.text || "{}");
   return json as ThematicQAResult;

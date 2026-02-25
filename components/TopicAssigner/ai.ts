@@ -1,7 +1,11 @@
 import { Type } from "@google/genai";
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { logUsage } from "../../services/geminiService";
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'topic-assigner';
 
 export interface TopicAssignmentResult {
     word: string;
@@ -12,7 +16,7 @@ export interface TopicAssignmentResult {
 }
 
 export const assignTopicsWithAI = async (words: string[], references: any[], onProgress: any): Promise<TopicAssignmentResult[]> => {
-    const model = resolveModel();
+    const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
     const response = await ai.models.generateContent({
         model,
         contents: `Assign topics for: ${words.join(', ')}. Use references: ${JSON.stringify(references)}`,
@@ -34,6 +38,6 @@ export const assignTopicsWithAI = async (words: string[], references: any[], onP
             }
         }
     });
-    await logUsage("Topic Assigner", model, 0.05);
+    await logUsage("Topic Assigner", model, 0.05, tier);
     return JSON.parse(response.text || "[]");
 };

@@ -1,6 +1,10 @@
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { fetchConfig, logUsage } from "../../services/geminiService";
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'competency-csv-normaliser';
 
 export const normalizeCompetencies = async (csvData: string): Promise<string> => {
 
@@ -85,7 +89,7 @@ Output Guarantee
 - Return strictly the CSV content.
 `);
 
-  const model = resolveModel();
+  const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
 
   const prompt = `
 ${config.instruction}
@@ -99,6 +103,6 @@ ${csvData}
     contents: prompt
   });
 
-  await logUsage("Competency Normalization", model, 0.05); // Estimated cost
+  await logUsage("Competency Normalization", model, 0.05, tier);
   return response.text || "";
 };

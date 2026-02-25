@@ -67,6 +67,7 @@ export interface QARun {
   parsed_ai_json: QAResult;
   prompt_version: string;
   ai_model: string;
+  ai_tier: string;
   execution_time_ms: number;
   triggered_by_user_id: string;
   triggered_by_user_email: string;

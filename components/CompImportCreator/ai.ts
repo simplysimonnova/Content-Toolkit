@@ -1,6 +1,10 @@
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { logUsage } from "../../services/geminiService";
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'comp-import-creator';
 
 interface CompImportResult {
     statement: string;
@@ -44,7 +48,7 @@ Output format API Requirement
 
 export const generateCompImport = async (text: string): Promise<CompImportResult[]> => {
     // Using a robust model for complex instruction following
-    const model = resolveModel();
+    const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
 
     try {
         const response = await ai.models.generateContent({
@@ -55,7 +59,7 @@ export const generateCompImport = async (text: string): Promise<CompImportResult
             }
         });
 
-        await logUsage('Comp Import Creator', model, 0.01);
+        await logUsage('Comp Import Creator', model, 0.01, tier);
 
         const responseText = response.text || "[]";
         const data = JSON.parse(responseText);

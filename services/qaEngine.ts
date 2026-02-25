@@ -4,9 +4,12 @@ import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc
 import { db, auth } from './firebase';
 import type { NormalizedSlide, QAMode, QAResult, QARun, QAVersion, PDFSourceType } from '../components/AIQARunner/types';
 import { validateQAResult } from './resultValidator';
-import { resolveModel } from '../lib/modelRegistry';
+import { type CapabilityTier } from '../lib/modelRegistry';
+import { getResolvedModelForTool } from '../lib/toolTierResolver';
+import { logUsage } from './geminiService';
 
-const MODEL = resolveModel();
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'lesson-qa';
 
 const DEFAULT_PROMPTS: Record<QAMode, string> = {
   'full-lesson': `You are a senior instructional quality reviewer for Novakid, an online English school for children aged 4–12.
@@ -183,10 +186,10 @@ function buildUserPrompt(slides: NormalizedSlide[]): string {
   return `LESSON CONTENT (${slides.length} slides):\n\n${slideBlocks}\n\nPerform the QA review and return the JSON report.`;
 }
 
-async function callAI(systemPrompt: string, userPrompt: string): Promise<{ raw: string; parsed: QAResult }> {
+async function callAI(systemPrompt: string, userPrompt: string, model: string): Promise<{ raw: string; parsed: QAResult }> {
 
   const response = await ai.models.generateContent({
-    model: MODEL,
+    model,
     contents: userPrompt,
     config: {
       systemInstruction: systemPrompt,
@@ -228,14 +231,16 @@ export async function runQAEngine(
   let raw = '';
   let parsed: QAResult;
 
+  const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
+
   try {
-    const result = await callAI(systemPrompt, userPrompt);
+    const result = await callAI(systemPrompt, userPrompt, model);
     raw = result.raw;
     parsed = result.parsed;
   } catch (firstErr) {
     console.warn('First AI attempt failed, retrying once:', firstErr);
     try {
-      const result = await callAI(systemPrompt, userPrompt);
+      const result = await callAI(systemPrompt, userPrompt, model);
       raw = result.raw;
       parsed = result.parsed;
     } catch (retryErr: any) {
@@ -262,7 +267,8 @@ export async function runQAEngine(
     raw_ai_response: raw,
     parsed_ai_json: parsed,
     prompt_version: versionTag,
-    ai_model: MODEL,
+    ai_model: model,
+    ai_tier: tier,
     execution_time_ms: executionTimeMs,
     triggered_by_user_id: user.uid,
     triggered_by_user_email: user.email || '',
@@ -270,5 +276,6 @@ export async function runQAEngine(
   };
 
   const docRef = await addDoc(collection(db, 'qa_runs'), run);
+  await logUsage('Lesson QA', model, 0.05, tier);
   return { runId: docRef.id, run };
 }

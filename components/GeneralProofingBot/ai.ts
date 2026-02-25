@@ -1,10 +1,14 @@
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { fetchConfig, logUsage } from "../../services/geminiService";
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'proofing-bot';
 
 export const generateProofReport = async (data: any): Promise<string> => {
     const config = await fetchConfig('proofing-bot', `Proofread this text for UK English spelling and grammar. Ensure all headings follow the same format. Only suggest tonal changes if the tone is inconsistent within the document or if the writing feels unfinished. Output the findings in a simple, clear list for the user to action.`);
-    const model = resolveModel();
+    const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
 
     const parts: any[] = [{ text: config.instruction }];
 
@@ -20,6 +24,6 @@ export const generateProofReport = async (data: any): Promise<string> => {
         contents: { parts }
     });
 
-    await logUsage("Proofing Audit", model, 0.02);
+    await logUsage("Proofing Audit", model, 0.02, tier);
     return response.text || "No specific issues found.";
 };

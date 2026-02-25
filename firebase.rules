@@ -123,5 +123,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if isAdmin();
     }
+
+    // --- AI Tool Settings (capability tier overrides, admin write, all authenticated users read) ---
+    match /tool_settings/{toolId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
   }
 }

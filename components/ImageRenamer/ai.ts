@@ -1,9 +1,13 @@
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { logUsage } from "../../services/geminiService";
 
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'image-renamer';
+
 export const analyzeImageForRenaming = async (base64Data: string, mimeType: string, stylePrefix: string): Promise<any> => {
-    const model = resolveModel();
+    const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
 
     const prompt = `Visually analyze this image and provide a standardized filename following these Novakid rules:
   1. Format: ${stylePrefix}[type]-[subject]-[descriptor]-[variant]
@@ -29,6 +33,6 @@ export const analyzeImageForRenaming = async (base64Data: string, mimeType: stri
         config: { responseMimeType: "application/json" }
     });
 
-    await logUsage("Image Analysis", model, 0.01);
+    await logUsage("Image Analysis", model, 0.01, tier);
     return JSON.parse(response.text || "{}");
 };

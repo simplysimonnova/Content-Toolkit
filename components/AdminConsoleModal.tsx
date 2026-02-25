@@ -34,7 +34,7 @@ interface NavGroup {
 }
 
 export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'usage' | 'users' | 'navigation' | 'links' | 'directus' | 'rules' | 'subscriptions' | 'ideas'>('usage');
+  const [activeTab, setActiveTab] = useState<'usage' | 'users' | 'navigation' | 'links' | 'directus' | 'rules' | 'subscriptions' | 'ideas' | 'ai-tools'>('usage');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -75,6 +75,10 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
   // --- Module State: Tool Config Settings ---
   const [openSettingsToolId, setOpenSettingsToolId] = useState<string | null>(null);
+
+  // --- Module State: AI Tool Settings ---
+  const [toolSettings, setToolSettings] = useState<Record<string, string>>({});
+  const [toolSettingsSaving, setToolSettingsSaving] = useState<string | null>(null);
 
   // --- Module State: Ideas & Fixes ---
   const [ideas, setIdeas] = useState<any[]>([]);
@@ -120,6 +124,12 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
     unsubscribes.push(onSnapshot(query(collection(db, 'tool_ideas'), orderBy('timestamp', 'desc')), (snap) => {
       setIdeas(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }));
+
+    unsubscribes.push(onSnapshot(collection(db, 'tool_settings'), (snap) => {
+      const settings: Record<string, string> = {};
+      snap.docs.forEach(d => { settings[d.id] = d.data().capabilityTier || 'default'; });
+      setToolSettings(settings);
     }));
 
     return () => unsubscribes.forEach(unsub => unsub());
@@ -390,7 +400,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
             { id: 'directus', icon: Presentation, label: 'Directus' },
             { id: 'rules', icon: Terminal, label: 'Tool Configs' },
             { id: 'subscriptions', icon: CreditCard, label: 'Subscriptions' },
-        { id: 'ideas', icon: Lightbulb, label: 'Ideas & Fixes' }
+        { id: 'ideas', icon: Lightbulb, label: 'Ideas & Fixes' },
+        { id: 'ai-tools', icon: Wand2, label: 'AI Tool Settings' }
           ].map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
               <tab.icon className="w-4 h-4" /> {tab.label}
@@ -917,6 +928,98 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                     </table>
                   </div>
                 )}
+              </div>
+            );
+          })()}
+
+          {activeTab === 'ai-tools' && (() => {
+            const AI_TOOLS = [
+              { id: 'lesson-descriptions',      label: 'Lesson Descriptions' },
+              { id: 'taf-generator',             label: 'TAF Generator' },
+              { id: 'tn-standardizer',           label: 'TN Standardizer' },
+              { id: 'tn-fixer',                  label: 'TN Fixer Module' },
+              { id: 'proofing-bot',              label: 'General Proofing Bot' },
+              { id: 'llm-content-checker',       label: 'LLM Content Checker' },
+              { id: 'thematic-qa',               label: 'Thematic QA' },
+              { id: 'lesson-qa',                 label: 'Lesson QA' },
+              { id: 'jira-ticketer',             label: 'Jira Ticketer' },
+              { id: 'image-renamer',             label: 'Image Renamer' },
+              { id: 'topic-assigner',            label: 'Topic Assigner' },
+              { id: 'vr-validator',              label: 'VR Validator' },
+              { id: 'comp-import-creator',       label: 'Competency Builder' },
+              { id: 'competency-csv-normaliser', label: 'Competency CSV Normaliser' },
+              { id: 'subscription-tracker',      label: 'Subscription Tracker' },
+              { id: 'prompt-rewriter',           label: 'Image Prompt Rewriter' },
+              { id: 'prompt-writer',             label: 'Image Prompt Writer' },
+            ];
+            const TIER_OPTIONS: { value: string; label: string }[] = [
+              { value: 'default',   label: 'Default' },
+              { value: 'reasoning', label: 'Reasoning' },
+              { value: 'vision',    label: 'Vision' },
+            ];
+            const TIER_STYLES: Record<string, string> = {
+              default:   'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300',
+              reasoning: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400',
+              vision:    'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400',
+            };
+            const updateTier = async (toolId: string, tier: string) => {
+              setToolSettingsSaving(toolId);
+              try {
+                await setDoc(doc(db, 'tool_settings', toolId), {
+                  tool_id: toolId,
+                  capabilityTier: tier,
+                  updatedAt: serverTimestamp(),
+                }, { merge: true });
+                setToolSettings(prev => ({ ...prev, [toolId]: tier }));
+              } catch (e) { console.error('Failed to update tier', e); }
+              setToolSettingsSaving(null);
+            };
+            return (
+              <div className="space-y-4 animate-fade-in">
+                <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 shadow-sm">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Set the capability tier per tool. All tiers currently resolve to <span className="font-mono font-bold">gemini-3-flash-preview</span>. Future model upgrades require editing only <span className="font-mono font-bold">lib/modelRegistry.ts</span>.
+                  </p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Tool</th>
+                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Tool ID</th>
+                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Capability Tier</th>
+                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y dark:divide-slate-700/50">
+                      {AI_TOOLS.map(tool => {
+                        const currentTier = toolSettings[tool.id] || 'default';
+                        const isSaving = toolSettingsSaving === tool.id;
+                        return (
+                          <tr key={tool.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                            <td className="px-4 py-3 font-bold text-slate-700 dark:text-slate-200 text-xs">{tool.label}</td>
+                            <td className="px-4 py-3 font-mono text-[10px] text-slate-400">{tool.id}</td>
+                            <td className="px-4 py-3">
+                              <select
+                                value={currentTier}
+                                onChange={e => updateTier(tool.id, e.target.value)}
+                                disabled={isSaving}
+                                className={`text-[10px] font-black uppercase px-2 py-1 rounded border-0 cursor-pointer ${TIER_STYLES[currentTier] ?? TIER_STYLES.default}`}
+                              >
+                                {TIER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                              </select>
+                            </td>
+                            <td className="px-4 py-3">
+                              {isSaving
+                                ? <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                                : <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             );
           })()}

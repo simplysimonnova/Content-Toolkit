@@ -1,6 +1,10 @@
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { fetchConfig, logUsage } from "../../services/geminiService";
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'jira-ticketer';
 
 export interface TicketData {
     notes: string;
@@ -36,7 +40,7 @@ Noise filter: If no clear reproduction steps are found, leave blank — don’t 
   `.trim();
 
     const config = await fetchConfig('jira-ticketer', fallbackInstruction);
-    const model = resolveModel();
+    const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
 
     const parts: any[] = [{ text: config.instruction }];
 
@@ -52,6 +56,6 @@ Noise filter: If no clear reproduction steps are found, leave blank — don’t 
         contents: { parts }
     });
 
-    await logUsage("Jira Ticketer", model, 0.02);
+    await logUsage("Jira Ticketer", model, 0.02, tier);
     return response.text || "Failed to generate ticket.";
 };

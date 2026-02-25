@@ -1,10 +1,14 @@
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { fetchConfig, logUsage } from "../../services/geminiService";
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'taf-generator';
 
 export const generateTAF = async (lessonData: any, metadata: string, ruleset: any): Promise<any> => {
     const config = await fetchConfig('taf-generator', "Generate TAF rows based on ruleset.");
-    const model = resolveModel();
+    const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
     const stabilityHint = config.isLocked ? "\nSTABILITY NOTE: This is a verified production prompt. Do not deviate from these logic constraints." : "";
 
     const parts: any[] = [
@@ -29,6 +33,6 @@ export const generateTAF = async (lessonData: any, metadata: string, ruleset: an
         config: { responseMimeType: "application/json" }
     });
 
-    await logUsage("TAF Gen", model, 0.03);
+    await logUsage("TAF Gen", model, 0.03, tier);
     return JSON.parse(response.text || "{}");
 };

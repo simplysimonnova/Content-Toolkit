@@ -1,7 +1,11 @@
 
 import { Type } from "@google/genai";
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'tn-fixer';
 
 export interface TNResult {
   fixedNotes: string;
@@ -19,7 +23,7 @@ REWRITE NOW.
 
   try {
     const response = await ai.models.generateContent({
-      model: resolveModel(),
+      model: (await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS)).model,
       contents: prompt,
       config: {
         systemInstruction: systemPrompt,

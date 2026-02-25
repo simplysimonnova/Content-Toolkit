@@ -1,7 +1,11 @@
 import { Type } from "@google/genai";
 import { ai } from '../../lib/aiClient';
-import { resolveModel } from '../../lib/modelRegistry';
+import { type CapabilityTier } from '../../lib/modelRegistry';
+import { getResolvedModelForTool } from '../../lib/toolTierResolver';
 import { logUsage } from "../../services/geminiService";
+
+export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
+const TOOL_ID = 'tn-standardizer';
 
 export interface TNResult {
   fixedNotes: string;
@@ -9,7 +13,7 @@ export interface TNResult {
 }
 
 export async function fixTeacherNotes(rawNotes: string, systemPrompt: string): Promise<TNResult> {
-  const model = resolveModel();
+  const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
 
   const prompt = `
 [INPUT DATA]:
@@ -42,7 +46,7 @@ REWRITE NOW.
     },
   });
 
-  await logUsage("TN Standardizer", model, 0.02);
+  await logUsage("TN Standardizer", model, 0.01, tier);
 
   const json = JSON.parse(response.text || "{}");
   return {
