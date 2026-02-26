@@ -257,7 +257,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
         items: [
           { id: 'u1', label: 'Class ID Finder', icon: 'Hash', page: 'class-id-finder' },
           { id: 'u2', label: 'Jira Ticketer', icon: 'Ticket', page: 'jira-ticketer' },
-          { id: 'u3', label: 'VR Validator', icon: 'Map', page: 'vr-validator' }
+          { id: 'u3', label: 'VR Validator', icon: 'Map', page: 'vr-validator' },
+          { id: 'u4', label: 'CSV Cleanroom', icon: 'Filter', page: 'csv-cleanroom' }
         ]
       },
       {
