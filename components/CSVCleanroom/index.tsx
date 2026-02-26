@@ -208,7 +208,12 @@ export const CSVCleanroom: React.FC = () => {
       );
     }
 
-    const csv = generateCSVForRows(outputData);
+    const outputHeaders = selectedOutputColumns;
+    const outputRows = outputData.map(row => 
+      selectedOutputColumns.map(col => String(row[col] ?? ''))
+    );
+
+    const csv = generateCSVForRows(outputHeaders, outputRows);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -221,7 +226,11 @@ export const CSVCleanroom: React.FC = () => {
   const exportDuplicatesCSV = () => {
     if (duplicateRows.length === 0) return;
     
-    const csv = generateCSVForRows(duplicateRows);
+    const dupRows = duplicateRows.map(row => 
+      headers.map(col => String(row[col] ?? ''))
+    );
+    
+    const csv = generateCSVForRows(headers, dupRows);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -234,19 +243,19 @@ export const CSVCleanroom: React.FC = () => {
   const exportSummaryReport = () => {
     if (!stats) return;
     
-    const report = [
-      ['Metric', 'Value'],
-      ['Original Row Count', stats.originalRowCount],
-      ['Rows Removed', stats.rowsRemoved],
-      ['Rows Remaining', stats.rowsRemaining],
-      ['Unique Key Count', stats.uniqueKeyCount],
-      ['Duplicate Groups Count', stats.duplicateGroupsCount],
+    const reportHeaders = ['Metric', 'Value'];
+    const reportRows = [
+      ['Original Row Count', String(stats.originalRowCount)],
+      ['Rows Removed', String(stats.rowsRemoved)],
+      ['Rows Remaining', String(stats.rowsRemaining)],
+      ['Unique Key Count', String(stats.uniqueKeyCount)],
+      ['Duplicate Groups Count', String(stats.duplicateGroupsCount)],
       ['', ''],
       ['Top 10 Duplicate Keys', 'Frequency'],
-      ...stats.topDuplicates.map(d => [d.key, d.count])
+      ...stats.topDuplicates.map(d => [d.key, String(d.count)])
     ];
     
-    const csv = generateCSVForRows(report.map(r => ({ metric: r[0], value: r[1] })));
+    const csv = generateCSVForRows(reportHeaders, reportRows);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
