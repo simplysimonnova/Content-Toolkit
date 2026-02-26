@@ -52,7 +52,8 @@ export type AppPage =
   | 'tn-standardizer'
   | 'thematic-qa'
   | 'tqa-reports'
-  | 'ai-qa-runner';
+  | 'ai-qa-runner'
+  | 'csv-cleanroom';
 
 export interface ResourceLink {
   id?: string;

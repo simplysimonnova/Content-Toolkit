@@ -39,6 +39,7 @@ const TNStandardizer = React.lazy(() => import('./components/TNStandardizer').th
 const ThematicQA = React.lazy(() => import('./components/ThematicQA').then(m => ({ default: m.ThematicQA })));
 const TQAReports = React.lazy(() => import('./components/ThematicQA/ReportsDashboard').then(m => ({ default: m.ReportsDashboard })));
 const AIQARunner = React.lazy(() => import('./components/AIQARunner').then(m => ({ default: m.AIQARunner })));
+const CSVCleanroom = React.lazy(() => import('./components/CSVCleanroom').then(m => ({ default: m.CSVCleanroom })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -119,6 +120,8 @@ const App: React.FC = () => {
         return <TQAReports />;
       case 'ai-qa-runner':
         return <AIQARunner />;
+      case 'csv-cleanroom':
+        return <CSVCleanroom />;
 
       // Curriculum & Planning
       case 'ss-compactor':
