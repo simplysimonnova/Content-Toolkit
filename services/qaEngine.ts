@@ -6,7 +6,7 @@ import type { NormalizedSlide, QAMode, QAResult, QARun, QAVersion, PDFSourceType
 import { validateQAResult } from './resultValidator';
 import { type CapabilityTier } from '../lib/modelRegistry';
 import { getResolvedModelForTool } from '../lib/toolTierResolver';
-import { logUsage } from './geminiService';
+import { logToolUsage } from './geminiService';
 
 export const ALLOWED_TIERS: CapabilityTier[] = ['default'];
 const TOOL_ID = 'lesson-qa';
@@ -244,6 +244,16 @@ export async function runQAEngine(
       raw = result.raw;
       parsed = result.parsed;
     } catch (retryErr: any) {
+      const executionTimeMs = Date.now() - startTime;
+      await logToolUsage({
+        tool_id: TOOL_ID,
+        tool_name: 'Lesson QA',
+        model,
+        tier,
+        status: 'error',
+        execution_time_ms: executionTimeMs,
+        metadata: { error: retryErr.message, mode }
+      });
       throw new Error(`AI QA failed after retry: ${retryErr.message}`);
     }
   }
@@ -276,6 +286,16 @@ export async function runQAEngine(
   };
 
   const docRef = await addDoc(collection(db, 'qa_runs'), run);
-  await logUsage('Lesson QA', model, 0.05, tier);
+  
+  await logToolUsage({
+    tool_id: TOOL_ID,
+    tool_name: 'Lesson QA',
+    model,
+    tier,
+    status: 'success',
+    execution_time_ms: executionTimeMs,
+    metadata: { mode, verdict: parsed.verdict, total_score: parsed.total_score }
+  });
+  
   return { runId: docRef.id, run };
 }
