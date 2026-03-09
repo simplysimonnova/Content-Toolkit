@@ -25,6 +25,14 @@ const STATUS_CONFIG = {
     Icon: CheckCircle2,
     label: 'Success',
   },
+  partial_success: {
+    bg: 'bg-amber-50 dark:bg-amber-900/20',
+    text: 'text-amber-700 dark:text-amber-400',
+    border: 'border-amber-100 dark:border-amber-800',
+    dot: 'bg-amber-500',
+    Icon: AlertTriangle,
+    label: 'Partial',
+  },
   error: {
     bg: 'bg-red-50 dark:bg-red-900/20',
     text: 'text-red-700 dark:text-red-400',

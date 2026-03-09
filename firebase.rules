@@ -129,5 +129,138 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if isAdmin();
     }
+
+    // =========================================================================
+    // QA Engine v1 Collections
+    // =========================================================================
+
+    // --- QA Lessons ---
+    // Writers can create and update NON-stage fields on their own lessons.
+    // Stage status fields for ALL 5 stages, their timestamps, and logging fields
+    // are write-protected for writers — only the service layer may update them.
+    match /qa_lessons/{lessonId} {
+      allow read: if request.auth != null && (
+        resource.data.writer_id == request.auth.uid || isAdmin()
+      );
+      allow create: if request.auth != null &&
+        request.resource.data.writer_id == request.auth.uid &&
+        request.resource.data.qa_version == 'v1';
+      // Writers may update title/content fields, but CANNOT touch any governed field
+      allow update: if isAdmin() || (
+        request.auth != null &&
+        resource.data.writer_id == request.auth.uid &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          // Stage status fields (all 5 stages)
+          'stage1_status', 'stage2_status', 'stage3_status',
+          'stage4_status', 'stage5_status',
+          // Final status fields
+          'final_academic_status', 'final_production_status',
+          // Gate reason
+          'blocked_reason',
+          // Audit timestamps (all 5 stages × 2)
+          'stage1_started_at', 'stage1_cleared_at',
+          'stage2_started_at', 'stage2_cleared_at',
+          'stage3_started_at', 'stage3_cleared_at',
+          'stage4_started_at', 'stage4_cleared_at',
+          'stage5_started_at', 'stage5_cleared_at',
+          // Execution status fields (Stage 3 and 4)
+          'stage3_execution_status', 'stage4_execution_status',
+          // Phase 2C structured logging fields
+          'proofreading_correction_count', 'proofreading_density',
+          'design_correction_count'
+        ])
+      );
+      allow delete: if false;
+    }
+
+
+    // --- QA Runs v1 (strictly immutable) ---
+    // No update or delete is permitted — enforced here, not by convention.
+    match /qa_runs_v1/{runId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin() || (
+        request.auth != null &&
+        get(/databases/$(database)/documents/qa_lessons/$(resource.data.lesson_id)).data.writer_id
+          == request.auth.uid
+      );
+      allow update, delete: if false;
+    }
+
+    // --- QA Modules (admin-only write, no deletion) ---
+    match /qa_modules/{moduleId} {
+      allow read: if request.auth != null;
+      allow create, update: if isAdmin();
+      allow delete: if false; // deactivate only — history must be preserved
+    }
+
+    // --- QA Config v1 (versioned thresholds — admin-only, no deletion) ---
+    // Thresholds are never hardcoded. Every run captures threshold_version.
+    match /qa_config_v1/{configId} {
+      allow read: if request.auth != null;
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // --- QA Disagreements ---
+    // Writer creates. Admin resolves. Immutable once resolved_at is set.
+    match /qa_disagreements/{disagreementId} {
+      allow create: if request.auth != null &&
+        request.resource.data.writer_id == request.auth.uid &&
+        request.resource.data.requires_escalation == true;
+      allow read: if request.auth != null && (
+        resource.data.writer_id == request.auth.uid || isAdmin()
+      );
+      // Admin can resolve only if not already resolved
+      allow update: if isAdmin() && resource.data.resolved_at == null;
+      allow delete: if false;
+    }
+
+    // --- QA Escalations (auto-created in batch with disagreements) ---
+    match /qa_escalations/{escalationId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+      allow update: if isAdmin() && resource.data.status == 'pending';
+      allow delete: if false;
+    }
+
+    // --- QA Overrides (admin create-only, fully immutable) ---
+    match /qa_overrides/{overrideId} {
+      allow create, read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // --- QA Snapshots (create-once after Stage 2 clears — strictly immutable) ---
+    // Consumed by Stages 3 and 4. No re-creation after first snapshot per lesson.
+    match /qa_snapshots/{snapshotId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin() || (
+        request.auth != null &&
+        get(/databases/$(database)/documents/qa_lessons/$(resource.data.lesson_id)).data.writer_id
+          == request.auth.uid
+      );
+      allow update, delete: if false;
+    }
+
+    // --- QA Proofreading Runs v1 (Stage 3 — strictly immutable) ---
+    match /qa_proofreading_runs_v1/{runId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin() || (
+        request.auth != null &&
+        get(/databases/$(database)/documents/qa_lessons/$(resource.data.lesson_id)).data.writer_id
+          == request.auth.uid
+      );
+      allow update, delete: if false;
+    }
+
+    // --- QA Design Runs v1 (Stage 4 — strictly immutable) ---
+    match /qa_design_runs_v1/{runId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin() || (
+        request.auth != null &&
+        get(/databases/$(database)/documents/qa_lessons/$(resource.data.lesson_id)).data.writer_id
+          == request.auth.uid
+      );
+      allow update, delete: if false;
+    }
   }
 }

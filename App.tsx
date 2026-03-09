@@ -35,11 +35,12 @@ const RowExpander = React.lazy(() => import('./components/RowExpander').then(m =
 const IDResolver = React.lazy(() => import('./components/IDResolver').then(m => ({ default: m.IDResolver })));
 const JiraTicketer = React.lazy(() => import('./components/JiraTicketer').then(m => ({ default: m.JiraTicketer })));
 const DirectusJsonBuilder = React.lazy(() => import('./components/DirectusJsonBuilder').then(m => ({ default: m.DirectusJsonBuilder })));
-const TNStandardizer = React.lazy(() => import('./components/TNStandardizer').then(m => ({ default: m.TNStandardizer })));
+const TNStandardiser = React.lazy(() => import('./components/TNStandardiser').then(m => ({ default: m.TNStandardiser })));
 const ThematicQA = React.lazy(() => import('./components/ThematicQA').then(m => ({ default: m.ThematicQA })));
 const TQAReports = React.lazy(() => import('./components/ThematicQA/ReportsDashboard').then(m => ({ default: m.ReportsDashboard })));
 const AIQARunner = React.lazy(() => import('./components/AIQARunner').then(m => ({ default: m.AIQARunner })));
 const CSVCleanroom = React.lazy(() => import('./components/CSVCleanroom').then(m => ({ default: m.CSVCleanroom })));
+const SlidesZipUpload = React.lazy(() => import('./components/SlidesZipUpload').then(m => ({ default: m.SlidesZipUpload })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -112,8 +113,8 @@ const App: React.FC = () => {
         return <JiraTicketer />;
       case 'directus-json-builder':
         return <DirectusJsonBuilder />;
-      case 'tn-standardizer':
-        return <TNStandardizer />;
+      case 'tn-standardiser':
+        return <TNStandardiser />;
       case 'thematic-qa':
         return <ThematicQA sidebarCollapsed={isSidebarCollapsed} />;
       case 'tqa-reports':
@@ -122,6 +123,8 @@ const App: React.FC = () => {
         return <AIQARunner />;
       case 'csv-cleanroom':
         return <CSVCleanroom />;
+      case 'slides-zip-upload':
+        return <SlidesZipUpload />;
 
       // Curriculum & Planning
       case 'ss-compactor':

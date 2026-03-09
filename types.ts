@@ -49,11 +49,12 @@ export type AppPage =
   | 'id-resolver'
   | 'jira-ticketer'
   | 'directus-json-builder'
-  | 'tn-standardizer'
+  | 'tn-standardiser'
   | 'thematic-qa'
   | 'tqa-reports'
   | 'ai-qa-runner'
-  | 'csv-cleanroom';
+  | 'csv-cleanroom'
+  | 'slides-zip-upload';
 
 export interface ResourceLink {
   id?: string;

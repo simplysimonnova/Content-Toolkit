@@ -23,7 +23,7 @@ export interface SummarySection {
   type: 'summary';
   title?: string;
   /** Short status label displayed as a badge (e.g. "Completed", "Error"). */
-  status: 'success' | 'error' | 'warning' | 'info';
+  status: 'success' | 'partial_success' | 'error' | 'warning' | 'info';
   /** One-sentence description of the result. */
   text: string;
 }
@@ -92,8 +92,9 @@ export interface ToolReport {
   tool_id: string;
   user_id: string;
   created_at: string;        // ISO string
-  status: 'success' | 'error';
+  status: 'success' | 'partial_success' | 'error';
   summary: string;           // one-line summary (mirrors sections[0].text)
+  // status: 'partial_success' means tool completed but ≥1 slide fell back
   report_data: ReportData;
   schema_version: string;    // e.g. "1.0"
   metadata?: Record<string, unknown>;

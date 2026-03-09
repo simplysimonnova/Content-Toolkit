@@ -14,9 +14,9 @@ export interface UnifiedToolSettingsModalProps {
   defaultPrompt: string;
   /**
    * Optional: read-only locked core prompt to display above the editable
-   * section. Used by System-B tools that have a hardcoded methodology block
-   * (e.g. TNStandardizer). When provided the editable textarea becomes
-   * "Additional Instructions" rather than the full prompt.
+   * section. Used by System-B tools that have a hardcoded methodology block.
+   * When provided the editable textarea becomes "Additional Instructions"
+   * rather than the full prompt.
    */
   lockedPromptDisplay?: string;
   /**

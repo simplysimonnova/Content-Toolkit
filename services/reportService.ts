@@ -15,7 +15,7 @@ const SCHEMA_VERSION = '1.0';
 export async function saveReport(params: {
   toolId: string;
   userId: string;
-  status: 'success' | 'error';
+  status: 'success' | 'partial_success' | 'error';
   summary: string;
   reportData: ReportData;
   metadata?: Record<string, unknown>;

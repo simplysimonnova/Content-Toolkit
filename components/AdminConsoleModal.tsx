@@ -9,10 +9,11 @@ import {
   ShieldBan, Map, Search, SlidersHorizontal, Lock, Unlock
 } from 'lucide-react';
 import { collection, query, doc, onSnapshot, orderBy, limit, deleteDoc, setDoc, serverTimestamp, addDoc, updateDoc, getDocs, startAfter, where, type DocumentSnapshot } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db, auth } from '../services/firebase';
 
 import { SubscriptionTracker } from './SubscriptionTracker';
 import { UnifiedToolSettingsModal } from './UnifiedToolSettingsModal';
+import { ENGINE_VERSION } from '../services/qaEngineV1';
 
 interface AdminConsoleModalProps {
   isOpen: boolean;
@@ -34,7 +35,7 @@ interface NavGroup {
 }
 
 export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'usage' | 'users' | 'navigation' | 'links' | 'directus' | 'rules' | 'subscriptions' | 'ideas' | 'ai-tools'>('usage');
+  const [activeTab, setActiveTab] = useState<'usage' | 'users' | 'navigation' | 'links' | 'directus' | 'rules' | 'subscriptions' | 'ideas' | 'ai-tools' | 'qa-modules' | 'qa-config' | 'qa-dashboard'>('usage');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -88,6 +89,20 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
   const [ideasSort, setIdeasSort] = useState<'newest' | 'oldest'>('newest');
   const [ideasView, setIdeasView] = useState<'card' | 'list'>('card');
 
+  // --- QA Engine v1 State ---
+  const [qaModules, setQaModules] = useState<any[]>([]);
+  const [qaConfig, setQaConfig] = useState<any>(null);
+  const [qaConfigHistory, setQaConfigHistory] = useState<any[]>([]);
+  const [qaRuns, setQaRuns] = useState<any[]>([]);
+  const [qaProofreadingRuns, setQaProofreadingRuns] = useState<any[]>([]);
+  const [qaDesignRuns, setQaDesignRuns] = useState<any[]>([]);
+  const [qaSnapshots, setQaSnapshots] = useState<any[]>([]);
+  const [qaModuleForm, setQaModuleForm] = useState({ name: '', academic_focus: '', ai_prompt: '', active: true });
+  const [qaModuleEditId, setQaModuleEditId] = useState<string | null>(null);
+  const [qaConfigForm, setQaConfigForm] = useState({ stage1_min_score: 35, stage2_min_score: 38, version: '' });
+  const [isSavingQA, setIsSavingQA] = useState(false);
+  const [triggerWindow, setTriggerWindow] = useState<'30' | '60' | '90'>('30');
+
   useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
@@ -130,6 +145,28 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
       const settings: Record<string, string> = {};
       snap.docs.forEach(d => { settings[d.id] = d.data().capabilityTier || 'default'; });
       setToolSettings(settings);
+    }));
+
+    // QA Engine v1 collections
+    unsubscribes.push(onSnapshot(query(collection(db, 'qa_modules'), orderBy('name', 'asc')), (snap) => {
+      setQaModules(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }));
+    unsubscribes.push(onSnapshot(query(collection(db, 'qa_config_v1'), orderBy('updated_at', 'desc')), (snap) => {
+      const all = snap.docs.map(d => ({ id: d.id, ...d.data() } as Record<string, any>));
+      setQaConfig(all.find(c => c['active']) ?? null);
+      setQaConfigHistory(all);
+    }));
+    unsubscribes.push(onSnapshot(query(collection(db, 'qa_runs_v1'), where('engine_version', '==', ENGINE_VERSION), orderBy('timestamp', 'desc'), limit(200)), (snap) => {
+      setQaRuns(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }));
+    unsubscribes.push(onSnapshot(query(collection(db, 'qa_proofreading_runs_v1'), where('engine_version', '==', ENGINE_VERSION), orderBy('timestamp', 'desc'), limit(200)), (snap) => {
+      setQaProofreadingRuns(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }));
+    unsubscribes.push(onSnapshot(query(collection(db, 'qa_design_runs_v1'), where('engine_version', '==', ENGINE_VERSION), orderBy('timestamp', 'desc'), limit(200)), (snap) => {
+      setQaDesignRuns(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }));
+    unsubscribes.push(onSnapshot(query(collection(db, 'qa_snapshots'), where('engine_version', '==', ENGINE_VERSION), orderBy('created_at', 'desc'), limit(200)), (snap) => {
+      setQaSnapshots(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }));
 
     return () => unsubscribes.forEach(unsub => unsub());
@@ -200,8 +237,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
         items: [
           { id: 'lc1', label: 'Lesson Descriptions', icon: 'FileText', page: 'lesson-descriptions' },
           { id: 'lc2', label: 'Lesson Plan Generator', icon: 'Wand2', page: 'plan-generator' },
-          { id: 'lc3', label: 'Slide-creator Studio', icon: 'Presentation', page: 'slide-creator' },
-          { id: 'lc4', label: 'TN Standardizer', icon: 'FileText', page: 'tn-standardizer' },
+          { id: 'lc3', label: 'Slide-creator Studio', icon: 'FileText', page: 'slide-creator' },
+          { id: 'lc4', label: 'TN Standardiser', icon: 'BookOpen', page: 'tn-standardiser' },
           { id: 'lc5', label: 'Lesson QA', icon: 'ShieldCheck', page: 'ai-qa-runner' },
           { id: 'lc6', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' }
         ]
@@ -213,7 +250,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'vq1', label: 'General Proofing Bot', icon: 'ClipboardCheck', page: 'proofing-bot' },
           { id: 'vq2', label: 'Lesson Proofing Bot', icon: 'ShieldCheck', page: 'lesson-proofing-bot' },
           { id: 'vq3', label: 'Thematic QA', icon: 'ShieldCheck', page: 'thematic-qa' },
-          { id: 'vq4', label: 'Lesson QA', icon: 'ShieldCheck', page: 'ai-qa-runner' }
+          { id: 'vq4', label: 'QA Engine V1', icon: 'ShieldCheck', page: 'slides-zip-upload' }
         ]
       },
       {
@@ -401,8 +438,11 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
             { id: 'directus', icon: Presentation, label: 'Directus' },
             { id: 'rules', icon: Terminal, label: 'Tool Configs' },
             { id: 'subscriptions', icon: CreditCard, label: 'Subscriptions' },
-        { id: 'ideas', icon: Lightbulb, label: 'Ideas & Fixes' },
-        { id: 'ai-tools', icon: Wand2, label: 'AI Tool Settings' }
+            { id: 'ideas', icon: Lightbulb, label: 'Ideas & Fixes' },
+            { id: 'ai-tools', icon: Wand2, label: 'AI Tool Settings' },
+            { id: 'qa-modules', icon: ClipboardCheck, label: 'QA Modules' },
+            { id: 'qa-config', icon: SlidersHorizontal, label: 'QA Config' },
+            { id: 'qa-dashboard', icon: ShieldCheck, label: 'QA Dashboard' },
           ].map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`py-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
               <tab.icon className="w-4 h-4" /> {tab.label}
@@ -791,7 +831,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           {activeTab === 'ideas' && (() => {
             const STATUS_OPTIONS = ['new', 'reviewed', 'actioned'];
             const STATUS_STYLES: Record<string, string> = {
-              'new':      'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
+              'new': 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
               'reviewed': 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
               'actioned': 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
             };
@@ -819,9 +859,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                   <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 rounded-xl p-1">
                     {(['all', 'idea', 'fix'] as const).map(t => (
                       <button key={t} onClick={() => setIdeasTypeFilter(t)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
-                          ideasTypeFilter === t ? 'bg-white dark:bg-slate-700 shadow text-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700'
-                        }`}>
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${ideasTypeFilter === t ? 'bg-white dark:bg-slate-700 shadow text-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700'
+                          }`}>
                         {t === 'all' ? 'All' : t === 'idea' ? '💡 Ideas' : '🔧 Fixes'}
                       </button>
                     ))}
@@ -871,9 +910,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                             <p className="text-[10px] text-slate-400 truncate">{idea.userEmail}</p>
                           </div>
                           <div className="ml-auto flex gap-1 shrink-0">
-                            <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
-                              idea.type === 'fix' ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' : 'bg-teal-50 dark:bg-teal-900/20 text-teal-600'
-                            }`}>{idea.type === 'fix' ? 'Fix' : 'Idea'}</span>
+                            <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${idea.type === 'fix' ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' : 'bg-teal-50 dark:bg-teal-900/20 text-teal-600'
+                              }`}>{idea.type === 'fix' ? 'Fix' : 'Idea'}</span>
                           </div>
                         </div>
                         <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed flex-1">{idea.text}</p>
@@ -919,9 +957,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                               <p className="text-[10px] text-slate-400">{idea.userEmail}</p>
                             </td>
                             <td className="px-4 py-3">
-                              <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
-                                idea.type === 'fix' ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' : 'bg-teal-50 dark:bg-teal-900/20 text-teal-600'
-                              }`}>{idea.type === 'fix' ? 'Fix' : 'Idea'}</span>
+                              <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${idea.type === 'fix' ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' : 'bg-teal-50 dark:bg-teal-900/20 text-teal-600'
+                                }`}>{idea.type === 'fix' ? 'Fix' : 'Idea'}</span>
                             </td>
                             <td className="px-4 py-3 max-w-xs">
                               <p className="text-xs dark:text-slate-300 line-clamp-2">{idea.text}</p>
@@ -958,38 +995,38 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
 
           {activeTab === 'ai-tools' && (() => {
             const AI_TOOLS = [
-              { id: 'lesson-descriptions',      label: 'Lesson Descriptions' },
-              { id: 'taf-generator',             label: 'TAF Generator' },
-              { id: 'tn-standardizer',           label: 'TN Standardizer' },
-              { id: 'tn-fixer',                  label: 'TN Fixer Module' },
-              { id: 'proofing-bot',              label: 'General Proofing Bot' },
-              { id: 'llm-content-checker',       label: 'LLM Content Checker' },
-              { id: 'thematic-qa',               label: 'Thematic QA' },
-              { id: 'lesson-qa',                 label: 'Lesson QA' },
-              { id: 'jira-ticketer',             label: 'Jira Ticketer' },
-              { id: 'image-renamer',             label: 'Image Renamer' },
-              { id: 'topic-assigner',            label: 'Topic Assigner' },
-              { id: 'vr-validator',              label: 'VR Validator' },
-              { id: 'comp-import-creator',       label: 'Competency Builder' },
+              { id: 'lesson-descriptions', label: 'Lesson Descriptions' },
+              { id: 'taf-generator', label: 'TAF Generator' },
+              { id: 'tn-standardiser', label: 'TN Standardiser' },
+              { id: 'tn-fixer', label: 'TN Fixer Module' },
+              { id: 'proofing-bot', label: 'General Proofing Bot' },
+              { id: 'llm-content-checker', label: 'LLM Content Checker' },
+              { id: 'thematic-qa', label: 'Thematic QA' },
+              { id: 'lesson-qa', label: 'Lesson QA' },
+              { id: 'jira-ticketer', label: 'Jira Ticketer' },
+              { id: 'image-renamer', label: 'Image Renamer' },
+              { id: 'topic-assigner', label: 'Topic Assigner' },
+              { id: 'vr-validator', label: 'VR Validator' },
+              { id: 'comp-import-creator', label: 'Competency Builder' },
               { id: 'competency-csv-normaliser', label: 'Competency CSV Normaliser' },
-              { id: 'subscription-tracker',      label: 'Subscription Tracker' },
-              { id: 'prompt-rewriter',           label: 'Image Prompt Rewriter' },
-              { id: 'prompt-writer',             label: 'Image Prompt Writer' },
+              { id: 'subscription-tracker', label: 'Subscription Tracker' },
+              { id: 'prompt-rewriter', label: 'Image Prompt Rewriter' },
+              { id: 'prompt-writer', label: 'Image Prompt Writer' },
             ];
             const TIER_OPTIONS: { value: string; label: string }[] = [
-              { value: 'default',   label: 'Default' },
+              { value: 'default', label: 'Default' },
               { value: 'reasoning', label: 'Reasoning' },
-              { value: 'vision',    label: 'Vision' },
+              { value: 'vision', label: 'Vision' },
             ];
             const TIER_STYLES: Record<string, string> = {
-              default:   'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300',
+              default: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300',
               reasoning: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400',
-              vision:    'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400',
+              vision: 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400',
             };
             const TIER_WARNINGS: Record<string, string | null> = {
-              default:   null,
+              default: null,
               reasoning: '⚠ Reasoning tier uses higher-cost model.',
-              vision:    null,
+              vision: null,
             };
             const updateTier = async (toolId: string, tier: string) => {
               setToolSettingsSaving(toolId);
@@ -1052,6 +1089,799 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
                     </tbody>
                   </table>
                 </div>
+              </div>
+            );
+          })()}
+
+          {/* ============================================================ */}
+          {/* QA MODULES TAB                                               */}
+          {/* ============================================================ */}
+          {activeTab === 'qa-modules' && (() => {
+            const saveModule = async () => {
+              if (!qaModuleForm.name || !qaModuleForm.ai_prompt) return;
+              setIsSavingQA(true);
+              try {
+                const payload = {
+                  ...qaModuleForm,
+                  triggers: [],
+                  version: 1,
+                  updated_by: auth.currentUser?.uid ?? 'admin',
+                  created_at: serverTimestamp(),
+                };
+                if (qaModuleEditId) {
+                  await updateDoc(doc(db, 'qa_modules', qaModuleEditId), { ...qaModuleForm, updated_at: serverTimestamp() });
+                  setQaModuleEditId(null);
+                } else {
+                  await addDoc(collection(db, 'qa_modules'), payload);
+                }
+                setQaModuleForm({ name: '', academic_focus: '', ai_prompt: '', active: true });
+              } catch (e) { alert('Save failed'); }
+              finally { setIsSavingQA(false); }
+            };
+            const deactivateModule = async (id: string) => {
+              if (!confirm('Deactivate this module? It will no longer be selectable for new lessons.')) return;
+              await updateDoc(doc(db, 'qa_modules', id), { active: false, updated_at: serverTimestamp() });
+            };
+            return (
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                  <p className="text-xs text-amber-700 dark:text-amber-400 font-bold">⚠ Admin Only — Modules define scoring prompts and trigger definitions for lessons. Changes affect all future QA runs for lessons using this module.</p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-6 shadow-sm space-y-4">
+                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{qaModuleEditId ? 'Edit Module' : 'Create Module'}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Module Name</label>
+                      <input value={qaModuleForm.name} onChange={e => setQaModuleForm({ ...qaModuleForm, name: e.target.value })} placeholder="e.g. Core English Lesson" className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Academic Focus</label>
+                      <input value={qaModuleForm.academic_focus} onChange={e => setQaModuleForm({ ...qaModuleForm, academic_focus: e.target.value })} placeholder="e.g. Speaking & Vocabulary" className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">AI Evaluation Prompt</label>
+                    <textarea value={qaModuleForm.ai_prompt} onChange={e => setQaModuleForm({ ...qaModuleForm, ai_prompt: e.target.value })} rows={5} placeholder="System instruction for the AI reviewer..." className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white resize-none" />
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={saveModule} disabled={isSavingQA} className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md">
+                      {isSavingQA ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {qaModuleEditId ? 'Update Module' : 'Create Module'}
+                    </button>
+                    {qaModuleEditId && <button onClick={() => { setQaModuleEditId(null); setQaModuleForm({ name: '', academic_focus: '', ai_prompt: '', active: true }); }} className="px-4 py-2.5 text-sm font-bold text-slate-500 hover:text-red-500">Cancel</button>}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{qaModules.length} module{qaModules.length !== 1 ? 's' : ''}</p>
+                  {qaModules.map(m => (
+                    <div key={m.id} className="bg-white dark:bg-slate-800 p-5 rounded-xl border dark:border-slate-700 flex items-start justify-between gap-4 group">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${m.active !== false ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-slate-100 text-slate-400'}`}>{m.active !== false ? 'Active' : 'Inactive'}</span>
+                          <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500">v{m.version ?? 1}</span>
+                        </div>
+                        <h5 className="font-bold text-sm dark:text-white">{m.name}</h5>
+                        <p className="text-xs text-slate-500 mt-0.5">{m.academic_focus}</p>
+                        <p className="text-[10px] text-slate-400 mt-1 line-clamp-2 font-mono">{m.ai_prompt?.slice(0, 120)}…</p>
+                        <p className="text-[9px] text-slate-400 mt-1">{(m.triggers ?? []).length} trigger definitions</p>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <button onClick={() => { setQaModuleEditId(m.id); setQaModuleForm({ name: m.name, academic_focus: m.academic_focus ?? '', ai_prompt: m.ai_prompt ?? '', active: m.active !== false }); }} className="p-2 text-slate-400 hover:text-indigo-500"><Edit3 className="w-4 h-4" /></button>
+                        {m.active !== false && <button onClick={() => deactivateModule(m.id)} className="p-2 text-slate-400 hover:text-red-500"><ShieldBan className="w-4 h-4" /></button>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ============================================================ */}
+          {/* QA CONFIG TAB (Versioned Thresholds)                         */}
+          {/* ============================================================ */}
+          {activeTab === 'qa-config' && (() => {
+            const saveNewConfig = async () => {
+              if (!qaConfigForm.version.trim()) return alert('Version tag is required (e.g. v1.1)');
+              setIsSavingQA(true);
+              try {
+                // Mark current active as inactive
+                if (qaConfig?.id) await updateDoc(doc(db, 'qa_config_v1', qaConfig.id), { active: false });
+                await addDoc(collection(db, 'qa_config_v1'), {
+                  ...qaConfigForm,
+                  active: true,
+                  updated_by: auth.currentUser?.uid ?? 'admin',
+                  updated_at: serverTimestamp(),
+                });
+                setQaConfigForm({ stage1_min_score: 35, stage2_min_score: 38, version: '' });
+              } catch (e) { alert('Save failed'); }
+              finally { setIsSavingQA(false); }
+            };
+            return (
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                  <p className="text-xs text-amber-700 dark:text-amber-400 font-bold">⚠ Changing thresholds creates a new versioned config entry. Historical QA runs are unaffected — each run captures the threshold version at time of execution.</p>
+                </div>
+
+                {/* Active config */}
+                {qaConfig ? (
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border-2 border-indigo-300 dark:border-indigo-700 p-5 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">Active</span>
+                      <span className="text-xs font-mono text-slate-400 dark:text-slate-500">{qaConfig.version}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 text-center">
+                        <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Stage 1 Min</p>
+                        <p className="text-3xl font-black text-indigo-600">{qaConfig.stage1_min_score}<span className="text-sm text-slate-400">/50</span></p>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 text-center">
+                        <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Stage 2 Min</p>
+                        <p className="text-3xl font-black text-indigo-600">{qaConfig.stage2_min_score}<span className="text-sm text-slate-400">/50</span></p>
+                      </div>
+                    </div>
+                    <p className="text-[9px] text-slate-400 mt-3">Updated by {qaConfig.updated_by} · {qaConfig.updated_at?.toDate?.()?.toLocaleString?.() ?? '—'}</p>
+                  </div>
+                ) : (
+                  <div className="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
+                    <p className="text-sm font-bold text-orange-700 dark:text-orange-400">⚠ No active QA threshold config. Create one below — QA runs will fail without it.</p>
+                  </div>
+                )}
+
+                {/* Create new config */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-6 shadow-sm space-y-4">
+                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Set New Thresholds</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Stage 1 Min Score (0–50)</label>
+                      <input type="number" min={0} max={50} value={qaConfigForm.stage1_min_score} onChange={e => setQaConfigForm({ ...qaConfigForm, stage1_min_score: Number(e.target.value) })} className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Stage 2 Min Score (0–50)</label>
+                      <input type="number" min={0} max={50} value={qaConfigForm.stage2_min_score} onChange={e => setQaConfigForm({ ...qaConfigForm, stage2_min_score: Number(e.target.value) })} className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Version Tag</label>
+                      <input value={qaConfigForm.version} onChange={e => setQaConfigForm({ ...qaConfigForm, version: e.target.value })} placeholder="e.g. v1.1" className="w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white" />
+                    </div>
+                  </div>
+                  <button onClick={saveNewConfig} disabled={isSavingQA} className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md">
+                    {isSavingQA ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Publish New Config Version
+                  </button>
+                </div>
+
+                {/* History */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                  <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                    <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Config History ({qaConfigHistory.length})</h4>
+                  </div>
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b dark:border-slate-700">
+                        <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase text-slate-400">Version</th>
+                        <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase text-slate-400">Stage 1</th>
+                        <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase text-slate-400">Stage 2</th>
+                        <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase text-slate-400">Status</th>
+                        <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase text-slate-400">Updated</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y dark:divide-slate-700">
+                      {qaConfigHistory.map(c => (
+                        <tr key={c.id} className={`hover:bg-slate-50 dark:hover:bg-slate-900/30 ${c.active ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : ''}`}>
+                          <td className="px-4 py-2.5 font-mono font-bold dark:text-white">{c.version}</td>
+                          <td className="px-4 py-2.5 dark:text-slate-300">{c.stage1_min_score}/50</td>
+                          <td className="px-4 py-2.5 dark:text-slate-300">{c.stage2_min_score}/50</td>
+                          <td className="px-4 py-2.5">
+                            <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${c.active ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}`}>{c.active ? 'Active' : 'Archived'}</span>
+                          </td>
+                          <td className="px-4 py-2.5 text-slate-400 font-mono">{c.updated_at?.toDate?.()?.toLocaleDateString?.() ?? '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ============================================================ */}
+          {/* QA DASHBOARD TAB (Phase 1 — Read-only)                       */}
+          {/* ============================================================ */}
+          {activeTab === 'qa-dashboard' && (() => {
+            const totalRuns = qaRuns.length;
+            const revisionRuns = qaRuns.filter(r => r.status === 'revision-required').length;
+            const passRuns = qaRuns.filter(r => r.status === 'pass').length;
+            const revisionRate = totalRuns > 0 ? Math.round((revisionRuns / totalRuns) * 100) : 0;
+
+            const avgCoreScore = totalRuns > 0
+              ? Math.round(qaRuns.reduce((s, r) => s + (r.core_score ?? 0), 0) / totalRuns)
+              : 0;
+            const avgModuleScore = totalRuns > 0
+              ? Math.round(qaRuns.reduce((s, r) => s + (r.module_score ?? 0), 0) / totalRuns)
+              : 0;
+
+            const seriousRuns = qaRuns.filter(r => r.serious_trigger_flag);
+            const triggerFreq: Record<string, number> = {};
+            seriousRuns.forEach(r => {
+              (r.triggers ?? []).forEach((t: any) => {
+                if (t.blocks_progression) triggerFreq[t.trigger_type] = (triggerFreq[t.trigger_type] ?? 0) + 1;
+              });
+            });
+            const topTriggers = Object.entries(triggerFreq).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            // Phase 3 — Operational metrics
+            const totalProofRuns = qaProofreadingRuns.length;
+            const failedProofRuns = qaProofreadingRuns.filter(r => r.status === 'blocked').length;
+            const avgStage3Ms = totalProofRuns > 0
+              ? Math.round(qaProofreadingRuns.reduce((s, r) => s + (r.duration_ms ?? 0), 0) / totalProofRuns)
+              : 0;
+            const stage3FailRate = totalProofRuns > 0 ? Math.round((failedProofRuns / totalProofRuns) * 100) : 0;
+
+            const totalDesignRuns = qaDesignRuns.length;
+            const failedDesignRuns = qaDesignRuns.filter(r => r.status === 'blocked').length;
+            const avgStage4Ms = totalDesignRuns > 0
+              ? Math.round(qaDesignRuns.reduce((s, r) => s + (r.duration_ms ?? 0), 0) / totalDesignRuns)
+              : 0;
+            const stage4FailRate = totalDesignRuns > 0 ? Math.round((failedDesignRuns / totalDesignRuns) * 100) : 0;
+
+            // Snapshot reuse rate: lessons that have a snapshot vs total unique lessons run
+            const uniqueLessonsRun = new Set([...qaRuns, ...qaProofreadingRuns, ...qaDesignRuns].map(r => r.lesson_id)).size;
+            const snapshotReuse = uniqueLessonsRun > 0
+              ? Math.round((qaSnapshots.length / uniqueLessonsRun) * 100)
+              : 0;
+
+            return (
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-3">
+                  <p className="text-[10px] text-blue-700 dark:text-blue-400 font-bold uppercase tracking-widest">QA Engine v1 · Phase 3 Dashboard · Read-Only View</p>
+                </div>
+
+                {/* KPI grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Total Runs', value: totalRuns, color: 'text-slate-700 dark:text-slate-200' },
+                    { label: 'Avg Core Score', value: `${avgCoreScore}/30`, color: 'text-indigo-600 dark:text-indigo-400' },
+                    { label: 'Avg Module Score', value: `${avgModuleScore}/20`, color: 'text-indigo-600 dark:text-indigo-400' },
+                    { label: 'Revision Rate', value: `${revisionRate}%`, color: revisionRate > 40 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' },
+                  ].map(k => (
+                    <div key={k.label} className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5 shadow-sm text-center">
+                      <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">{k.label}</p>
+                      <p className={`text-3xl font-black ${k.color}`}>{k.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Serious trigger frequency */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Serious Trigger Frequency ({seriousRuns.length} runs affected)</h4>
+                    </div>
+                    {topTriggers.length === 0 ? (
+                      <p className="px-5 py-6 text-xs text-slate-400 text-center">No serious triggers recorded.</p>
+                    ) : (
+                      <div className="p-4 space-y-2">
+                        {topTriggers.map(([type, count]) => (
+                          <div key={type} className="flex items-center justify-between">
+                            <span className="text-xs font-mono dark:text-slate-300 truncate">{type}</span>
+                            <span className="flex items-center gap-2">
+                              <span className="text-xs font-black text-red-600 dark:text-red-400">{count}</span>
+                              <div className="h-1.5 bg-red-200 dark:bg-red-900/40 rounded-full" style={{ width: `${Math.round((count / (seriousRuns.length || 1)) * 80)}px` }} />
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pass vs revision */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 shadow-sm">
+                    <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Run Outcomes</h4>
+                    </div>
+                    <div className="p-5 space-y-3">
+                      {[
+                        { label: 'Passed', count: passRuns, color: 'bg-emerald-500', textColor: 'text-emerald-600 dark:text-emerald-400' },
+                        { label: 'Revision Required', count: revisionRuns, color: 'bg-red-500', textColor: 'text-red-600 dark:text-red-400' },
+                      ].map(o => (
+                        <div key={o.label}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold dark:text-slate-300">{o.label}</span>
+                            <span className={`text-xs font-black ${o.textColor}`}>{o.count}</span>
+                          </div>
+                          <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div className={`h-2 rounded-full transition-all ${o.color}`} style={{ width: totalRuns > 0 ? `${(o.count / totalRuns) * 100}%` : '0%' }} />
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-[9px] text-slate-400 pt-2 border-t dark:border-slate-700">
+                        Note: Reviewer calibration, writer analytics, and bottleneck analysis are Phase 4 — requires Stage 3–5 data.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phase 3 — Operational Health */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                  <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                    <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Operational Health — Stages 3 &amp; 4</h4>
+                  </div>
+                  <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Avg Stage 3 Duration', value: totalProofRuns > 0 ? `${(avgStage3Ms / 1000).toFixed(1)}s` : '—', sub: `${totalProofRuns} runs`, color: avgStage3Ms > 5000 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' },
+                      { label: 'Stage 3 Block Rate', value: totalProofRuns > 0 ? `${stage3FailRate}%` : '—', sub: `${failedProofRuns} blocked`, color: stage3FailRate > 30 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' },
+                      { label: 'Avg Stage 4 Duration', value: totalDesignRuns > 0 ? `${(avgStage4Ms / 1000).toFixed(1)}s` : '—', sub: `${totalDesignRuns} runs`, color: avgStage4Ms > 7000 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' },
+                      { label: 'Stage 4 Block Rate', value: totalDesignRuns > 0 ? `${stage4FailRate}%` : '—', sub: `${failedDesignRuns} blocked`, color: stage4FailRate > 30 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' },
+                    ].map(k => (
+                      <div key={k.label} className="text-center">
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">{k.label}</p>
+                        <p className={`text-2xl font-black ${k.color}`}>{k.value}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{k.sub}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="px-5 pb-4 border-t dark:border-slate-700 pt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Snapshot Reuse Rate</span>
+                      <span className={`text-sm font-black ${snapshotReuse >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>{uniqueLessonsRun > 0 ? `${snapshotReuse}%` : '—'}</span>
+                    </div>
+                    <div className="mt-2 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div className="h-2 rounded-full bg-indigo-500 transition-all" style={{ width: `${Math.min(snapshotReuse, 100)}%` }} />
+                    </div>
+                    <p className="text-[9px] text-slate-400 mt-1">{qaSnapshots.length} snapshot(s) across {uniqueLessonsRun} lesson(s). Target: 100% — every lesson should have exactly one snapshot.</p>
+                  </div>
+                </div>
+
+                {/* Recent runs table */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                  <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                    <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Recent Runs (last 200)</h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="border-b dark:border-slate-700">
+                        <tr>
+                          <th className="px-4 py-2.5 text-[10px] font-black uppercase text-slate-400">Stage</th>
+                          <th className="px-4 py-2.5 text-[10px] font-black uppercase text-slate-400">Core</th>
+                          <th className="px-4 py-2.5 text-[10px] font-black uppercase text-slate-400">Module</th>
+                          <th className="px-4 py-2.5 text-[10px] font-black uppercase text-slate-400">Total</th>
+                          <th className="px-4 py-2.5 text-[10px] font-black uppercase text-slate-400">Trigger</th>
+                          <th className="px-4 py-2.5 text-[10px] font-black uppercase text-slate-400">Status</th>
+                          <th className="px-4 py-2.5 text-[10px] font-black uppercase text-slate-400">When</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y dark:divide-slate-700">
+                        {qaRuns.slice(0, 50).map(r => (
+                          <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/30">
+                            <td className="px-4 py-2.5 font-mono font-bold dark:text-slate-200">Stage {r.stage}</td>
+                            <td className="px-4 py-2.5 dark:text-slate-300">{r.core_score}/30</td>
+                            <td className="px-4 py-2.5 dark:text-slate-300">{r.module_score}/20</td>
+                            <td className="px-4 py-2.5 font-bold dark:text-slate-200">{r.total_score}/50</td>
+                            <td className="px-4 py-2.5">
+                              {r.serious_trigger_flag
+                                ? <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">Serious</span>
+                                : <span className="text-[9px] text-slate-400">—</span>}
+                            </td>
+                            <td className="px-4 py-2.5">
+                              <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${r.status === 'pass' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400'}`}>{r.status}</span>
+                            </td>
+                            <td className="px-4 py-2.5 text-slate-400 font-mono">{r.timestamp?.toDate?.()?.toLocaleDateString?.() ?? '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                {/* ============================================================ */}
+                {/* PHASE 4 — CALIBRATION & INTELLIGENCE LAYER                  */}
+                {/* All computations from existing state — no new collections.  */}
+                {/* ============================================================ */}
+
+                {/* 1. Reviewer Calibration */}
+                {(() => {
+                  const byReviewer: Record<string, { scores: number[]; cores: number[]; modules: number[]; serious: number; total: number }> = {};
+                  qaRuns.forEach(r => {
+                    const id = r.reviewer_id ?? 'unknown';
+                    if (!byReviewer[id]) byReviewer[id] = { scores: [], cores: [], modules: [], serious: 0, total: 0 };
+                    byReviewer[id].scores.push(r.total_score ?? 0);
+                    byReviewer[id].cores.push(r.core_score ?? 0);
+                    byReviewer[id].modules.push(r.module_score ?? 0);
+                    if (r.serious_trigger_flag) byReviewer[id].serious++;
+                    byReviewer[id].total++;
+                  });
+                  const reviewers = Object.entries(byReviewer).map(([id, d]) => {
+                    const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : 0;
+                    const mean = avg(d.scores);
+                    const variance = d.scores.length > 1
+                      ? Math.round(d.scores.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / d.scores.length)
+                      : 0;
+                    return { id, runs: d.total, avgTotal: mean, avgCore: avg(d.cores), avgModule: avg(d.modules), seriousRate: d.total > 0 ? Math.round((d.serious / d.total) * 100) : 0, variance };
+                  }).sort((a, b) => b.runs - a.runs);
+                  if (reviewers.length === 0) return null;
+                  return (
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                      <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Reviewer Calibration</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="border-b dark:border-slate-700">
+                            <tr>
+                              {['Reviewer', 'Runs', 'Avg Total', 'Avg Core', 'Avg Module', 'Score Variance', 'Serious Rate'].map(h => (
+                                <th key={h} className="px-4 py-2 text-[10px] font-black uppercase text-slate-400">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y dark:divide-slate-700">
+                            {reviewers.map(r => (
+                              <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/30">
+                                <td className="px-4 py-2 font-mono text-[10px] dark:text-slate-300 truncate max-w-[120px]">{r.id}</td>
+                                <td className="px-4 py-2 dark:text-slate-300">{r.runs}</td>
+                                <td className="px-4 py-2 font-bold dark:text-slate-200">{r.avgTotal}/50</td>
+                                <td className="px-4 py-2 dark:text-slate-300">{r.avgCore}/30</td>
+                                <td className="px-4 py-2 dark:text-slate-300">{r.avgModule}/20</td>
+                                <td className="px-4 py-2">
+                                  <span className={`font-mono ${r.variance > 50 ? 'text-amber-600 dark:text-amber-400 font-black' : 'dark:text-slate-300'}`}>{r.variance}</span>
+                                  {r.variance > 50 && <span className="ml-1 text-[8px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1 py-0.5 rounded font-black uppercase">Drift</span>}
+                                </td>
+                                <td className="px-4 py-2">
+                                  <span className={r.seriousRate > 50 ? 'text-red-600 dark:text-red-400 font-black' : 'dark:text-slate-300'}>{r.seriousRate}%</span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 2. Writer Performance Analytics */}
+                {(() => {
+                  const byWriter: Record<string, { scores: number[]; revisions: number; lessons: Set<string>; proofDensities: number[]; stage4Blocks: number; stage4Total: number }> = {};
+                  qaRuns.forEach(r => {
+                    const wid = r.writer_id ?? r.lesson_id ?? 'unknown';
+                    if (!byWriter[wid]) byWriter[wid] = { scores: [], revisions: 0, lessons: new Set(), proofDensities: [], stage4Blocks: 0, stage4Total: 0 };
+                    byWriter[wid].scores.push(r.total_score ?? 0);
+                    if (r.status === 'revision-required') byWriter[wid].revisions++;
+                    if (r.lesson_id) byWriter[wid].lessons.add(r.lesson_id);
+                  });
+                  qaProofreadingRuns.forEach(r => {
+                    const wid = r.lesson_id ?? 'unknown';
+                    if (!byWriter[wid]) byWriter[wid] = { scores: [], revisions: 0, lessons: new Set(), proofDensities: [], stage4Blocks: 0, stage4Total: 0 };
+                    if (r.proofreading_density != null) byWriter[wid].proofDensities.push(r.proofreading_density);
+                  });
+                  qaDesignRuns.forEach(r => {
+                    const wid = r.lesson_id ?? 'unknown';
+                    if (!byWriter[wid]) byWriter[wid] = { scores: [], revisions: 0, lessons: new Set(), proofDensities: [], stage4Blocks: 0, stage4Total: 0 };
+                    byWriter[wid].stage4Total++;
+                    if (r.status === 'blocked') byWriter[wid].stage4Blocks++;
+                  });
+                  const writers = Object.entries(byWriter).map(([id, d]) => {
+                    const avgScore = d.scores.length > 0 ? Math.round(d.scores.reduce((s, v) => s + v, 0) / d.scores.length) : 0;
+                    const avgDensity = d.proofDensities.length > 0 ? (d.proofDensities.reduce((s, v) => s + v, 0) / d.proofDensities.length).toFixed(2) : '—';
+                    const s4BlockRate = d.stage4Total > 0 ? Math.round((d.stage4Blocks / d.stage4Total) * 100) : 0;
+                    const revisionRate = d.scores.length > 0 ? Math.round((d.revisions / d.scores.length) * 100) : 0;
+                    return { id, lessons: d.lessons.size, avgScore, avgDensity, s4BlockRate, revisionRate, totalRuns: d.scores.length };
+                  }).filter(w => w.totalRuns > 0).sort((a, b) => b.totalRuns - a.totalRuns).slice(0, 20);
+                  if (writers.length === 0) return null;
+                  return (
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                      <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Writer Performance (top 20 by run volume · no ranking)</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="border-b dark:border-slate-700">
+                            <tr>
+                              {['Lesson / Writer ID', 'Runs', 'Lessons', 'Avg Score', 'Proof Density', 'S4 Block Rate', 'Revision Rate'].map(h => (
+                                <th key={h} className="px-4 py-2 text-[10px] font-black uppercase text-slate-400">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y dark:divide-slate-700">
+                            {writers.map(w => (
+                              <tr key={w.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/30">
+                                <td className="px-4 py-2 font-mono text-[10px] dark:text-slate-300 truncate max-w-[140px]">{w.id}</td>
+                                <td className="px-4 py-2 dark:text-slate-300">{w.totalRuns}</td>
+                                <td className="px-4 py-2 dark:text-slate-300">{w.lessons}</td>
+                                <td className="px-4 py-2 font-bold dark:text-slate-200">{w.avgScore}/50</td>
+                                <td className="px-4 py-2">
+                                  <span className={typeof w.avgDensity === 'string' ? 'text-slate-400' : Number(w.avgDensity) > 3 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'dark:text-slate-300'}>{w.avgDensity}</span>
+                                </td>
+                                <td className="px-4 py-2">
+                                  <span className={w.s4BlockRate > 50 ? 'text-red-600 dark:text-red-400 font-bold' : 'dark:text-slate-300'}>{w.s4BlockRate > 0 ? `${w.s4BlockRate}%` : '—'}</span>
+                                </td>
+                                <td className="px-4 py-2">
+                                  <span className={w.revisionRate > 50 ? 'text-red-600 dark:text-red-400 font-bold' : 'dark:text-slate-300'}>{w.revisionRate}%</span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 3. Trigger Pattern Intelligence */}
+                {(() => {
+                  const now = Date.now();
+                  const MS_30 = 30 * 24 * 60 * 60 * 1000;
+                  const MS_60 = 60 * 24 * 60 * 60 * 1000;
+                  const MS_90 = 90 * 24 * 60 * 60 * 1000;
+                  const countTriggers = (withinMs: number) => {
+                    const freq: Record<string, number> = {};
+                    qaRuns.forEach(r => {
+                      const ts = r.timestamp?.toDate?.()?.getTime?.() ?? 0;
+                      if (now - ts > withinMs) return;
+                      (r.triggers ?? []).forEach((t: any) => {
+                        if (t.blocks_progression) freq[t.trigger_type] = (freq[t.trigger_type] ?? 0) + 1;
+                      });
+                    });
+                    return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 8);
+                  };
+                  const byModule: Record<string, Record<string, number>> = {};
+                  qaRuns.forEach(r => {
+                    const mod = r.module_id ?? 'unknown';
+                    if (!byModule[mod]) byModule[mod] = {};
+                    (r.triggers ?? []).forEach((t: any) => {
+                      if (t.blocks_progression) byModule[mod][t.trigger_type] = (byModule[mod][t.trigger_type] ?? 0) + 1;
+                    });
+                  });
+                  const t30 = countTriggers(MS_30);
+                  const t60 = countTriggers(MS_60);
+                  const t90 = countTriggers(MS_90);
+                  const triggerData = triggerWindow === '30' ? t30 : triggerWindow === '60' ? t60 : t90;
+                  const maxCount = triggerData[0]?.[1] ?? 1;
+                  const moduleEntries = Object.entries(byModule).map(([mod, freq]) => {
+                    const modName = qaModules.find(m => m.id === mod)?.name ?? mod;
+                    const topTrigger = Object.entries(freq).sort((a, b) => b[1] - a[1])[0];
+                    return { mod, modName, topTrigger: topTrigger?.[0] ?? '—', topCount: topTrigger?.[1] ?? 0, total: Object.values(freq).reduce((s, v) => s + v, 0) };
+                  }).sort((a, b) => b.total - a.total);
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                        <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
+                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Serious Trigger Frequency</h4>
+                          <div className="flex gap-1">
+                            {(['30', '60', '90'] as const).map(w => (
+                              <button key={w} onClick={() => setTriggerWindow(w)} className={`text-[9px] font-black px-2 py-0.5 rounded transition-colors ${triggerWindow === w ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>{w}d</button>
+                            ))}
+                          </div>
+                        </div>
+                        {triggerData.length === 0 ? (
+                          <p className="px-5 py-6 text-xs text-slate-400 text-center">No serious triggers in this window.</p>
+                        ) : (
+                          <div className="p-4 space-y-2">
+                            {triggerData.map(([type, count]) => (
+                              <div key={type} className="flex items-center gap-3">
+                                <span className="text-[10px] font-mono dark:text-slate-300 w-40 truncate shrink-0">{type}</span>
+                                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                  <div className="h-1.5 rounded-full bg-red-500 transition-all" style={{ width: `${(count / maxCount) * 100}%` }} />
+                                </div>
+                                <span className="text-[10px] font-black text-red-600 dark:text-red-400 w-6 text-right">{count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                        <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Trigger Frequency by Module</h4>
+                        </div>
+                        {moduleEntries.length === 0 ? (
+                          <p className="px-5 py-6 text-xs text-slate-400 text-center">No module trigger data yet.</p>
+                        ) : (
+                          <div className="p-4 space-y-2">
+                            {moduleEntries.slice(0, 8).map(m => (
+                              <div key={m.mod} className="flex items-center justify-between">
+                                <span className="text-[10px] dark:text-slate-300 truncate max-w-[160px]">{m.modName}</span>
+                                <span className="flex items-center gap-2 shrink-0">
+                                  <span className="text-[9px] font-mono text-slate-400 truncate max-w-[80px]">{m.topTrigger}</span>
+                                  <span className="text-[10px] font-black text-red-600 dark:text-red-400">{m.total}</span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 4. Time-to-Clear Metrics */}
+                {(() => {
+                  const toMs = (ts: any): number | null => {
+                    try { return ts?.toDate?.()?.getTime?.() ?? null; } catch { return null; }
+                  };
+                  type StagePair = { s1s?: number | null; s1c?: number | null; s2s?: number | null; s2c?: number | null; s3c?: number | null; s4c?: number | null; s5c?: number | null };
+                  const lessonTimes: Record<string, StagePair> = {};
+                  // We derive these from the lesson collection via qaRuns timestamps as a proxy
+                  // (Full lesson timestamps require a separate qa_lessons listener — using run records here)
+                  const runsByLesson: Record<string, any[]> = {};
+                  qaRuns.forEach(r => {
+                    if (!runsByLesson[r.lesson_id]) runsByLesson[r.lesson_id] = [];
+                    runsByLesson[r.lesson_id].push(r);
+                  });
+                  const deltas1to2: number[] = [];
+                  const deltasTotalClear: number[] = [];
+                  const stageBottleneck: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0 };
+                  Object.values(runsByLesson).forEach(runs => {
+                    const s1Runs = runs.filter(r => r.stage === 1).sort((a, b) => (toMs(a.timestamp) ?? 0) - (toMs(b.timestamp) ?? 0));
+                    const s2Runs = runs.filter(r => r.stage === 2).sort((a, b) => (toMs(a.timestamp) ?? 0) - (toMs(b.timestamp) ?? 0));
+                    const s1Pass = s1Runs.find(r => r.status === 'pass');
+                    const s2Pass = s2Runs.find(r => r.status === 'pass');
+                    const s1First = s1Runs[0];
+                    if (s1First && s1Pass) {
+                      const revCount = s1Runs.indexOf(s1Pass);
+                      if (revCount > 0) stageBottleneck['1']++;
+                    }
+                    if (s1Pass && s2Pass) {
+                      const d = (toMs(s2Pass.timestamp) ?? 0) - (toMs(s1Pass.timestamp) ?? 0);
+                      if (d > 0) deltas1to2.push(d);
+                    }
+                    const s2Revs = s2Runs.filter(r => r.status === 'revision-required').length;
+                    if (s2Revs > 0) stageBottleneck['2'] += s2Revs;
+                  });
+                  qaProofreadingRuns.forEach(r => { if (r.status === 'blocked') stageBottleneck['3']++; });
+                  qaDesignRuns.forEach(r => { if (r.status === 'blocked') stageBottleneck['4']++; });
+                  const avgMs = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : null;
+                  const fmtDuration = (ms: number | null) => {
+                    if (ms === null) return '—';
+                    if (ms < 60000) return `${Math.round(ms / 1000)}s`;
+                    if (ms < 3600000) return `${Math.round(ms / 60000)}m`;
+                    return `${(ms / 3600000).toFixed(1)}h`;
+                  };
+                  const avg12 = avgMs(deltas1to2);
+                  const bottleneckStage = Object.entries(stageBottleneck).sort((a, b) => b[1] - a[1])[0];
+                  return (
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                      <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Time-to-Clear Metrics</h4>
+                      </div>
+                      <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                          { label: 'Avg Stage 1→2 Gap', value: fmtDuration(avg12), sub: `${deltas1to2.length} lesson pairs` },
+                          { label: 'S1 Revision Loops', value: stageBottleneck['1'], sub: 'lessons with >1 S1 attempt' },
+                          { label: 'S2 Revision Loops', value: stageBottleneck['2'], sub: 'total S2 revisions' },
+                          { label: 'Bottleneck Stage', value: bottleneckStage?.[1] > 0 ? `Stage ${bottleneckStage[0]}` : '—', sub: bottleneckStage?.[1] > 0 ? `${bottleneckStage[1]} blocks/revisions` : 'No data yet' },
+                        ].map(k => (
+                          <div key={k.label} className="text-center">
+                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">{k.label}</p>
+                            <p className="text-2xl font-black text-slate-700 dark:text-slate-200">{k.value}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{k.sub}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 5. Module Effectiveness */}
+                {(() => {
+                  const byModule: Record<string, { moduleName: string; scores: number[]; serious: number; revisions: number; total: number; completions: number }> = {};
+                  qaRuns.forEach(r => {
+                    const mid = r.module_id ?? 'unknown';
+                    const modName = qaModules.find((m: any) => m.id === mid)?.name ?? mid;
+                    if (!byModule[mid]) byModule[mid] = { moduleName: modName, scores: [], serious: 0, revisions: 0, total: 0, completions: 0 };
+                    byModule[mid].scores.push(r.module_score ?? 0);
+                    if (r.serious_trigger_flag) byModule[mid].serious++;
+                    if (r.status === 'revision-required') byModule[mid].revisions++;
+                    if (r.status === 'pass') byModule[mid].completions++;
+                    byModule[mid].total++;
+                  });
+                  const modules = Object.entries(byModule).map(([id, d]) => ({
+                    id,
+                    name: d.moduleName,
+                    avgScore: d.scores.length > 0 ? Math.round(d.scores.reduce((s, v) => s + v, 0) / d.scores.length) : 0,
+                    seriousRate: d.total > 0 ? Math.round((d.serious / d.total) * 100) : 0,
+                    revisionRate: d.total > 0 ? Math.round((d.revisions / d.total) * 100) : 0,
+                    completionRate: d.total > 0 ? Math.round((d.completions / d.total) * 100) : 0,
+                    total: d.total,
+                  })).sort((a, b) => b.total - a.total);
+                  if (modules.length === 0) return null;
+                  return (
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                      <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Module Effectiveness</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="border-b dark:border-slate-700">
+                            <tr>
+                              {['Module', 'Runs', 'Avg Module Score', 'Serious Rate', 'Revision Rate', 'Completion Rate'].map(h => (
+                                <th key={h} className="px-4 py-2 text-[10px] font-black uppercase text-slate-400">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y dark:divide-slate-700">
+                            {modules.map(m => (
+                              <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/30">
+                                <td className="px-4 py-2 font-medium dark:text-slate-200 truncate max-w-[160px]">{m.name}</td>
+                                <td className="px-4 py-2 dark:text-slate-300">{m.total}</td>
+                                <td className="px-4 py-2">
+                                  <span className={m.avgScore < 12 ? 'text-red-600 dark:text-red-400 font-bold' : 'dark:text-slate-300'}>{m.avgScore}/20</span>
+                                </td>
+                                <td className="px-4 py-2">
+                                  <span className={m.seriousRate > 40 ? 'text-red-600 dark:text-red-400 font-bold' : 'dark:text-slate-300'}>{m.seriousRate}%</span>
+                                </td>
+                                <td className="px-4 py-2">
+                                  <span className={m.revisionRate > 50 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'dark:text-slate-300'}>{m.revisionRate}%</span>
+                                </td>
+                                <td className="px-4 py-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                      <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${m.completionRate}%` }} />
+                                    </div>
+                                    <span className={m.completionRate < 50 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-emerald-600 dark:text-emerald-400 font-bold'}>{m.completionRate}%</span>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 6. Governance Drift Monitor */}
+                {(() => {
+                  const OVERRIDE_RATE_THRESHOLD = 15;
+                  const SERIOUS_DROP_THRESHOLD = 5;
+                  const DENSITY_SPIKE_THRESHOLD = 5;
+                  const recentRuns = qaRuns.filter(r => {
+                    const ts = r.timestamp?.toDate?.()?.getTime?.() ?? 0;
+                    return Date.now() - ts < 30 * 24 * 60 * 60 * 1000;
+                  });
+                  const olderRuns = qaRuns.filter(r => {
+                    const ts = r.timestamp?.toDate?.()?.getTime?.() ?? 0;
+                    const age = Date.now() - ts;
+                    return age >= 30 * 24 * 60 * 60 * 1000 && age < 60 * 24 * 60 * 60 * 1000;
+                  });
+                  const seriousRateRecent = recentRuns.length > 0 ? Math.round((recentRuns.filter(r => r.serious_trigger_flag).length / recentRuns.length) * 100) : null;
+                  const seriousRateOlder = olderRuns.length > 0 ? Math.round((olderRuns.filter(r => r.serious_trigger_flag).length / olderRuns.length) * 100) : null;
+                  const seriousDrop = seriousRateRecent !== null && seriousRateOlder !== null && seriousRateOlder > 0
+                    ? seriousRateOlder - seriousRateRecent
+                    : null;
+                  const recentDensities = qaProofreadingRuns
+                    .filter(r => { const ts = r.timestamp?.toDate?.()?.getTime?.() ?? 0; return Date.now() - ts < 30 * 24 * 60 * 60 * 1000; })
+                    .map(r => r.proofreading_density ?? 0);
+                  const avgRecentDensity = recentDensities.length > 0 ? recentDensities.reduce((s, v) => s + v, 0) / recentDensities.length : 0;
+                  const alerts: { level: 'warn' | 'info'; label: string; detail: string }[] = [];
+                  if (seriousDrop !== null && seriousDrop > SERIOUS_DROP_THRESHOLD) {
+                    alerts.push({ level: 'warn', label: 'Serious Trigger Drop', detail: `Rate fell ${seriousDrop}pp in last 30 days (${seriousRateOlder}% → ${seriousRateRecent}%). May indicate prompt weakness or under-flagging.` });
+                  }
+                  if (avgRecentDensity > DENSITY_SPIKE_THRESHOLD) {
+                    alerts.push({ level: 'warn', label: 'Proofreading Density Spike', detail: `Avg correction density is ${avgRecentDensity.toFixed(2)} per 100 words (threshold: ${DENSITY_SPIKE_THRESHOLD}). Review writer training.` });
+                  }
+                  if (alerts.length === 0) {
+                    alerts.push({ level: 'info', label: 'No drift detected', detail: 'All governance indicators within normal range.' });
+                  }
+                  return (
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 overflow-hidden shadow-sm">
+                      <div className="px-5 py-3 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Governance Drift Monitor · Visual Only</h4>
+                      </div>
+                      <div className="p-4 space-y-2">
+                        {alerts.map((a, i) => (
+                          <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border ${a.level === 'warn' ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800' : 'bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700'}`}>
+                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded shrink-0 mt-0.5 ${a.level === 'warn' ? 'bg-amber-500 text-white' : 'bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300'}`}>{a.level === 'warn' ? 'ALERT' : 'OK'}</span>
+                            <div>
+                              <p className="text-xs font-bold dark:text-slate-200">{a.label}</p>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{a.detail}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="px-5 pb-3 pt-1">
+                        <p className="text-[9px] text-slate-400">No auto-actions. Visual indicators only. Thresholds: override &gt;{OVERRIDE_RATE_THRESHOLD}%, serious drop &gt;{SERIOUS_DROP_THRESHOLD}pp, density &gt;{DENSITY_SPIKE_THRESHOLD}/100 words.</p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
               </div>
             );
           })()}

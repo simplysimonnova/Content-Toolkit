@@ -13,11 +13,18 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-    public state: State = {
-        hasError: false,
-        error: null,
-        errorInfo: null,
-    };
+    declare state: State;
+    declare setState: Component<Props, State>['setState'];
+    declare props: Readonly<Props> & Readonly<{ children?: ReactNode }>;
+
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+            hasError: false,
+            error: null,
+            errorInfo: null,
+        };
+    }
 
     public static getDerivedStateFromError(error: Error): State {
         return { hasError: true, error, errorInfo: null };
