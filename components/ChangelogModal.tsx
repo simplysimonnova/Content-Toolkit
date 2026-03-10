@@ -12,6 +12,23 @@ interface LogEntry {
 
 const HISTORY: LogEntry[] = [
   {
+    version: '1.8.0',
+    date: 'March 2026',
+    title: 'TN Standardiser V2 & Reporting Middleware Pilot',
+    type: 'Feature',
+    changes: [
+      'TN Standardiser rebuilt as V2 (components/TNStandardiser/) — full rewrite replacing V1 TNStandardizer.',
+      'Multi-file input: PDF, PPTX, and Slides.com ZIP parsers with slide-by-slide extraction.',
+      'Slide-parallel AI processing with per-slide retry logic and graceful fallback to original notes.',
+      'Pre-processing: stripTeacherNoteMarkup() strips {{ MarkupId: ... }} tokens before AI calls — safe, targeted, no over-stripping.',
+      'Reporting middleware pilot: TN Standardiser is first tool to save structured ToolReport to tool_reports Firestore collection after each run (fire-and-forget, non-blocking).',
+      'New partial_success report status added to types/report.ts, services/reportService.ts, and ReportViewer.tsx (amber badge).',
+      'TN-specific reportBuilder.ts builds scorecard, summary, text, and raw report sections from run context.',
+      'Lite "Saved Report Preview" collapsible panel on TN Standardiser page for reporting layer validation.',
+      'UI polish: Fix Log collapsed by default (title + first line visible), result panel height tuned for 1080p.',
+    ]
+  },
+  {
     version: '1.7.0',
     date: 'February 2026',
     title: 'AI Model Governance Phase 3: Reasoning Tier + Cost Visibility',

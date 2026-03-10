@@ -41,6 +41,7 @@ export const TNStandardiser: React.FC = () => {
   const [additionalInstructions, setAdditionalInstructions] = useState('');
   const [currentReport, setCurrentReport] = useState<ToolReport | null>(null);
   const [showReport, setShowReport] = useState(false);
+  const [fixLogExpanded, setFixLogExpanded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInfoRef = useRef<{ name: string; inputType: TNReportContext['inputType'] } | null>(null);
@@ -273,10 +274,10 @@ export const TNStandardiser: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-start">
 
         {/* Left column — Input */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
 
           {/* Mode toggle */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
@@ -411,8 +412,8 @@ export const TNStandardiser: React.FC = () => {
         </div>
 
         {/* Right column — Output */}
-        <div className="space-y-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col min-h-[480px]">
+        <div className="flex flex-col gap-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col" style={{maxHeight: '70vh'}}>
 
             {/* Output header */}
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -432,7 +433,7 @@ export const TNStandardiser: React.FC = () => {
             </div>
 
             {/* Output body */}
-            <div className="flex-1 p-6 overflow-y-auto max-h-[560px]">
+            <div className="flex-1 p-6 overflow-y-auto">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                   <div className="relative w-12 h-12">
@@ -455,17 +456,34 @@ export const TNStandardiser: React.FC = () => {
           </div>
 
           {/* Fix log */}
-          {result && (
-            <div className="bg-slate-900 dark:bg-slate-950 rounded-2xl border border-slate-800 p-5">
-              <p className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
-                Fix Log
-              </p>
-              <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-sans opacity-90">
-                {result.fixLog}
-              </pre>
-            </div>
-          )}
+          {result && (() => {
+            const logLines = result.fixLog.split('\n');
+            const firstLine = logLines[0] ?? '';
+            return (
+              <div className="bg-slate-900 dark:bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden">
+                <button
+                  onClick={() => setFixLogExpanded(v => !v)}
+                  className="w-full flex items-center justify-between px-5 py-3 text-left"
+                >
+                  <p className="text-xs font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                    Fix Log
+                  </p>
+                  {fixLogExpanded
+                    ? <ChevronUp className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                    : <ChevronDown className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />}
+                </button>
+                {!fixLogExpanded && (
+                  <p className="px-5 pb-3 text-xs text-slate-400 truncate opacity-70">{firstLine}</p>
+                )}
+                {fixLogExpanded && (
+                  <pre className="px-5 pb-5 text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-sans opacity-90">
+                    {result.fixLog}
+                  </pre>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
 

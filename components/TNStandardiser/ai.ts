@@ -17,6 +17,31 @@ export interface TNResult {
  * Uses shared ai client, model resolution, and usage logging.
  * systemPrompt is sourced from Firestore (getToolConfig) or DEFAULT_SYSTEM_INSTRUCTION.
  */
+/**
+ * Strips technical markup tokens from teacher-note text before AI processing.
+ * Only removes {{ ... }} blocks — does not alter normal prose content.
+ *
+ * Examples:
+ *   "Ask S. to describe the picture.\n{{ MarkupId: 6-1-80-VE-hw-ngw-334c3cew }}"
+ *   → "Ask S. to describe the picture."
+ *
+ *   "{{ MarkupId: abc123 }}\nTeacher asks CCQs."
+ *   → "Teacher asks CCQs."
+ *
+ *   "Introduce vocab: {{ term }} and explain."  ← normal {{ }} not a markup ID — left intact
+ *   → "Introduce vocab: {{ term }} and explain."  (no match — regex requires MarkupId pattern)
+ *
+ * Risk note: regex targets {{ MarkupId: <alphanumeric-dash> }} specifically to avoid
+ * over-stripping {{ }} used in normal lesson templates or variable placeholders.
+ */
+export function stripTeacherNoteMarkup(text: string): string {
+  return text
+    .replace(/\{\{\s*MarkupId\s*:[^}]+\}\}/gi, '')
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export async function fixTeacherNotes(
   rawNotes: string,
   systemPrompt: string
@@ -24,7 +49,8 @@ export async function fixTeacherNotes(
   const startTime = Date.now();
   const { model, tier } = await getResolvedModelForTool(TOOL_ID, ALLOWED_TIERS);
 
-  const prompt = `[INPUT DATA]:\n${rawNotes}\n\nREWRITE NOW.`;
+  const cleanedNotes = stripTeacherNoteMarkup(rawNotes);
+  const prompt = `[INPUT DATA]:\n${cleanedNotes}\n\nREWRITE NOW.`;
 
   try {
     const response = await ai.models.generateContent({
