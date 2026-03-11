@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { ListOrdered, Trash2, Copy, Check, Play, Sparkles, ClipboardList, List } from 'lucide-react';
+import { logToolUsage } from '../services/geminiService';
 
 export const ListMerger: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -34,6 +35,7 @@ export const ListMerger: React.FC = () => {
 
     // Sort alphabetically
     setResultList(uniqueItems.sort((a, b) => a.localeCompare(b)));
+    logToolUsage({ tool_id: 'list-merger', tool_name: 'List Merger', status: 'success' });
   };
 
   const handleCopy = () => {

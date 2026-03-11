@@ -4,6 +4,7 @@ import { Upload, FileText, Download, CheckCircle, AlertCircle, Settings, X, Data
 import { parseCSV, generateCSV } from '../utils/csvHelper';
 import { ToolSettingsModal } from './ToolSettingsModal';
 import { useAuth } from '../context/AuthContext';
+import { logToolUsage } from '../services/geminiService';
 
 interface ProcessingHistoryItem {
   id: string;
@@ -200,6 +201,7 @@ export const WordListProcessor: React.FC = () => {
         const updatedHistory = [historyItem, ...history];
         setHistory(updatedHistory);
         localStorage.setItem('wl_processor_history', JSON.stringify(updatedHistory));
+        logToolUsage({ tool_id: 'word-cleaner', tool_name: 'Word List Processor', status: 'success' });
       } catch (err) {
         setError('An error occurred while processing the list.');
       } finally {

@@ -3,12 +3,43 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
-import { Clock, Zap, Star, ChevronRight, AlertTriangle, Info, X, Check } from 'lucide-react';
+import { Clock, Zap, Star, ChevronRight, AlertTriangle, Info, X, Check, Wrench } from 'lucide-react';
 import { AppPage } from '../types';
 
 interface DashboardProps {
   onNavigate: (page: AppPage) => void;
 }
+
+const TOOL_ID_TO_PAGE: Record<string, AppPage> = {
+  // Exact matches
+  'tn-standardiser':           'tn-standardiser',
+  'thematic-qa':               'thematic-qa',
+  'topic-assigner':            'topic-assigner',
+  'vr-validator':              'vr-validator',
+  'jira-ticketer':             'jira-ticketer',
+  'comp-import-creator':       'comp-import-creator',
+  'deduplicator':              'deduplicator',
+  'csv-cleanroom':             'csv-cleanroom',
+  'word-cleaner':              'word-cleaner',
+  'list-merger':               'list-merger',
+  'image-extractor':           'image-extractor',
+  'class-id-finder':           'class-id-finder',
+  'row-expander':              'row-expander',
+  'id-resolver':               'id-resolver',
+  'directus-json-builder':     'directus-json-builder',
+  // Legacy logUsage-derived mismatches
+  'proofing-audit':            'proofing-bot',
+  'taf-gen':                   'taf-generator',
+  'lesson-content':            'lesson-descriptions',
+  'lesson-description':        'lesson-descriptions',
+  'image-analysis':            'image-renamer',
+  'competency-normalization':  'competency-csv-normaliser',
+  'sound-gen':                 'sound-generator',
+  'prompt-creator':            'prompt-writer',
+  'image-rewrite':             'prompt-rewriter',
+  'subscription-pdf-import':   'subscription-tracker',
+  'qa-engine-v1':              'slides-zip-upload',
+};
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { user } = useAuth();
@@ -189,22 +220,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               ) : recentActions.length === 0 ? (
                 <p className="text-center py-10 text-slate-400 text-sm italic">No recent actions recorded yet.</p>
               ) : (
-                recentActions.map((action) => (
-                  <div key={action.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
-                        <Zap className="w-4 h-4" />
+                recentActions.map((action) => {
+                  const targetPage = action.tool_id ? TOOL_ID_TO_PAGE[action.tool_id] : undefined;
+                  const isClickable = !!targetPage;
+                  const Wrapper = isClickable ? 'button' : 'div';
+                  const modelBadge = action.is_ai_tool && action.model
+                    ? action.model.split('-').slice(1, 3).join('-')
+                    : action.is_ai_tool === false ? 'Tool' : null;
+                  return (
+                    <Wrapper
+                      key={action.id}
+                      {...(isClickable ? { onClick: () => onNavigate(targetPage!) } : {})}
+                      className={`w-full flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-left ${
+                        isClickable ? 'hover:border-orange-300 dark:hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/10 cursor-pointer transition-all group' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${
+                          action.is_ai_tool
+                            ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                        }`}>
+                          {action.is_ai_tool ? <Zap className="w-4 h-4" /> : <Wrench className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <p className={`text-sm font-bold dark:text-white ${
+                            isClickable ? 'group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors' : ''
+                          }`}>{action.tool}</p>
+                          <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">{new Date(action.timestamp?.toDate()).toLocaleString()}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold dark:text-white">{action.tool}</p>
-                        <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">{new Date(action.timestamp?.toDate()).toLocaleString()}</p>
+                      <div className="flex items-center gap-2">
+                        {modelBadge && (
+                          <span className="text-[10px] font-bold px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
+                            {modelBadge}
+                          </span>
+                        )}
+                        {isClickable && <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-orange-500 transition-colors flex-shrink-0" />}
                       </div>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
-                      {action.model?.split('-')[1]}
-                    </span>
-                  </div>
-                ))
+                    </Wrapper>
+                  );
+                })
               )}
             </div>
           </div>

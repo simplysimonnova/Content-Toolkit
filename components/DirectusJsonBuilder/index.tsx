@@ -4,6 +4,7 @@ import Papa from 'papaparse';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../context/AuthContext';
+import { logToolUsage } from '../../services/geminiService';
 
 const TOOL_ID = 'directus-json-builder';
 
@@ -161,6 +162,7 @@ export const DirectusJsonBuilder: React.FC = () => {
             uniqueLeadEntities: output.length,
             filename
         });
+        logToolUsage({ tool_id: 'directus-json-builder', tool_name: 'Directus JSON Builder', status: 'success' });
     };
 
     const handleDownload = () => {

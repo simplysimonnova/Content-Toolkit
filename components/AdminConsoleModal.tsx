@@ -239,7 +239,6 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'lc2', label: 'Lesson Plan Generator', icon: 'Wand2', page: 'plan-generator' },
           { id: 'lc3', label: 'Slide-creator Studio', icon: 'FileText', page: 'slide-creator' },
           { id: 'lc4', label: 'TN Standardiser', icon: 'BookOpen', page: 'tn-standardiser' },
-          { id: 'lc5', label: 'Lesson QA', icon: 'ShieldCheck', page: 'ai-qa-runner' },
           { id: 'lc6', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' }
         ]
       },

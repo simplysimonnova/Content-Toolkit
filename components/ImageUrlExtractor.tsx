@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Search, ExternalLink, Copy, Check, Trash2 } from 'lucide-react';
+import { logToolUsage } from '../services/geminiService';
 
 export const ImageUrlExtractor: React.FC = () => {
   const [inputCode, setInputCode] = useState('');
@@ -19,6 +20,7 @@ export const ImageUrlExtractor: React.FC = () => {
       .filter((src): src is string => !!src);
 
     setExtractedUrls(urls);
+    if (urls.length > 0) logToolUsage({ tool_id: 'image-extractor', tool_name: 'Image URL Extractor', status: 'success' });
   };
 
   const handleCopy = (url: string, index: number) => {

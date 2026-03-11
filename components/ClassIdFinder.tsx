@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { logToolUsage } from '../services/geminiService';
 import { Hash, Copy, Check, Trash2, Link2, Search, Info, ExternalLink, Globe } from 'lucide-react';
 
 export const ClassIdFinder: React.FC = () => {
@@ -6,6 +7,7 @@ export const ClassIdFinder: React.FC = () => {
   const [classId, setClassId] = useState<string | null>(null);
   const [idCopied, setIdCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const loggedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!inputUrl.trim()) {
@@ -20,6 +22,10 @@ export const ClassIdFinder: React.FC = () => {
     
     if (match && match[1]) {
       setClassId(match[1]);
+      if (match[1] !== loggedIdRef.current) {
+        loggedIdRef.current = match[1];
+        logToolUsage({ tool_id: 'class-id-finder', tool_name: 'Class ID Finder', status: 'success' });
+      }
     } else {
       // Fallback: try to find any long numeric string if the standard path pattern fails
       const fallbackRegex = /(\d{8,10})/;

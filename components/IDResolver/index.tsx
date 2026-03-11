@@ -6,6 +6,7 @@ import Papa from 'papaparse';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../context/AuthContext';
+import { logToolUsage } from '../../services/geminiService';
 
 export const IDResolver: React.FC = () => {
     const [expandedFile, setExpandedFile] = useState<any[] | null>(null);
@@ -129,6 +130,7 @@ export const IDResolver: React.FC = () => {
         try {
             const matchResult = resolveIDs(expandedFile, libraryFile, lessonFile, mapping);
             setResult(matchResult);
+            logToolUsage({ tool_id: 'id-resolver', tool_name: 'ID Resolver', status: 'success' });
 
             const { competency_misses, skill_conflicts, lesson_misses } = matchResult.stats;
             if (competency_misses > 0 || skill_conflicts > 0 || lesson_misses > 0) {

@@ -45,7 +45,6 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
       { id: 'lc2', label: 'Lesson Plan Generator', icon: 'Wand2', page: 'plan-generator' },
       { id: 'lc3', label: 'Slide-creator Studio', icon: 'Presentation', page: 'slide-creator' },
       { id: 'lc4', label: 'TN Standardiser', icon: 'BookOpen', page: 'tn-standardiser' },
-      { id: 'lc5', label: 'Lesson QA', icon: 'ShieldCheck', page: 'ai-qa-runner' },
       { id: 'lc6', label: 'TAF Generator', icon: 'TableProperties', page: 'taf-generator' }
     ]
   },
@@ -302,7 +301,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isCol
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto scrollbar-hide pb-10">
+        <div className="flex-1 overflow-y-auto pb-10 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0a0f1d] [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full">
           <div className="px-2 mb-6">
             <NavLink page="dashboard" iconName="LayoutDashboard" label="Dashboard" />
           </div>

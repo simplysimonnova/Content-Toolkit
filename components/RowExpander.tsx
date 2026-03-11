@@ -4,6 +4,7 @@ import { PageHeader } from './ui/PageHeader';
 import { ToolSettingsModal } from './ToolSettingsModal';
 import { parseCSV, generateCSVForRows } from '../utils/csvHelper';
 import { useAuth } from '../context/AuthContext';
+import { logToolUsage } from '../services/geminiService';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
@@ -178,6 +179,7 @@ export const RowExpander: React.FC = () => {
                 });
 
                 setProcessedRows(newRows);
+                logToolUsage({ tool_id: 'row-expander', tool_name: 'Row Expander', status: 'success' });
 
                 // Content Audit
                 if (finalCount !== totalValuesPre) {
