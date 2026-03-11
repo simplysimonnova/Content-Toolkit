@@ -4,6 +4,7 @@ import {
   FileText, Eye, Tag, AlertCircle, Info, Settings, Layers, X,
   Play, Clock,
 } from 'lucide-react';
+import { PageHeader } from '../ui/PageHeader';
 import { runThematicQA } from './ai';
 import { ThematicQAResult, BatchItem, QASettings } from './types';
 import { ResultPanel, RISK_CONFIG } from './ResultPanel';
@@ -166,28 +167,27 @@ export const ThematicQA: React.FC<{ sidebarCollapsed?: boolean }> = ({ sidebarCo
     <div className="max-w-5xl mx-auto animate-fade-in pb-20 space-y-6">
 
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20"><ShieldCheck className="w-8 h-8 text-white" /></div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Thematic QA</h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">Compliance-focused thematic content scanner</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
-            {(['single','batch'] as const).map(m => (
-              <button key={m} onClick={() => setMode(m)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${mode===m?'bg-white dark:bg-slate-700 shadow text-slate-800 dark:text-white':'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-                {m==='single'?<><Eye className="w-3.5 h-3.5"/>Single</>:<><Layers className="w-3.5 h-3.5"/>Batch</>}
-              </button>
-            ))}
-          </div>
-          <button onClick={()=>setShowInfo(true)} title="About" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Info className="w-5 h-5"/></button>
-          <button onClick={()=>setShowHistory(true)} title="Scan History" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Clock className="w-5 h-5"/></button>
-          <button onClick={()=>setShowSettings(true)} title="Settings" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Settings className="w-5 h-5"/></button>
-        </div>
-      </div>
+      <PageHeader
+        icon={<ShieldCheck />}
+        iconColor="indigo"
+        title="Thematic QA"
+        description="Compliance-focused thematic content scanner"
+        actions={
+          <>
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+              {(['single','batch'] as const).map(m => (
+                <button key={m} onClick={() => setMode(m)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${mode===m?'bg-white dark:bg-slate-700 shadow text-slate-800 dark:text-white':'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                  {m==='single'?<><Eye className="w-3.5 h-3.5"/>Single</>:<><Layers className="w-3.5 h-3.5"/>Batch</>}
+                </button>
+              ))}
+            </div>
+            <button onClick={()=>setShowInfo(true)} title="About" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Info className="w-5 h-5"/></button>
+            <button onClick={()=>setShowHistory(true)} title="Scan History" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Clock className="w-5 h-5"/></button>
+            <button onClick={()=>setShowSettings(true)} title="Settings" className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"><Settings className="w-5 h-5"/></button>
+          </>
+        }
+      />
 
       {/* Theme — shared */}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">

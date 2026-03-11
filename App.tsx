@@ -41,6 +41,7 @@ const TQAReports = React.lazy(() => import('./components/ThematicQA/ReportsDashb
 const AIQARunner = React.lazy(() => import('./components/AIQARunner').then(m => ({ default: m.AIQARunner })));
 const CSVCleanroom = React.lazy(() => import('./components/CSVCleanroom').then(m => ({ default: m.CSVCleanroom })));
 const SlidesZipUpload = React.lazy(() => import('./components/SlidesZipUpload').then(m => ({ default: m.SlidesZipUpload })));
+const ToolkitInfo = React.lazy(() => import('./components/ToolkitInfo').then(m => ({ default: m.ToolkitInfo })));
 const PlaceholderPage = React.lazy(() => import('./components/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 
 const App: React.FC = () => {
@@ -125,6 +126,8 @@ const App: React.FC = () => {
         return <CSVCleanroom />;
       case 'slides-zip-upload':
         return <SlidesZipUpload />;
+      case 'toolkit-info':
+        return <ToolkitInfo />;
 
       // Curriculum & Planning
       case 'ss-compactor':

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ShieldCheck, Upload, FileText, Zap, XCircle, AlertTriangle, Info, Settings } from 'lucide-react';
+import { PageHeader } from '../ui/PageHeader';
 import { useAuth } from '../../context/AuthContext';
 import { normalizePagesGSlides, normalizePagesSlidescom } from '../../services/pdfNormalizer';
 import { runDeterministicChecks } from '../../services/deterministicChecks';
@@ -173,39 +174,32 @@ export const AIQARunner: React.FC = () => {
     <div className="max-w-5xl mx-auto animate-fade-in space-y-6">
 
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-            <ShieldCheck className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-              Run AI QA
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">
-              Upload a lesson PDF and run a structured AI quality review.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowInfo(true)}
-            className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-            title="About this tool"
-          >
-            <Info className="w-5 h-5" />
-          </button>
-          {isAdmin && (
+      <PageHeader
+        icon={<ShieldCheck />}
+        iconColor="indigo"
+        title="Run AI QA"
+        description="Upload a lesson PDF and run a structured AI quality review."
+        actions={
+          <>
             <button
-              onClick={() => setShowSettings(true)}
-              className="p-2.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-              title="QA Prompt Settings"
+              onClick={() => setShowInfo(true)}
+              className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+              title="About this tool"
             >
-              <Settings className="w-5 h-5" />
+              <Info className="w-5 h-5" />
             </button>
-          )}
-        </div>
-      </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                title="QA Prompt Settings"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            )}
+          </>
+        }
+      />
 
       {/* Input form — shown on idle or error */}
       {(stage === 'idle' || stage === 'error') && (

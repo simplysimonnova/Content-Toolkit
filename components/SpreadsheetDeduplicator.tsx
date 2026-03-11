@@ -5,6 +5,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, Download, CheckCircle, AlertCircle, Trash2, ArrowRight, ShieldBan, FileCheck, Info, Settings, Shield, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { PageHeader } from './ui/PageHeader';
 import { parseCSV, generateCSVForRows } from '../utils/csvHelper';
 import { useAuth } from '../context/AuthContext';
 import { ToolSettingsModal } from './ToolSettingsModal';
@@ -405,44 +406,36 @@ export const SpreadsheetDeduplicator: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto animate-fade-in">
+    <div className="max-w-6xl mx-auto animate-fade-in space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-              <ShieldBan className="w-8 h-8 text-white" />
-            </div>
-            {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-900" />}
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-              Spreadsheet De-duplication
-              {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">
-              Remove duplicates against a Reference List or within the file itself.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowInfo(true)}
-            className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-            title="What this tool does"
-          >
-            <Info className="w-5 h-5" />
-          </button>
-          {isAdmin && (
+      <PageHeader
+        icon={<ShieldBan />}
+        iconColor="indigo"
+        title="Spreadsheet De-duplication"
+        description="Remove duplicates against a Reference List or within the file itself."
+        actions={
+          <>
+            {isLocked && (
+              <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>
+            )}
             <button
-              onClick={() => setShowSettings(true)}
+              onClick={() => setShowInfo(true)}
               className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+              title="What this tool does"
             >
-              <Settings className="w-5 h-5" />
+              <Info className="w-5 h-5" />
             </button>
-          )}
-        </div>
-      </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            )}
+          </>
+        }
+      />
 
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">

@@ -54,7 +54,8 @@ export type AppPage =
   | 'tqa-reports'
   | 'ai-qa-runner'
   | 'csv-cleanroom'
-  | 'slides-zip-upload';
+  | 'slides-zip-upload'
+  | 'toolkit-info';
 
 export interface ResourceLink {
   id?: string;

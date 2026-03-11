@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { Settings, Info, Download, Play, Link2, AlertCircle, FileText, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, Info, Download, Play, Link2, AlertCircle, FileText, CheckCircle2, XCircle, RotateCcw, Lock, Unlock } from 'lucide-react';
 import { resolveIDs } from './matcher';
 import { ColumnMapping, MatchResult } from './types';
 import Papa from 'papaparse';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../../services/firebase';
+import { useAuth } from '../../context/AuthContext';
 
 export const IDResolver: React.FC = () => {
     const [expandedFile, setExpandedFile] = useState<any[] | null>(null);
@@ -26,11 +29,25 @@ export const IDResolver: React.FC = () => {
         lesson_lul_column: ''
     });
 
+    const { isAdmin } = useAuth();
+    const [isLocked, setIsLocked] = useState(false);
+    const [modalIsLocked, setModalIsLocked] = useState(false);
+    const [isSavingLock, setIsSavingLock] = useState(false);
+
     const [result, setResult] = useState<MatchResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const unsub = onSnapshot(doc(db, 'configurations', 'id-resolver'), (snap) => {
+            if (snap.exists()) {
+                setIsLocked(!!snap.data().isLocked);
+            }
+        });
+        return unsub;
+    }, []);
 
     const [resolverSettings, setResolverSettings] = useState({
         normalizeWhitespace: true,
@@ -195,7 +212,7 @@ export const IDResolver: React.FC = () => {
         Object.values(mapping).every(v => v !== '');
 
     return (
-        <div className="max-w-7xl mx-auto animate-fade-in pb-20">
+        <div className="max-w-7xl mx-auto animate-fade-in space-y-6 pb-20">
 
             {/* Header */}
             <div className="flex justify-between items-center mb-8 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -227,13 +244,16 @@ export const IDResolver: React.FC = () => {
                         <Info className="w-6 h-6" />
                     </button>
                     <button
-                        onClick={() => setShowSettings(!showSettings)}
+                        onClick={() => { setModalIsLocked(isLocked); setShowSettings(!showSettings); }}
                         className={`p-2.5 rounded-xl transition-all ${showSettings ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800'}`}
                         title="Resolver Settings"
                     >
                         <Settings className="w-6 h-6" />
                     </button>
                 </div>
+                {isLocked && (
+                    <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>
+                )}
             </div>
 
             {/* File Uploads */}
@@ -446,10 +466,14 @@ export const IDResolver: React.FC = () => {
                                 <CheckCircle2 className="w-5 h-5 text-green-500" />
                                 ID Resolution Summary
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
                                 <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl text-center">
                                     <div className="text-2xl font-black text-slate-700 dark:text-slate-300">{result.stats.total_rows}</div>
                                     <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Rows</div>
+                                </div>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl text-center">
+                                    <div className="text-2xl font-black text-slate-700 dark:text-slate-300">{new Set(result.matched.map(r => r.lesson_id).filter(Boolean)).size}</div>
+                                    <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Lessons</div>
                                 </div>
                                 <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl text-center">
                                     <div className="text-2xl font-black text-green-600 dark:text-green-400">{result.stats.competency_matches}</div>
@@ -672,6 +696,25 @@ export const IDResolver: React.FC = () => {
                             </div>
 
                         </div>
+                        {isAdmin && (
+                            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5">Admin</p>
+                                    <p className="text-xs text-slate-400">{modalIsLocked ? 'Settings locked for non-admins' : 'Unlocked — anyone can change settings'}</p>
+                                </div>
+                                <button
+                                    onClick={() => setModalIsLocked(l => !l)}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                                        modalIsLocked
+                                            ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20'
+                                            : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'
+                                    }`}
+                                >
+                                    {modalIsLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                                    {modalIsLocked ? 'Locked (Verified)' : 'Unlocked'}
+                                </button>
+                            </div>
+                        )}
                         <div className="p-5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <button
                                 onClick={() => setResolverSettings({ normalizeWhitespace: true, caseSensitive: false, strictSkillMatch: true, allowPartialCEFR: false, flagSkillConflicts: true, includeUnmatched: true })}
@@ -679,8 +722,26 @@ export const IDResolver: React.FC = () => {
                             >
                                 Reset to defaults
                             </button>
-                            <button onClick={() => setShowSettings(false)} className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/20 text-sm">
-                                Save & Close
+                            <button
+                                disabled={isSavingLock}
+                                onClick={async () => {
+                                    if (isAdmin && modalIsLocked !== isLocked) {
+                                        setIsSavingLock(true);
+                                        try {
+                                            await setDoc(doc(db, 'configurations', 'id-resolver'), {
+                                                isLocked: modalIsLocked,
+                                                updatedAt: new Date().toISOString(),
+                                                toolId: 'id-resolver'
+                                            }, { merge: true });
+                                        } finally {
+                                            setIsSavingLock(false);
+                                        }
+                                    }
+                                    setShowSettings(false);
+                                }}
+                                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/20 text-sm"
+                            >
+                                {isSavingLock ? 'Saving...' : 'Save & Close'}
                             </button>
                         </div>
                     </div>

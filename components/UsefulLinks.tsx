@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link2, Search, LayoutGrid, List, ExternalLink, Filter, Loader2 } from 'lucide-react';
+import { PageHeader } from './ui/PageHeader';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { ResourceLink } from '../types';
@@ -47,30 +48,28 @@ export const UsefulLinks: React.FC = () => {
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-            <Link2 className="w-7 h-7 text-indigo-500" />
-            Useful Links
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Directory of educational resources and Metabase dashboards.</p>
-        </div>
-
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
-          <button 
-            onClick={() => setViewMode('card')}
-            className={`p-2 rounded-lg transition-all ${viewMode === 'card' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}
-          >
-            <LayoutGrid className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={() => setViewMode('list')}
-            className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}
-          >
-            <List className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={<Link2 />}
+        iconColor="indigo"
+        title="Useful Links"
+        description="Directory of educational resources and Metabase dashboards."
+        actions={
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <button
+              onClick={() => setViewMode('card')}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'card' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}
+            >
+              <LayoutGrid className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}
+            >
+              <List className="w-5 h-5" />
+            </button>
+          </div>
+        }
+      />
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">

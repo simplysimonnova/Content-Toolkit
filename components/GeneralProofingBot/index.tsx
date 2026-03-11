@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ClipboardCheck, FileText, Play, Loader2, AlertCircle, Trash2, Copy, Check, Info, FileUp, X, SearchCheck, FileCode, Settings } from 'lucide-react';
+import { PageHeader } from '../ui/PageHeader';
 import { generateProofReport } from './ai';
 import { ToolSettingsModal } from '../ToolSettingsModal';
 import { useAuth } from '../../context/AuthContext';
@@ -117,22 +118,19 @@ OUTPUT: Provide a clear, actionable list of findings. Use bullet points for easy
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-                        <SearchCheck className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">General Proofing Bot</h1>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium">Audit documents for UK English, formatting consistency, and tone.</p>
-                    </div>
-                </div>
-                {isAdmin && (
-                    <button onClick={() => setShowSettings(true)} className="p-3 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all">
-                        <Settings className="w-6 h-6" />
-                    </button>
-                )}
-            </div>
+            <PageHeader
+                icon={<SearchCheck />}
+                iconColor="indigo"
+                title="General Proofing Bot"
+                description="Audit documents for UK English, formatting consistency, and tone."
+                actions={
+                    isAdmin ? (
+                        <button onClick={() => setShowSettings(true)} className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all" title="Settings">
+                            <Settings className="w-5 h-5" />
+                        </button>
+                    ) : undefined
+                }
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">

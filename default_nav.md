@@ -1,4 +1,3 @@
-
 # Fallback Navigation Structure
 
 This is the hardcoded fallback navigation used by the Content Toolkit if the dynamic Firestore configuration fails to load.

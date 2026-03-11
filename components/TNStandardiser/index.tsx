@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Settings, AlertCircle, Copy, Check, Upload, Loader2, BookOpen, FileArchive, Presentation, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Settings, AlertCircle, Copy, Check, Upload, Loader2, BookOpen, FileArchive, Presentation, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { PageHeader } from '../ui/PageHeader';
 import { fixTeacherNotes, type TNResult } from './ai';
 import { ResultRenderer } from './ResultRenderer';
 import { extractNotesFromPdf } from './parsers/pdfParser';
 import { extractNotesFromPptx } from './parsers/pptxParser';
 import { extractNotesFromSlidesZip } from './parsers/slidesZipParser';
 import { buildTNReport, type TNReportContext } from './reportBuilder';
+import { TNInfoModal } from './TNInfoModal';
 import { UnifiedToolSettingsModal } from '../UnifiedToolSettingsModal';
 import { ReportViewer } from '../ReportViewer';
 import { saveReport } from '../../services/reportService';
@@ -36,6 +38,7 @@ export const TNStandardiser: React.FC = () => {
   const [parsingFile, setParsingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [additionalInstructions, setAdditionalInstructions] = useState('');
@@ -247,32 +250,32 @@ export const TNStandardiser: React.FC = () => {
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
 
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-            <BookOpen className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-              {TOOL_LABEL}
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">
-              Standardise raw teacher notes to the Novakid ABC format.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {isAdmin && (
+      <PageHeader
+        icon={<BookOpen />}
+        iconColor="indigo"
+        title={TOOL_LABEL}
+        description="Standardise raw teacher notes to the Novakid ABC format."
+        actions={
+          <>
             <button
-              onClick={() => setShowSettings(true)}
+              onClick={() => setShowInfo(true)}
               className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-              title="Settings"
+              title="About this tool"
             >
-              <Settings className="w-5 h-5" />
+              <Info className="w-5 h-5" />
             </button>
-          )}
-        </div>
-      </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                title="Settings"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            )}
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-start">
 
@@ -510,6 +513,7 @@ export const TNStandardiser: React.FC = () => {
         </div>
       )}
 
+      <TNInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} />
       <UnifiedToolSettingsModal
         toolId={TOOL_ID}
         isOpen={showSettings}

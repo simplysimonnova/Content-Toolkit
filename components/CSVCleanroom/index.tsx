@@ -245,7 +245,7 @@ export const CSVCleanroom: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto animate-fade-in">
+    <div className="max-w-6xl mx-auto animate-fade-in space-y-6">
 
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 mb-6">

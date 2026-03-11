@@ -109,7 +109,7 @@ export const CompetencyCsvNormaliser: React.FC = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto animate-fade-in pb-20">
+        <div className="max-w-6xl mx-auto animate-fade-in space-y-6 pb-20">
 
             {/* Header */}
             <div className="flex justify-between items-center mb-8 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">

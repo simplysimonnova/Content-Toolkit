@@ -250,6 +250,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
           { id: 'vq1', label: 'General Proofing Bot', icon: 'ClipboardCheck', page: 'proofing-bot' },
           { id: 'vq2', label: 'Lesson Proofing Bot', icon: 'ShieldCheck', page: 'lesson-proofing-bot' },
           { id: 'vq3', label: 'Thematic QA', icon: 'ShieldCheck', page: 'thematic-qa' },
+          { id: 'vq3r', label: 'TQA Reports', icon: 'BarChart2', page: 'tqa-reports' },
           { id: 'vq4', label: 'QA Engine V1', icon: 'ShieldCheck', page: 'slides-zip-upload' }
         ]
       },
@@ -302,6 +303,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({ isOpen, on
         id: 'resources',
         title: 'Resources',
         items: [
+          { id: 'r0', label: 'Toolkit Info', icon: 'Compass', page: 'toolkit-info' },
           { id: 'r1', label: 'Internal Notes', icon: 'StickyNote', page: 'internal-notes' },
           { id: 'r2', label: 'Useful Links', icon: 'Link2', page: 'useful-links' },
           { id: 'r3', label: 'Directus Guides', icon: 'Presentation', page: 'directus-guides' }

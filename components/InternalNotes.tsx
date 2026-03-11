@@ -5,6 +5,7 @@ import {
   Filter, Loader2, X, Tag, Calendar, Share2, Lock, Edit3, Trash2, 
   Save, CheckCircle2, User
 } from 'lucide-react';
+import { PageHeader } from './ui/PageHeader';
 import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { InternalNote } from '../types';
@@ -139,7 +140,7 @@ export const InternalNotes: React.FC = () => {
     const date = note.updatedAt?.toDate() || note.createdAt?.toDate() || new Date();
     
     return (
-      <div className="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-orange-500 dark:hover:border-orange-500 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between shadow-sm relative">
+      <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-orange-500 dark:hover:border-orange-500 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between shadow-sm relative">
         <div>
           <div className="flex justify-between items-start mb-4">
             <div className="flex flex-wrap gap-1">
@@ -191,7 +192,7 @@ export const InternalNotes: React.FC = () => {
     const date = note.updatedAt?.toDate() || note.createdAt?.toDate() || new Date();
 
     return (
-      <div className="flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group">
+      <div className="flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
         <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 flex-shrink-0">
           <StickyNote className="w-5 h-5" />
         </div>
@@ -228,39 +229,37 @@ export const InternalNotes: React.FC = () => {
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-            <StickyNote className="w-7 h-7 text-orange-500" />
-            Internal Notes
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage personal and team-wide educational notes.</p>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
-            <button 
-              onClick={() => setViewMode('card')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'card' ? 'bg-white dark:bg-slate-700 shadow-sm text-orange-500' : 'text-slate-400'}`}
+      <PageHeader
+        icon={<StickyNote />}
+        iconColor="indigo"
+        title="Internal Notes"
+        description="Manage personal and team-wide educational notes."
+        actions={
+          <>
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+              <button
+                onClick={() => setViewMode('card')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'card' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}
+              >
+                <LayoutGrid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+            <button
+              onClick={handleOpenAdd}
+              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
             >
-              <LayoutGrid className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
+              Create Note
             </button>
-            <button 
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-orange-500' : 'text-slate-400'}`}
-            >
-              <List className="w-5 h-5" />
-            </button>
-          </div>
-          <button 
-            onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
-          >
-            <Plus className="w-5 h-5" />
-            Create Note
-          </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">

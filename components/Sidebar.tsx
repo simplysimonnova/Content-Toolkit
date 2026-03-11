@@ -24,7 +24,8 @@ const ICON_MAP: Record<string, any> = {
   'Tag': Tag, 'TableProperties': TableProperties, 'FileText': FileText,
   'ShieldBan': ShieldBan, 'Link2': Link2, 'CreditCard': CreditCard,
   'ClipboardCheck': ClipboardCheck, 'ListOrdered': ListOrdered,
-  'StickyNote': StickyNote, 'Hash': Hash, 'Terminal': Terminal, 'Ticket': Ticket, 'Braces': Braces, 'BarChart2': BarChart2
+  'StickyNote': StickyNote, 'Hash': Hash, 'Terminal': Terminal, 'Ticket': Ticket, 'Braces': Braces, 'BarChart2': BarChart2,
+  'Compass': Compass
 };
 
 const FALLBACK_GROUPS: NavGroupConfig[] = [
@@ -108,6 +109,7 @@ const FALLBACK_GROUPS: NavGroupConfig[] = [
     id: 'resources',
     title: 'Resources',
     items: [
+      { id: 'r0', label: 'Toolkit Info', icon: 'Compass', page: 'toolkit-info' },
       { id: 'r1', label: 'Internal Notes', icon: 'StickyNote', page: 'internal-notes' },
       { id: 'r2', label: 'Useful Links', icon: 'Link2', page: 'useful-links' },
       { id: 'r3', label: 'Directus Guides', icon: 'Presentation', page: 'directus-guides' }

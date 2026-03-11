@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Copy, Check, RefreshCw, Wand2, Palette, Trash2, UserCircle, Shirt, ChevronRight, Play, Settings } from 'lucide-react';
+import { PageHeader } from './ui/PageHeader';
 import { rewriteImagePrompt } from '../services/geminiService';
 import { ToolSettingsModal } from './ToolSettingsModal';
 import { useAuth } from '../context/AuthContext';
@@ -108,25 +109,23 @@ export const PromptRewriter: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto animate-fade-in space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-            <Wand2 className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Prompt Rewriter</h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">Transform characters and costumes while preserving Novakid style consistency.</p>
-          </div>
-        </div>
-        {isAdmin && (
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-        )}
-      </div>
+      <PageHeader
+        icon={<Wand2 />}
+        iconColor="indigo"
+        title="Prompt Rewriter"
+        description="Transform characters and costumes while preserving Novakid style consistency."
+        actions={
+          isAdmin ? (
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+              title="Settings"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          ) : undefined
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">

@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Copy, Check, Loader2, PenLine, Trash2, ArrowRight, UserCheck, Settings } from 'lucide-react';
+import { PageHeader } from './ui/PageHeader';
 import { generateNewImagePrompt } from '../services/geminiService';
 import { ToolSettingsModal } from './ToolSettingsModal';
 import { useAuth } from '../context/AuthContext';
@@ -70,32 +71,29 @@ ${JSON.stringify(IMAGE_STYLE_RULES, null, 2)}`;
   return (
     <div className="max-w-4xl mx-auto animate-fade-in space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-            <PenLine className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Prompt Creator</h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">Expand simple keywords into full Novakid educational prompts.</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full">
-            <UserCheck className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Character Sync On</span>
-          </div>
-          {isAdmin && (
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-              title="Global AI Settings"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        icon={<PenLine />}
+        iconColor="indigo"
+        title="Prompt Creator"
+        description="Expand simple keywords into full Novakid educational prompts."
+        actions={
+          <>
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full">
+              <UserCheck className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Character Sync On</span>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                title="Global AI Settings"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            )}
+          </>
+        }
+      />
 
       {/* Input Card */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">

@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Download, Info, Settings, Trash2, ArrowRight, Maximize2, Shield, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, FileText, Download, Info, Settings, Trash2, ArrowRight, Maximize2, AlertCircle, CheckCircle } from 'lucide-react';
+import { PageHeader } from './ui/PageHeader';
+import { ToolSettingsModal } from './ToolSettingsModal';
 import { parseCSV, generateCSVForRows } from '../utils/csvHelper';
 import { useAuth } from '../context/AuthContext';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -212,36 +214,45 @@ export const RowExpander: React.FC = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto animate-fade-in pb-20">
+        <div className="max-w-6xl mx-auto animate-fade-in space-y-6 pb-20">
             {/* Header */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <div className="p-4 bg-blue-500 rounded-2xl shadow-lg shadow-blue-500/20">
-                            <Maximize2 className="w-8 h-8 text-white" />
-                        </div>
-                        {isLocked && <Shield className="w-3.5 h-3.5 text-teal-500 absolute -top-1 -right-1 fill-white dark:fill-slate-900" />}
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-                            Row Expander
-                            {isLocked && <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>}
-                        </h1>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium">
-                            Expand rows with multiple values in a cell into atomic, single-value rows.
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setShowInfo(true)}
-                        className="p-2.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-                        title="Info"
-                    >
-                        <Info className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
+            <PageHeader
+                icon={<Maximize2 />}
+                iconColor="indigo"
+                title="Row Expander"
+                description="Expand rows with multiple values in a cell into atomic, single-value rows."
+                actions={
+                    <>
+                        {isLocked && (
+                            <span className="text-[10px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-800">Stable</span>
+                        )}
+                        <button
+                            onClick={() => setShowInfo(true)}
+                            className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                            title="About this tool"
+                        >
+                            <Info className="w-5 h-5" />
+                        </button>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setShowSettings(true)}
+                                className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                                title="Settings"
+                            >
+                                <Settings className="w-5 h-5" />
+                            </button>
+                        )}
+                    </>
+                }
+            />
+
+            {/* Settings Modal */}
+            <ToolSettingsModal
+                toolId="row-expander"
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                defaultPrompt=""
+            />
 
             {/* Info Modal */}
             {showInfo && (
